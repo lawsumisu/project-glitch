@@ -25,6 +25,9 @@
     <Filter Include="Source Files\Input">
       <UniqueIdentifier>{d5aebd7f-47a5-478e-912c-40eb31f42e90}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\CustomUtilities">
+      <UniqueIdentifier>{8cebe2b0-3fab-48a2-a1fd-c57f0bf444c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -48,9 +51,6 @@
     <ClInclude Include="Character.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Physics.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InputBuffer.h">
       <Filter>Header Files\Input</Filter>
     </ClInclude>
@@ -66,10 +66,16 @@
     <ClInclude Include="VectorUtility.h">
       <Filter>Header Files\CustomUtilities</Filter>
     </ClInclude>
-    <ClInclude Include="MaskCollider.h">
+    <ClInclude Include="Collision.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Collision.h">
+    <ClInclude Include="RectUtility.h">
+      <Filter>Header Files\CustomUtilities</Filter>
+    </ClInclude>
+    <ClInclude Include="PillarCollider.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SensorCollider.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -83,9 +89,6 @@
     <ClCompile Include="EnumeratorUtilities.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VectorUtility.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="KeyboardBinding.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
@@ -97,6 +100,12 @@
     </ClCompile>
     <ClCompile Include="PlayerInput.cpp">
       <Filter>Source Files\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="VectorUtility.cpp">
+      <Filter>Source Files\CustomUtilities</Filter>
+    </ClCompile>
+    <ClCompile Include="RectUtility.cpp">
+      <Filter>Source Files\CustomUtilities</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
