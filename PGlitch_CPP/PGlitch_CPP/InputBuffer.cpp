@@ -2,6 +2,7 @@
 #include "InputBuffer.h"
 #include <iostream>
 
+InputBuffer::InputBuffer(size_t size) : InputBuffer(size, InputBindingSet()) {}
 InputBuffer::InputBuffer(size_t size, InputBindingSet& bindings) : 
     inputs(RingBuffer<FrameInput>(size)) {
     this->size = size;
@@ -9,7 +10,9 @@ InputBuffer::InputBuffer(size_t size, InputBindingSet& bindings) :
     this->bindings.insert(bindings.begin(), bindings.end());
     clear();
 }
-
+void InputBuffer::addBinding(InputBinding* binding) {
+    bindings.insert(InputBindingPtr(binding));
+}
 void InputBuffer::update() {
     FrameInput fi = FrameInput();
     FrameInput previousFI = current();
@@ -27,7 +30,7 @@ void InputBuffer::update() {
             //Check if previous frame input contained this binding, as it means this input has been released.
             if (previousFI.contains(PlayerInput(binding->code(), InputType::HOLD)) ||
                 previousFI.contains(PlayerInput(binding->code(), InputType::PRESS))) {
-                fi.add(PlayerInput(binding->code(), InputType::UP));
+                fi.add(PlayerInput(binding->code(), InputType::RELEASE));
             }
         }
     }

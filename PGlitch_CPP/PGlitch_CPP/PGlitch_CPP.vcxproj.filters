@@ -28,6 +28,12 @@
     <Filter Include="Source Files\CustomUtilities">
       <UniqueIdentifier>{8cebe2b0-3fab-48a2-a1fd-c57f0bf444c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Physics">
+      <UniqueIdentifier>{7ced28bb-ffa1-4820-a257-cb593e9d3916}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Physics">
+      <UniqueIdentifier>{d96103e6-fe5c-453f-9d3c-73efbad05a6e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -66,17 +72,17 @@
     <ClInclude Include="VectorUtility.h">
       <Filter>Header Files\CustomUtilities</Filter>
     </ClInclude>
-    <ClInclude Include="Collision.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RectUtility.h">
       <Filter>Header Files\CustomUtilities</Filter>
     </ClInclude>
+    <ClInclude Include="Collision.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
     <ClInclude Include="PillarCollider.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Physics</Filter>
     </ClInclude>
     <ClInclude Include="SensorCollider.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -106,6 +112,15 @@
     </ClCompile>
     <ClCompile Include="RectUtility.cpp">
       <Filter>Source Files\CustomUtilities</Filter>
+    </ClCompile>
+    <ClCompile Include="PillarCollider.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Collision.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="SensorCollider.cpp">
+      <Filter>Source Files\Physics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

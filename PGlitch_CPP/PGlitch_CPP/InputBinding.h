@@ -17,6 +17,8 @@ struct InputBinding {
 
     virtual bool operator==(const InputBinding* otherIB) const = 0;
 
+    virtual bool operator==(const InputBinding& otherIB) const = 0;
+
     virtual size_t hashCode() const = 0;
 
     inline bool operator!=(const InputBinding* otherIB) const {
@@ -37,6 +39,18 @@ namespace std {
         bool operator()(const shared_ptr<InputBinding>& input1, const shared_ptr<InputBinding>& input2) const {
             return (*input1) == (input2.get());
             
+        }
+    };
+
+    template <> struct std::hash<InputBinding> {
+        size_t operator()(const InputBinding& input) const {
+            return input.hashCode();
+        }
+    };
+
+    template <> struct std::equal_to<InputBinding> {
+        bool operator()(const InputBinding& input1, const InputBinding& input2) const {
+            return input1 == input2;
         }
     };
 }

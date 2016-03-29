@@ -22,7 +22,7 @@ std::string EnumeratorUtilities::toSymbol(const InputType& type) {
     switch (type) {
     case InputType::HOLD:
         return "_";
-    case InputType::UP:
+    case InputType::RELEASE:
         return "^";
     default:
         return "";

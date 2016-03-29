@@ -14,7 +14,12 @@ private:
     InputBindingSet bindings;
     size_t size;
 public:
+    /// <summary>
+    /// Creates an <see cref="InputBuffer"/> of size size with no bindings.
+    /// </summary>
+    InputBuffer(size_t size);
     InputBuffer(size_t size, InputBindingSet& bindings);
+    void addBinding(InputBinding* binding);
     void update();
     void clear();
     FrameInput current() const;

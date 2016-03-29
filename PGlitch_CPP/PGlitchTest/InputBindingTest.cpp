@@ -36,10 +36,10 @@ namespace PGlitchTest
 
         TEST_METHOD(testEqualsImplicit) {
 
-            std::unique_ptr<InputBinding> IB (new KeyboardBinding(sf::Keyboard::Left, InputCode::LEFT));
-            std::unique_ptr<KeyboardBinding> KB(new KeyboardBinding(sf::Keyboard::Left, InputCode::LEFT));
+            InputBinding& IB = KeyboardBinding(sf::Keyboard::Left, InputCode::LEFT);
+            KeyboardBinding KB = KeyboardBinding(sf::Keyboard::Left, InputCode::LEFT);
 
-            Assert::IsTrue((*IB)==KB.get());
+            Assert::IsTrue(KB == IB);
         }
 
         TEST_METHOD(testToString) {

@@ -12,6 +12,7 @@ public:
     bool readInput() const;
     InputCode code() const;
     bool operator==(const InputBinding* otherInput) const;
+    bool operator==(const InputBinding& otherBinding) const;
     bool operator==(const KeyboardBinding otherBinding) const;
     size_t hashCode() const;
     std::string toString() const;

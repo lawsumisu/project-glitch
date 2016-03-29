@@ -21,6 +21,11 @@ bool KeyboardBinding::operator==(const InputBinding* otherInput) const {
     else return false;
 }
 
+bool KeyboardBinding::operator==(const InputBinding& otherBinding) const {
+    const KeyboardBinding* KB = dynamic_cast<const KeyboardBinding*>(&otherBinding);
+    if (KB) return (*this) == (*KB);
+    else return false;
+}
 bool KeyboardBinding::operator==(const KeyboardBinding otherBinding) const {
     return key == otherBinding.key && _code == otherBinding._code;
 }

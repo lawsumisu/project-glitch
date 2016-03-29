@@ -43,7 +43,7 @@ namespace PGlitchTest
 
         TEST_METHOD(testToString) {
             PlayerInput pi1 = PlayerInput(InputCode::RIGHT, InputType::PRESS);
-            PlayerInput pi2 = PlayerInput(InputCode::DOWN, InputType::UP);
+            PlayerInput pi2 = PlayerInput(InputCode::DOWN, InputType::RELEASE);
             PlayerInput pi3 = PlayerInput(InputCode::LEFT, InputType::HOLD);
 
             Assert::AreEqual("R", pi1.toString().c_str());
@@ -97,5 +97,15 @@ namespace PGlitchTest
             Assert::AreEqual(1U, FI.count());
         }
 
+        TEST_METHOD(testIsDown) {
+            FrameInput FI = FrameInput();
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
+            FI.add(PlayerInput(InputCode::DOWN, InputType::HOLD));
+            FI.add(PlayerInput(InputCode::UP, InputType::RELEASE));
+
+            Assert::IsTrue(FI.isDown(InputCode::RIGHT));
+            Assert::IsTrue(FI.isDown(InputCode::DOWN));
+            Assert::IsFalse(FI.isDown(InputCode::UP));
+        }
 	};
 }

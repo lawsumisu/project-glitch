@@ -16,6 +16,9 @@ bool FrameInput::contains(PlayerInput& input) const {
     else return inputs.find(input) != inputs.end();
 }
 
+bool FrameInput::isDown(InputCode code) const {
+    return contains(PlayerInput(code, InputType::PRESS)) || contains(PlayerInput(code, InputType::HOLD));
+}
 size_t FrameInput::count() const {
     return inputs.size();
 }
