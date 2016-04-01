@@ -16,13 +16,13 @@ namespace Physics {
         float _groundAngle;
         FloatRect _ground, _ceiling, _left, _right;
         FloatRect findNearestCollision(vector<FloatRect>& collisions, WallType type);
-        float calculateAngle(vector<FloatRect>& groundCollisions, float width);
+        float calculateAngle(vector<FloatRect>& groundCollisions);
 
         //Constructors
         Collision(FloatRect& G, FloatRect& C, FloatRect& L, FloatRect& R, float angle);
     public:
         Collision(vector<FloatRect>& groundCollisions, vector<FloatRect>& ceilingCollisions,
-            vector<FloatRect>& leftCollisions, vector<FloatRect>& rightCollisions, float width);
+            vector<FloatRect>& leftCollisions, vector<FloatRect>& rightCollisions);
 
         /// <summary>
         /// Compares this <see cref="Collision"/> to another and returns a single <see cref="Collision"/>

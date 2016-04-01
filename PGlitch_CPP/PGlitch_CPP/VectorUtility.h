@@ -2,6 +2,7 @@
 
 #include <SFML/System/Vector2.hpp>
 #include <math.h>
+#include <sstream>
 
 using namespace sf;
 namespace CustomUtilities {
@@ -15,5 +16,7 @@ namespace CustomUtilities {
         static float angle(Vector2f& v1, Vector2f& v2);
 
         static Vector2f normalize(Vector2f& v);
+        
+        static std::string toString(Vector2f& v);
     };
 }

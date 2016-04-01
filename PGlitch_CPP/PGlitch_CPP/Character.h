@@ -72,9 +72,9 @@ public:
 
 Character::Character() : buffer(InputBuffer(10)) {
     //Set defaults.
-    gndAcceleration = 180;
+    gndAcceleration = 100;
     gndDeceleration = 360;
-    friction = 14;
+    friction = gndAcceleration;
     gravity = 720;
     highJump = -360;
     lowJump = -240;
@@ -95,8 +95,8 @@ void Character::update(vector<PillarCollider> colliders, float dt) {
     updateKinematics(dt);
     updateCollisions(colliders);
 
-    //cout << "Velocity: (" << velocity.x << "," << velocity.y << ")" << endl;
-    //cout << "Angle: " << angle << endl;
+    // << "Velocity: (" << velocity.x << "," << velocity.y << ")" << endl;
+    cout << "Angle: " << angle << endl;
 }
 
 void Character::updateState(float dt) {
@@ -105,6 +105,7 @@ void Character::updateState(float dt) {
     //Check for changes to horizontal acceleration due to input.
     int motionSign = getMotionSign();
     int vxSign = MathUtility::sign(velocity.x);
+    if (velocity.x == 0 && current.isDown(InputCode::LEFT)) vxSign = -1;
     if (motionSign == 1) acceleration.x = vxSign*gndAcceleration;
     else if (motionSign == -1) acceleration.x = -vxSign*gndDeceleration;
     else acceleration.x = -vxSign*min(abs(velocity.x)/dt,friction);
@@ -117,6 +118,7 @@ void Character::updateState(float dt) {
     else if (jumpFlag && velocity.y < lowJump && 
         current.contains(PlayerInput(InputCode::B1, InputType::RELEASE))){
         velocity.y = lowJump;
+        jumpFlag = false;
     }
 
     if (sState == SpatialState::AIR) {
@@ -129,7 +131,7 @@ void Character::updateKinematics(float dt) {
     velocity += acceleration*dt;
 
     Vector2f attunedVelocity;
-    attunedVelocity.x = velocity.x * cosf(angle) - velocity.y * sinf(angle);
+    attunedVelocity.x = velocity.x * cosf(angle) + velocity.y * sinf(angle);
     attunedVelocity.y = velocity.x * -sinf(angle) + velocity.y * cosf(angle);
 
     // Now, update position.
@@ -139,21 +141,20 @@ void Character::updateKinematics(float dt) {
 void Character::updateCollisions(std::vector<PillarCollider> colliders) {
     sensor.setCenter(position);
     Collision collision = sensor.collides(colliders);
-    cout << collision.toString() << endl;
 
     //Update horizontal position based on left and right collisions.
     if (collision.withRight()) {
-        cout << "Colliding with right." << endl;
         position.x = min(position.x, collision.right() - _size.x / 2);
         velocity.x = 0;
     }
     else if (collision.withLeft()) {
-        cout << "Colliding with left" << endl;
         position.x = max(position.x, collision.left() + _size.x / 2);
         velocity.x = 0;
     }
 
     //Update vertical position based on ground and ceiling collisions.
+    sensor.setCenter(position);
+    collision = sensor.collides(colliders);
     if (collision.withGround() && velocity.y >= 0 && 
         (isGrounded() || position.y + _size.y / 2 > collision.ground())) {
         position.y = collision.ground() - _size.y / 2;

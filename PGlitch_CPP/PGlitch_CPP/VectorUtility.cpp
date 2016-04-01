@@ -14,3 +14,9 @@ float VectorUtility::angle(Vector2f& v1, Vector2f& v2) {
 Vector2f VectorUtility::normalize(Vector2f& v) {
     return v / magnitude(v);
 }
+
+std::string VectorUtility::toString(Vector2f& v) {  
+    std::stringstream ss;
+    ss << "Vector2f: (" << v.x << "," << v.y << ")";
+    return ss.str();
+}

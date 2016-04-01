@@ -3,6 +3,8 @@
 #include "../PGlitch_CPP/PillarCollider.h"
 #include "../PGlitch_CPP/RectUtility.h"
 #include "../PGlitch_CPP/SensorCollider.h"
+#include "../PGlitch_CPP/MathUtility.h"
+#include "../PGlitch_CPP/VectorUtility.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace sf;
@@ -141,12 +143,33 @@ namespace PGlitchTest
             Collision collision = sensor.collides(vector<PillarCollider>{ ground, left, right });
             Collision collision2 = sensor.collides(vector<PillarCollider>{ground});
 
-            Logger::WriteMessage(collision.toString().c_str());
-            Logger::WriteMessage(collision2.toString().c_str());
             Assert::IsTrue(collision.withGround());
             Assert::IsFalse(collision.withRight());
-            //Assert::IsFalse(collision.withLeft());
+            Assert::IsTrue(collision.withLeft());
 
+        }
+
+        TEST_METHOD(testCollisionAngle) {
+            SensorCollider sensor = SensorCollider(Vector2f(3, -1), Vector2f(3, 2), Vector2f(6, 10));
+            PillarCollider collider = PillarCollider::uniformDepth({ -2,-4,-6 }, 2, 0, Vector2f(0, 6));
+
+            Collision collision = sensor.collides(vector<PillarCollider>{collider});
+
+            Logger::WriteMessage(collision.toString().c_str());
+
+            std::vector<Vector2f> points = {};
+            //points.push_back(Vector2f(0, 2));
+            //points.push_back(Vector2f(1, 2));
+            points.push_back(Vector2f(2, 2));
+            //points.push_back(Vector2f(2, 4));
+            //points.push_back(Vector2f(3, 4));
+            points.push_back(Vector2f(4, 4));
+            //points.push_back(Vector2f(4, 6));
+            //points.push_back(Vector2f(5, 6));
+            points.push_back(Vector2f(6, 6));
+
+            Vector2f output = MathUtility::linearRegression(points);
+            Logger::WriteMessage(VectorUtility::toString(output).c_str());
         }
     };
 }

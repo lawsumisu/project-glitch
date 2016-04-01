@@ -16,7 +16,7 @@ Collision SensorCollider::collides(PillarCollider& collider) {
     vector<FloatRect> leftCollisions = collider.intersects(_left);
     vector<FloatRect> rightCollisions = collider.intersects(_right);
 
-    return Collision(groundCollisions, ceilingCollisions, leftCollisions, rightCollisions, collider.width());
+    return Collision(groundCollisions, ceilingCollisions, leftCollisions, rightCollisions);
 }
 
 Collision SensorCollider::collides(vector<PillarCollider>& colliders) {

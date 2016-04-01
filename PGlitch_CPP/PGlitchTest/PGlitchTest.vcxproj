@@ -98,7 +98,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;C:\Users\EXSokono\Designer Alley\Developer Station\Project Glitch\PGlitch_CPP\PGlitch_CPP\Debug;C:\Users\EXSokono\Libraries\SFML-2.3.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>PlayerInput.obj;EnumeratorUtilities.obj;FrameInput.obj;sfml-window-d.lib;sfml-graphics-d.lib;stdafx.obj;KeyboardBinding.obj;VectorUtility.obj;RectUtility.obj;PillarCollider.obj;SensorCollider.obj;Collision.obj;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>PlayerInput.obj;EnumeratorUtilities.obj;FrameInput.obj;sfml-window-d.lib;sfml-graphics-d.lib;stdafx.obj;KeyboardBinding.obj;VectorUtility.obj;RectUtility.obj;PillarCollider.obj;SensorCollider.obj;Collision.obj;MathUtility.obj;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

@@ -31,8 +31,13 @@ namespace Physics {
         /// </summary>
         PillarCollider(std::vector<float> heightMap, vector<float> depthMap, float width, Vector2f origin);
         vector<FloatRect> intersects(FloatRect& collidingRect) const;
-        float width() { return _width; }
-        VertexArray toOutline();
+        VertexArray toOutline() const;
+
+        /// <summary>
+        /// Returns a <see cref="VertexArray"/> that represents the outline of this collider
+        /// as a polygon.
+        /// </summary>
+        VertexArray toPhysicalOutline() const;
         static PillarCollider uniformHeight(vector<float> depthMap, float width, float height, Vector2f position);
         static PillarCollider uniformDepth(vector<float> heightMap, float width, float depth, Vector2f position);
 

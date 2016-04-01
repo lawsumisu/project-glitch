@@ -177,6 +177,7 @@
     <ClCompile Include="InputBuffer.cpp" />
     <ClCompile Include="KeyboardBinding.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="MathUtility.cpp" />
     <ClCompile Include="PillarCollider.cpp" />
     <ClCompile Include="PlayerInput.cpp" />
     <ClCompile Include="RectUtility.cpp" />
