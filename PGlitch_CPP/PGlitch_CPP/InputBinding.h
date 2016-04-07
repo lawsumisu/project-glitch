@@ -4,16 +4,21 @@
 #include <memory>
 #include <sstream>
 
-struct InputBinding {
+/// <summary>
+/// Interface for representing the binding between a physical input and its abstract representation.
+/// Bindings are immutable.
+/// </summary>
+class InputBinding {
+private:
+    //Fields
+    InputCode _code;
+    float _strength;
+public:
 
-    /// <summary>
-    /// Gets the code that is bound to this input.
-    /// </summary>
-    virtual InputCode code() const = 0;
     /// <summary>
     /// Gets the state of the input and returns a <see cref="PlayerInput"/> that corresponds to its state. 
     /// </summary>
-    virtual bool readInput() const = 0;
+    virtual PlayerInput readInput() const = 0;
 
     virtual bool operator==(const InputBinding* otherIB) const = 0;
 

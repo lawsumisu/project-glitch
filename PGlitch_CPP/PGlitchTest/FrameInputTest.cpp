@@ -46,9 +46,23 @@ namespace PGlitchTest
             PlayerInput pi2 = PlayerInput(InputCode::DOWN, InputType::RELEASE);
             PlayerInput pi3 = PlayerInput(InputCode::LEFT, InputType::HOLD);
 
-            Assert::AreEqual("R", pi1.toString().c_str());
-            Assert::AreEqual("^D", pi2.toString().c_str());
-            Assert::AreEqual("_L", pi3.toString().c_str());
+            Assert::AreEqual("R(100)", pi1.toString().c_str());
+            Assert::AreEqual("[-]D(100)", pi2.toString().c_str());
+            Assert::AreEqual("[+]L(100)", pi3.toString().c_str());
+        }
+
+        TEST_METHOD(testRetype) {
+            PlayerInput pi1 = PlayerInput(InputCode::RIGHT, InputType::PRESS);
+
+            Assert::AreEqual(PlayerInput(InputCode::RIGHT, InputType::HOLD), pi1.retype(InputType::HOLD));
+            Assert::AreEqual(3, pi1.retype(InputType::HOLD).retype(InputType::HOLD).duration());
+            Assert::AreEqual("[+2]R(100)", pi1.retype(InputType::HOLD).retype(InputType::HOLD).toString().c_str());
+        }
+
+        TEST_METHOD(testRetune) {
+            PlayerInput pi = PlayerInput(InputCode::RIGHT, InputType::PRESS, 100.f);
+
+            Assert::AreEqual(PlayerInput(InputCode::RIGHT, InputType::PRESS, 5.f), pi.retune(5.f));
         }
     };
 
@@ -71,6 +85,33 @@ namespace PGlitchTest
             Assert::IsFalse(FI.contains(PlayerInput::none()));
         }
 
+        TEST_METHOD(testAddChangeStrength) {
+            FrameInput FI = FrameInput();
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS, 5.f));
+            FI.add(PlayerInput(InputCode::LEFT, InputType::HOLD, 10.f));
+            
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS, 10.f));
+            FI.add(PlayerInput(InputCode::LEFT, InputType::HOLD, 5.f));
+
+            Logger::WriteMessage(FI.toString().c_str());
+            Assert::AreEqual(2U, FI.count());
+            Assert::IsTrue(FI.contains(PlayerInput(InputCode::RIGHT, InputType::PRESS, 10.f)));
+            Assert::IsTrue(FI.contains(PlayerInput(InputCode::LEFT, InputType::HOLD, 10.f)));
+        }
+
+        TEST_METHOD(testAddChangeType) {
+            FrameInput FI = FrameInput();
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::RELEASE));
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
+
+            Assert::AreEqual(1U, FI.count());
+            Assert::IsTrue(FI.contains(PlayerInput(InputCode::RIGHT, InputType::PRESS)));
+
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::HOLD));
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::RELEASE));
+            Assert::AreEqual(1U, FI.count());
+            Assert::IsTrue(FI.contains(PlayerInput(InputCode::RIGHT, InputType::HOLD)));
+        }
         TEST_METHOD(testAddNone) {
             FrameInput FI = FrameInput();
             FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
@@ -80,7 +121,7 @@ namespace PGlitchTest
             Assert::AreEqual(1U, FI.count());
         }
 
-        TEST_METHOD(testContains) {
+        TEST_METHOD(testContainsIgnoreStrength) {
             FrameInput FI = FrameInput();
             FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
 
@@ -88,7 +129,7 @@ namespace PGlitchTest
             Assert::IsFalse(FI.contains(PlayerInput(InputCode::LEFT, InputType::PRESS)));
         }
 
-        TEST_METHOD(testContainsRepeatAdd) {
+        TEST_METHOD(testContainsIgnoreStrengthRepeatAdd) {
             FrameInput FI = FrameInput();
             FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
             FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
@@ -99,13 +140,45 @@ namespace PGlitchTest
 
         TEST_METHOD(testIsDown) {
             FrameInput FI = FrameInput();
-            FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
-            FI.add(PlayerInput(InputCode::DOWN, InputType::HOLD));
-            FI.add(PlayerInput(InputCode::UP, InputType::RELEASE));
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS, 10.f));
+            FI.add(PlayerInput(InputCode::DOWN, InputType::HOLD, 50.f));
+            FI.add(PlayerInput(InputCode::UP, InputType::RELEASE, 0.f));
 
             Assert::IsTrue(FI.isDown(InputCode::RIGHT));
             Assert::IsTrue(FI.isDown(InputCode::DOWN));
             Assert::IsFalse(FI.isDown(InputCode::UP));
+        }
+
+        TEST_METHOD(testContains) {
+            FrameInput FI = FrameInput();
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS, 5.f));
+
+            Assert::IsTrue(FI.contains(PlayerInput(InputCode::RIGHT, InputType::PRESS, 5.f)));
+            Assert::IsFalse(FI.contains(PlayerInput(InputCode::RIGHT, InputType::PRESS, 5.1f)));
+            Assert::IsFalse(FI.contains(PlayerInput::none()));
+        }
+
+        TEST_METHOD(testModifyWithPreviousHold) {
+            FrameInput FI = FrameInput();
+            FI.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
+            
+            FrameInput previous = FrameInput();
+            previous.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
+
+            FrameInput modified = FI.modifyWithPrevious(previous);
+
+            Assert::IsTrue(modified.containsIgnoreStrength(PlayerInput(InputCode::RIGHT, InputType::HOLD)));
+            Assert::IsFalse(modified.containsIgnoreStrength(PlayerInput(InputCode::RIGHT, InputType::PRESS)));
+        }
+
+        TEST_METHOD(testModifyWithPreviousRelease) {
+            FrameInput previous = FrameInput();
+            previous.add(PlayerInput(InputCode::RIGHT, InputType::PRESS));
+
+            FrameInput modified = FrameInput().modifyWithPrevious(previous);
+
+            Assert::AreEqual(1U, modified.count());
+            Assert::IsTrue(modified.containsIgnoreStrength(PlayerInput(InputCode::RIGHT, InputType::RELEASE)));
         }
 	};
 }

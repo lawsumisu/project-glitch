@@ -4,15 +4,15 @@
 
 KeyboardBinding::KeyboardBinding(sf::Keyboard::Key key, InputCode code) {
     this->key = key;
-    _code = code;
+    this->code = code;
+    input = PlayerInput(code, InputType::PRESS);
+
 }
 
-InputCode KeyboardBinding::code() const {
-    return _code;
-}
 
-bool KeyboardBinding::readInput() const {
-    return sf::Keyboard::isKeyPressed(key);
+PlayerInput KeyboardBinding::readInput() const {
+    if (sf::Keyboard::isKeyPressed(key)) return input;
+    return PlayerInput::none();
 }
 
 bool KeyboardBinding::operator==(const InputBinding* otherInput) const {
@@ -27,14 +27,14 @@ bool KeyboardBinding::operator==(const InputBinding& otherBinding) const {
     else return false;
 }
 bool KeyboardBinding::operator==(const KeyboardBinding otherBinding) const {
-    return key == otherBinding.key && _code == otherBinding._code;
+    return key == otherBinding.key && code == otherBinding.code;
 }
 size_t KeyboardBinding::hashCode() const {
-    return std::hash<int>()((int)_code) ^ std::hash<int>()((int)key);
+    return std::hash<int>()((int)code) ^ std::hash<int>()((int)key);
 }
 
 std::string KeyboardBinding::toString() const {
     std::stringstream ss;
-    ss << "[KeyboardBinding: binding = " << EnumeratorUtilities::toSymbol(_code) << "]";
+    ss << "[KeyboardBinding: binding = " << EnumeratorUtilities::toSymbol(code) << "]";
     return ss.str();
 }

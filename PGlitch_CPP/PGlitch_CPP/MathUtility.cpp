@@ -4,6 +4,10 @@
 using namespace CustomUtilities;
 using namespace sf;
 
+int MathUtility::sign(float f) {
+    if (f == 0) return 0;
+    else return f == abs(f) ? 1 : -1; 
+}
 Vector2f MathUtility::linearRegression(std::vector<Vector2f> coordinates) {
     int count = coordinates.size();
     float x_sum = 0, y_sum = 0, xx_sum = 0, xy_sum = 0;

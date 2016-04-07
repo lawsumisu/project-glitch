@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "CppUnitTest.h"
 #include "../PGlitch_CPP/KeyboardBinding.h"
+#include "../PGlitch_CPP/JoystickBinding.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -11,6 +12,11 @@ namespace Microsoft
         namespace CppUnitTestFramework
         {
             template<> static std::wstring ToString<KeyboardBinding>(const KeyboardBinding& binding)
+            {
+                RETURN_WIDE_STRING(binding.toString().c_str());
+            }
+
+            template<> static std::wstring ToString<ButtonBinding>(const ButtonBinding& binding)
             {
                 RETURN_WIDE_STRING(binding.toString().c_str());
             }
@@ -48,4 +54,19 @@ namespace PGlitchTest
             Assert::AreEqual("[KeyboardBinding: binding = L]", KB1.toString().c_str());
         }
 	};
+
+    TEST_CLASS(JoystickBindingTest) {
+        TEST_METHOD(testEquals) {
+            ButtonBinding JB1 = ButtonBinding(0, 0, InputCode::LEFT);
+            ButtonBinding JB2 = ButtonBinding(0, 0, InputCode::LEFT);
+
+            Assert::AreEqual(JB1, JB2);
+            Assert::AreEqual(JB1.hashCode(), JB2.hashCode());
+        }
+        TEST_METHOD(testToString) {
+            ButtonBinding JB1 = ButtonBinding(0, 0, InputCode::LEFT);
+
+            Assert::AreEqual("[JoystickBinding(Button): binding = L]", JB1.toString().c_str());
+        }
+    };
 }

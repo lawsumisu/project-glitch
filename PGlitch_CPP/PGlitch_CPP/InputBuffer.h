@@ -4,6 +4,7 @@
 #include "RingBuffer.h"
 #include "InputBinding.h"
 #include "KeyboardBinding.h"
+#include "JoystickBinding.h"
 #include <unordered_set>
 
 typedef std::unordered_set<InputBindingPtr> InputBindingSet;

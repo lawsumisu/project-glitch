@@ -13,6 +13,23 @@ std::string EnumeratorUtilities::toSymbol(const InputCode& code) {
         return "L";
     case InputCode::RIGHT:
         return "R";
+    case InputCode::B1:
+        return "B1";
+    case InputCode::B2:
+        return "B2";
+    case InputCode::B3:
+        return "B3";
+    case InputCode::B4:
+        return "B4";
+    case InputCode::B5:
+        return "B5";
+    case InputCode::B6:
+        return "B6";
+    case InputCode::B7:
+        return "B7";
+    case InputCode::B8:
+        return "B8";
+
     default:
         return "";
     }

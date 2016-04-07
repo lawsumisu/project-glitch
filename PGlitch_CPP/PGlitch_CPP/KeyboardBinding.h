@@ -5,12 +5,12 @@
 
 struct KeyboardBinding : public InputBinding {
 private :
-    InputCode _code;
+    InputCode code;
     sf::Keyboard::Key key;
+    PlayerInput input;
 public:
     KeyboardBinding(sf::Keyboard::Key key, InputCode code);
-    bool readInput() const;
-    InputCode code() const;
+    PlayerInput readInput() const;
     bool operator==(const InputBinding* otherInput) const;
     bool operator==(const InputBinding& otherBinding) const;
     bool operator==(const KeyboardBinding otherBinding) const;

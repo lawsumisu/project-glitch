@@ -5,6 +5,7 @@
 #include <SFML/System/Vector2.hpp>
 #include "MathUtility.h"
 #include <SFML/Graphics/Drawable.hpp>
+#include "GameState.h"
 
 using namespace Physics;
 using namespace sf;
@@ -17,7 +18,7 @@ class Character : public Drawable{
 
 private:
     //Enumerators
-    enum class SpatialState { STAND, RUN, CROUCH, AIR };
+    enum class SpatialState { STAND, WALK, DASH, CROUCH, AIR };
     enum class ActionState { IDLE, ATTACK, HIT, DEAD };
 
     //Fields
@@ -29,7 +30,8 @@ private:
     ActionState aState;
 
     //Defaults
-    float gndAcceleration, gndDeceleration, friction, gravity, highJump, lowJump;
+    float gndAcceleration, gndDeceleration, friction, gravity, highJump, lowJump, walkSpeed, dashSpeed;
+    int dashTimer;
     
     //Flags
     bool jumpFlag;
@@ -40,11 +42,11 @@ private:
     /// <summary>
     /// Updates the input buffer, and then any
     /// </summary>
-    void updateState(float dt);
+    void updateState();
     /// <summary>
     /// Updates the position, velocity, and acceleration of this <see cref="Character"/>
     /// </summary>
-    void updateKinematics(float dt);
+    void updateKinematics();
 
     /// <summary>
     /// Checks for collisions, and if there are any, updates position to reflect these collisions.
@@ -59,12 +61,13 @@ private:
     /// Returns -1 if moving in the opposite direction (i.e input == left and veloicty.x >= 0).
     /// Returns 0 if not inputting a left or right motion.
     /// </summary>
-    int getMotionSign();   
+    int getMotionSign(); 
+    std::pair<InputCode, int> getMotionInfo();
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 public:
     Character();
-    void update(vector<PillarCollider> colliders, float dt);
+    void update(vector<PillarCollider> colliders);
     void setSize(Vector2f newSize);
     void setPosition(Vector2f newPosition) { position = newPosition; }
 
@@ -78,6 +81,9 @@ Character::Character() : buffer(InputBuffer(10)) {
     gravity = 720;
     highJump = -360;
     lowJump = -240;
+    walkSpeed = 200;
+    dashSpeed = 300;
+    dashTimer = 5;
     jumpFlag = false;
     sState = SpatialState::STAND;
 
@@ -85,38 +91,57 @@ Character::Character() : buffer(InputBuffer(10)) {
     buffer.addBinding(new KeyboardBinding(Keyboard::Left, InputCode::LEFT));
     buffer.addBinding(new KeyboardBinding(Keyboard::Right, InputCode::RIGHT));
     buffer.addBinding(new KeyboardBinding(Keyboard::Space, InputCode::B1));
+    buffer.addBinding(new ButtonBinding(0, 0, InputCode::B1));
+    buffer.addBinding(new AxisBinding(0, Joystick::Axis::X, InputCode::RIGHT, InputCode::LEFT));
     
     //Set up sensor.
     sensor = SensorCollider(position, Vector2f(_size.x/2, 5), Vector2f(_size.x, _size.x/2 + 16));
 }
-void Character::update(vector<PillarCollider> colliders, float dt) {
+void Character::update(vector<PillarCollider> colliders) {
     buffer.update();
-    updateState(dt);
-    updateKinematics(dt);
+    updateState();
+    updateKinematics();
     updateCollisions(colliders);
 
     // << "Velocity: (" << velocity.x << "," << velocity.y << ")" << endl;
-    cout << "Angle: " << angle << endl;
+    //cout << "Angle: " << angle << endl;
+
+    //if (buffer.current().count() > 0) std::cout << buffer.current() << std::endl;
 }
 
-void Character::updateState(float dt) {
+void Character::updateState() {
+    float dt = GameState::GS().time().dt();
     FrameInput current = buffer.current();
 
     //Check for changes to horizontal acceleration due to input.
-    int motionSign = getMotionSign();
+    /*int motionSign = getMotionSign();
     int vxSign = MathUtility::sign(velocity.x);
     if (velocity.x == 0 && current.isDown(InputCode::LEFT)) vxSign = -1;
+    else if (velocity.x == 0 && current.isDown(InputCode::RIGHT)) vxSign = 1;
     if (motionSign == 1) acceleration.x = vxSign*gndAcceleration;
     else if (motionSign == -1) acceleration.x = -vxSign*gndDeceleration;
-    else acceleration.x = -vxSign*min(abs(velocity.x)/dt,friction);
+    else acceleration.x = -vxSign*min(abs(velocity.x)/dt,friction);*/
+
+    std::pair<InputCode, int> motionInfo = getMotionInfo();
+    if (motionInfo.first != InputCode::NONE) {
+        float hSpeed = walkSpeed;
+        if (isGrounded() && current[motionInfo.first].strength() == 100.f 
+            && (current[motionInfo.first].duration() <= dashTimer || sState == SpatialState::DASH)) {
+            sState = SpatialState::DASH;
+            hSpeed = dashSpeed;
+        }
+        else if (isGrounded()) sState = SpatialState::WALK;
+        velocity.x = hSpeed * motionInfo.second * current[motionInfo.first].strength() / 100.f;
+    }
+    else velocity.x = 0;
 
     //Check for changes to vertical velocity due to input.
-    if (isGrounded() && current.contains(PlayerInput(InputCode::B1, InputType::PRESS))) {
+    if (isGrounded() && current.containsIgnoreStrength(PlayerInput(InputCode::B1, InputType::PRESS))) {
         velocity.y = highJump;
         jumpFlag = true;
     }
     else if (jumpFlag && velocity.y < lowJump && 
-        current.contains(PlayerInput(InputCode::B1, InputType::RELEASE))){
+        current.containsIgnoreStrength(PlayerInput(InputCode::B1, InputType::RELEASE))){
         velocity.y = lowJump;
         jumpFlag = false;
     }
@@ -127,7 +152,8 @@ void Character::updateState(float dt) {
     else acceleration.y = 0;
 }
 
-void Character::updateKinematics(float dt) {
+void Character::updateKinematics() {
+    float dt = GameState::GS().time().dt();
     velocity += acceleration*dt;
 
     Vector2f attunedVelocity;
@@ -164,7 +190,7 @@ void Character::updateCollisions(std::vector<PillarCollider> colliders) {
     }
     else if (collision.withCeiling()){
         position.y = max(position.y, collision.ceiling() + _size.y / 2);
-        velocity.y = 0;
+        velocity.y = max(0.f, velocity.y);
     }
 
     if (!collision.withGround()) {
@@ -186,7 +212,14 @@ int Character::getMotionSign() {
         (current.isDown(InputCode::LEFT) && velocity.x <= 0)) return 1;
     else return -1;
 }
-
+std::pair<InputCode, int> Character::getMotionInfo() {
+    FrameInput current = buffer.current();
+    if (current.isDown(InputCode::RIGHT) && velocity.x > 0) return{ InputCode::RIGHT, 1 };
+    else if (current.isDown(InputCode::LEFT) && velocity.x < 0) return{ InputCode::LEFT, -1 };
+    else if (current.isDown(InputCode::RIGHT)) return{ InputCode::RIGHT, 1 };
+    else if (current.isDown(InputCode::LEFT)) return{ InputCode::LEFT, -1 };
+    else return{ InputCode::NONE, 0 };
+}
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const { 
     target.draw(sensor, states);
     FloatRect R = RectUtility::construct(Vector2f(position), Vector2f(_size));

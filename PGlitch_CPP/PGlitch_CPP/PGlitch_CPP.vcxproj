@@ -155,6 +155,9 @@
   <ItemGroup>
     <ClInclude Include="Character.h" />
     <ClInclude Include="Collision.h" />
+    <ClInclude Include="GameState.h" />
+    <ClInclude Include="GameTime.h" />
+    <ClInclude Include="JoystickBinding.h" />
     <ClInclude Include="MathUtility.h" />
     <ClInclude Include="PillarCollider.h" />
     <ClInclude Include="RectUtility.h" />
@@ -174,7 +177,10 @@
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="EnumeratorUtilities.cpp" />
     <ClCompile Include="FrameInput.cpp" />
+    <ClCompile Include="GameState.cpp" />
+    <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="InputBuffer.cpp" />
+    <ClCompile Include="JoystickBinding.cpp" />
     <ClCompile Include="KeyboardBinding.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MathUtility.cpp" />
