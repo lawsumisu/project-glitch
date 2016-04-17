@@ -9,22 +9,32 @@ using namespace sf;
 class GameState {
 private:
     //Fields
-    size_t frameCount;
+
+    size_t frameCount = 0;
     GameTime _time;
+
+    //Methods
+    /// <summary>
+    /// Gets the singleton <see cref="GameState"/>.
+    /// </summary>
+    /// <returns></returns>
+    static GameState& GS() {
+        static GameState instance;
+        return instance;
+    }
+    //Constructor
+
     GameState();
 public:
-    void update();
+    static void update();
     /// <summary>
     /// Resets the game state.
     /// </summary>
-    void reset();
+    static void reset();
     /// <summary>
     /// Gets the <see cref="GameTime"/> of this <see cref="GameState"/>.
     /// </summary>
     /// <returns></returns>
-    GameTime time() { return _time; }
-    static GameState& GS() { 
-        static GameState instance;
-        return instance; 
-    }
+    static GameTime time();
+    
 };

@@ -4,10 +4,10 @@
 using namespace Physics;
 SensorCollider::SensorCollider(Vector2f& center, Vector2f& horizontalDimensions, Vector2f& verticalDimensions) {
     this->center = center;
-    _ceiling = RectUtility::construct(center - Vector2f(0, verticalDimensions.y / 2), verticalDimensions);
-    _ground = RectUtility::construct(center + Vector2f(0, verticalDimensions.y / 2), verticalDimensions);
-    _right = RectUtility::construct(center + Vector2f(horizontalDimensions.x / 2, 0), horizontalDimensions);
-    _left = RectUtility::construct(center - Vector2f(horizontalDimensions.x / 2, 0), horizontalDimensions);
+    _ceiling = construct(center - Vector2f(0, verticalDimensions.y / 2), verticalDimensions);
+    _ground = construct(center + Vector2f(0, verticalDimensions.y / 2), verticalDimensions);
+    _right = construct(center + Vector2f(horizontalDimensions.x / 2, 0), horizontalDimensions);
+    _left = construct(center - Vector2f(horizontalDimensions.x / 2, 0), horizontalDimensions);
 }
 
 Collision SensorCollider::collides(PillarCollider& collider) {
@@ -44,8 +44,8 @@ void SensorCollider::setCenter(Vector2f newCenter) {
     }
 }
 void SensorCollider::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    RectUtility::draw(ground(), Color(0,0,255,255), target, states);
-    RectUtility::draw(right(), Color(255, 0, 0, 255), target, states);
-    RectUtility::draw(left(), Color(0, 255, 0, 255), target, states);
-    RectUtility::draw(ceiling(), Color(0, 255, 255, 255), target, states);
+    CustomUtilities::draw(ground(), Color(0,0,255,255), target, states);
+    CustomUtilities::draw(right(), Color(255, 0, 0, 255), target, states);
+    CustomUtilities::draw(left(), Color(0, 255, 0, 255), target, states);
+    CustomUtilities::draw(ceiling(), Color(0, 255, 255, 255), target, states);
 }

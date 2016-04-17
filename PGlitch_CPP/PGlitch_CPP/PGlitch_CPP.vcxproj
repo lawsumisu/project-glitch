@@ -157,6 +157,7 @@
     <ClInclude Include="Collision.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GameTime.h" />
+    <ClInclude Include="Knockback.h" />
     <ClInclude Include="JoystickBinding.h" />
     <ClInclude Include="MathUtility.h" />
     <ClInclude Include="PillarCollider.h" />

@@ -5,11 +5,11 @@
 
 using namespace CustomUtilities;
 
-FloatRect RectUtility::construct(Vector2f& center, Vector2f& dimensions) {
+FloatRect CustomUtilities::construct(Vector2f& center, Vector2f& dimensions) {
     return FloatRect(center.x - dimensions.x / 2, center.y - dimensions.y / 2, dimensions.x, dimensions.y);
 }
 
-void RectUtility::draw(FloatRect& R, Color& color, sf::RenderTarget& target, sf::RenderStates states) {
+void CustomUtilities::draw(FloatRect& R, Color& color, sf::RenderTarget& target, sf::RenderStates states) {
     VertexArray va = VertexArray(sf::LinesStrip, 5);
     va[0] = Vector2f(R.left, R.top);
     va[1] = Vector2f(R.left + R.width, R.top);

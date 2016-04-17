@@ -47,7 +47,7 @@ private:
 public:
 
     //Constructor
-    AxisBinding(size_t index, sf::Joystick::Axis axis, InputCode positiveCode, InputCode negativeCode, float deadzone = 15.f);
+    AxisBinding(size_t index, sf::Joystick::Axis axis, InputCode positiveCode, InputCode negativeCode, float deadzone = 25.f);
     //Methods
     PlayerInput readInput() const;
     bool operator==(const InputBinding* otherIB) const;

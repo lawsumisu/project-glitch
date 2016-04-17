@@ -4,11 +4,15 @@
 GameState::GameState(){}
 
 void GameState::update() {
-    ++frameCount;
-    _time.update();
+    ++GS().frameCount;
+    GS()._time.update();
 }
 
 void GameState::reset() {
-    _time = GameTime();
+    GS()._time = GameTime();
+}
+
+GameTime GameState::time() {
+    return GS()._time;
 }
 

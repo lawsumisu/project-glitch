@@ -1,14 +1,15 @@
 #include "stdafx.h"
 #include "MathUtility.h"
-
+#include <math.h>
+#include <algorithm>
 using namespace CustomUtilities;
 using namespace sf;
 
-int MathUtility::sign(float f) {
+int CustomUtilities::sign(float f) {
     if (f == 0) return 0;
     else return f == abs(f) ? 1 : -1; 
 }
-Vector2f MathUtility::linearRegression(std::vector<Vector2f> coordinates) {
+Vector2f CustomUtilities::linearRegression(std::vector<Vector2f> coordinates) {
     int count = coordinates.size();
     float x_sum = 0, y_sum = 0, xx_sum = 0, xy_sum = 0;
     for (Vector2f& v : coordinates) {
@@ -23,4 +24,8 @@ Vector2f MathUtility::linearRegression(std::vector<Vector2f> coordinates) {
     float m = (-x_sum*y_sum + count*xy_sum) / determinant;
 
     return Vector2f(b, m);
+}
+
+float CustomUtilities::degToRad(float degree) {
+    return degree * pi / 180;
 }

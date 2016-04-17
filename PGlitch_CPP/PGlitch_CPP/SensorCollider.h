@@ -21,10 +21,10 @@ namespace Physics{
         SensorCollider(Vector2f& center, Vector2f& horizontalDimensions, Vector2f& verticalDimensions);
         Collision collides(PillarCollider& collider);
         Collision collides(vector<PillarCollider>& colliders);
-        FloatRect ceiling() const{ return RectUtility::copy(_ceiling); }
-        FloatRect ground() const{ return RectUtility::copy(_ground); }
-        FloatRect left() const{ return RectUtility::copy(_left); }
-        FloatRect right() const{ return RectUtility::copy(_right); }
+        FloatRect ceiling() const{ return FloatRect(_ceiling); }
+        FloatRect ground() const{ return FloatRect(_ground); }
+        FloatRect left() const{ return FloatRect(_left); }
+        FloatRect right() const{ return FloatRect(_right); }
         void setCenter(Vector2f newCenter);
     };
 }

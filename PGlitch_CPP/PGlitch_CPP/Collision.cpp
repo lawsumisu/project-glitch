@@ -5,10 +5,10 @@
 using namespace Physics;
 
 Collision::Collision(FloatRect& G, FloatRect& C, FloatRect& L, FloatRect& R, float angle) {
-    _ground = RectUtility::copy(G);
-    _ceiling = RectUtility::copy(C);
-    _left = RectUtility::copy(L);
-    _right = RectUtility::copy(R);
+    _ground = copy(G);
+    _ceiling = copy(C);
+    _left = copy(L);
+    _right = copy(R);
     _groundAngle = angle;
 }
 Collision::Collision(vector<FloatRect>& groundCollisions, vector<FloatRect>& ceilingCollisions,
@@ -50,7 +50,7 @@ float Collision::calculateAngle(vector<FloatRect>& groundCollisions) {
     // Get the arctangent of the slope to get angle. 
     // Have to flip the sign due to game's y-coordinates having the opposite convention of
     // normal cartesian coordinates.
-    return atan(-MathUtility::linearRegression(points).y);
+    return atan(-linearRegression(points).y);
 }
 FloatRect Collision::findNearestCollision(vector<FloatRect>& collisions, WallType type) {
     if (collisions.size() == 0) return FloatRect();
@@ -79,7 +79,7 @@ FloatRect Collision::findNearestCollision(vector<FloatRect>& collisions, WallTyp
             break;
         }
     }
-    return RectUtility::copy(nearest);
+    return copy(nearest);
 }
 
 Collision Collision::reduce(Collision& otherCollision) const {

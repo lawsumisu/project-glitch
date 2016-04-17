@@ -5,6 +5,7 @@
 #include "../PGlitch_CPP/SensorCollider.h"
 #include "../PGlitch_CPP/MathUtility.h"
 #include "../PGlitch_CPP/VectorUtility.h"
+#include "../PGlitch_CPP/Knockback.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace sf;
@@ -19,7 +20,11 @@ namespace Microsoft
         {
             template<> static std::wstring ToString<FloatRect>(const FloatRect& R)
             {
-                RETURN_WIDE_STRING(RectUtility::toString(R).c_str());
+                RETURN_WIDE_STRING(toString(R).c_str());
+            }
+
+            template<> static std::wstring ToString<Knockback>(const Knockback& kb) {
+                RETURN_WIDE_STRING(kb.toString().c_str());
             }
         }
     }
@@ -168,8 +173,41 @@ namespace PGlitchTest
             //points.push_back(Vector2f(5, 6));
             points.push_back(Vector2f(6, 6));
 
-            Vector2f output = MathUtility::linearRegression(points);
-            Logger::WriteMessage(VectorUtility::toString(output).c_str());
+            Vector2f output = linearRegression(points);
+            Logger::WriteMessage(toString(output).c_str());
+        }
+    };
+
+    TEST_CLASS(KnockbackTest) {
+
+        TEST_METHOD(testToString) {
+            Knockback kb = Knockback(13, 40, 1.16f, 1.57f, 1);
+
+            Logger::WriteMessage(kb.toString().c_str());
+        }
+
+        TEST_METHOD(testNone) {
+            Knockback none = Knockback::none();
+            Knockback kb = Knockback(13, 40, 1.16f, 1.57f, 1);
+
+            Assert::AreEqual(none, none + none);
+            Assert::AreNotEqual(none, kb);
+            Assert::AreEqual(kb, none + kb);
+        }
+
+        TEST_METHOD(testNoneDifferentTimestamp) {
+            Knockback none1 = Knockback(0,0,0,0, 1);
+            Knockback none2 = Knockback(0,0,0,0, 2);
+
+            Assert::AreEqual(none1, none2);
+        }
+
+        TEST_METHOD(testVelocity) {
+            Knockback kb = Knockback(10, 25, 1, 0, 0);
+
+            Logger::WriteMessage(kb.toString().c_str());
+            Logger::WriteMessage(toString(kb.knockback(28.f/60)).c_str());
+            Logger::WriteMessage(toString(Vector2f(cosf(0), sinf(0))*1.67f).c_str());
         }
     };
 }

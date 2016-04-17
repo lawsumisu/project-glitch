@@ -9,7 +9,8 @@ class GameState;
 class GameTime {
 private:
     Clock clock;
-    float _timeScale;
+    float _timeScale = 1.f;
+    int _frameCount = 0;
     float cachedTime;
     RingBuffer<float> clockHistory;
     void update();
@@ -23,4 +24,6 @@ public:
     /// </summary>
     float dt() const;
     friend class GameState;
+    int frameCount() const;
+    float timestamp() const;
 };

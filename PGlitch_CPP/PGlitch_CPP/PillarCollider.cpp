@@ -85,7 +85,7 @@ vector<FloatRect> PillarCollider::intersects(FloatRect& collidingRect) const {
     for (size_t i = iMin; i <= iMax; ++i) {
         FloatRect R = FloatRect();
         collidingRect.intersects(pillars[i], R);
-        if (RectUtility::area(R) != 0)output.push_back(R);
+        if (area(R) != 0)output.push_back(R);
     }
     return output;
 }
