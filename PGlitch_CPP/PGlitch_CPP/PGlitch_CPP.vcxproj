@@ -155,12 +155,16 @@
   <ItemGroup>
     <ClInclude Include="Character.h" />
     <ClInclude Include="Collision.h" />
+    <ClInclude Include="GameInfo.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="GameTime.h" />
     <ClInclude Include="Knockback.h" />
     <ClInclude Include="JoystickBinding.h" />
+    <ClInclude Include="LineUtility.h" />
     <ClInclude Include="MathUtility.h" />
     <ClInclude Include="PillarCollider.h" />
+    <ClInclude Include="Platform.h" />
+    <ClInclude Include="RaycastCollider.h" />
     <ClInclude Include="RectUtility.h" />
     <ClInclude Include="VectorUtility.h" />
     <ClInclude Include="Enumerators.h" />
@@ -178,15 +182,19 @@
     <ClCompile Include="Collision.cpp" />
     <ClCompile Include="EnumeratorUtilities.cpp" />
     <ClCompile Include="FrameInput.cpp" />
+    <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="GameState.cpp" />
     <ClCompile Include="GameTime.cpp" />
     <ClCompile Include="InputBuffer.cpp" />
     <ClCompile Include="JoystickBinding.cpp" />
     <ClCompile Include="KeyboardBinding.cpp" />
+    <ClCompile Include="LineUtility.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MathUtility.cpp" />
     <ClCompile Include="PillarCollider.cpp" />
+    <ClCompile Include="Platform.cpp" />
     <ClCompile Include="PlayerInput.cpp" />
+    <ClCompile Include="RaycastCollider.cpp" />
     <ClCompile Include="RectUtility.cpp" />
     <ClCompile Include="SensorCollider.cpp" />
     <ClCompile Include="stdafx.cpp">

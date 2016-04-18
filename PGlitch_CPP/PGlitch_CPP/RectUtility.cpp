@@ -9,7 +9,7 @@ FloatRect CustomUtilities::construct(Vector2f& center, Vector2f& dimensions) {
     return FloatRect(center.x - dimensions.x / 2, center.y - dimensions.y / 2, dimensions.x, dimensions.y);
 }
 
-void CustomUtilities::draw(FloatRect& R, Color& color, sf::RenderTarget& target, sf::RenderStates states) {
+void CustomUtilities::draw(const FloatRect& R, const Color& color, sf::RenderTarget& target, sf::RenderStates states) {
     VertexArray va = VertexArray(sf::LinesStrip, 5);
     va[0] = Vector2f(R.left, R.top);
     va[1] = Vector2f(R.left + R.width, R.top);
@@ -20,4 +20,8 @@ void CustomUtilities::draw(FloatRect& R, Color& color, sf::RenderTarget& target,
     for (size_t i = 0; i < va.getVertexCount(); ++i) va[i].color = color;
 
     target.draw(va, states);
+}
+
+FloatRect CustomUtilities::operator*(const FloatRect& R, float f) {
+    return FloatRect(R.left * f, R.top*f, R.width*f, R.height*f);
 }

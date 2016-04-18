@@ -21,7 +21,7 @@ namespace Physics {
         //Fields
 
         // Angle of hit in radians.
-        float angle;
+        float _angle;
 
         // Initial knockback of the hit.
         Vector2f originalKnockback;
@@ -91,6 +91,10 @@ namespace Physics {
 
         static Knockback& none();
 
+        //Accessors
+
+        float angle() const;
+
     };
 }
 
@@ -104,7 +108,7 @@ const float Knockback::hitstunFactor = .66f;
 const float Knockback::launchSpeedFactor = 1.8f;
 
 Knockback::Knockback(Vector2f& knockback, float timestamp) {
-    this->angle = atan2f(knockback.y, knockback.x);
+    this->_angle = atan2f(knockback.y, knockback.x);
     this->originalKnockback = knockback;
     this->timestamp = timestamp;
     this->duration = magnitude(knockback) / knockbackDecay;
@@ -123,7 +127,7 @@ Vector2f Knockback::calculateKnockback(float damage, float baseKnockback, float 
 Vector2f Knockback::knockback(float timestamp) const {
     float timeDifference = timestamp - this->timestamp;
     if (timeDifference >= duration) return Vector2f();
-    return originalKnockback - Vector2f(cosf(angle), sinf(angle)) * knockbackDecay * timeDifference;
+    return originalKnockback - Vector2f(cosf(_angle), sinf(_angle)) * knockbackDecay * timeDifference;
 }
 
 Vector2f Knockback::velocity(float timestamp) const {
@@ -160,7 +164,11 @@ bool Physics::operator==(const Knockback& kb1, const Knockback& kb2) {
 string Knockback::toString() const {
     stringstream ss;
     ss << "Knockback:[strength: " << magnitude(originalKnockback) <<
-        ", angle: " << angle <<
+        ", angle: " << _angle <<
         ", hitstun: " << hitstun << "s, duration: " << duration << "s]";
     return ss.str();
+}
+
+float Knockback::angle() const {
+    return _angle;
 }

@@ -12,7 +12,7 @@ void GameState::reset() {
     GS()._time = GameTime();
 }
 
-GameTime GameState::time() {
+GameTime& GameState::time() {
     return GS()._time;
 }
 

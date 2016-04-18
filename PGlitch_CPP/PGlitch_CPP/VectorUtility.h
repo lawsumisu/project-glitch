@@ -22,4 +22,9 @@ namespace CustomUtilities {
     /// Requires that vmin.x &lt; vmax.x and vmin.y &lt; max.y.
     /// </summary>
     Vector2f clamp(const Vector2f& v, const Vector2f& vmin, const Vector2f& vmax);
+
+    /// <summary>
+    /// Converts a polar coordinate to a cartesian coordinate.
+    /// </summary>
+    Vector2f toPoint(float radius, float angle);
 }

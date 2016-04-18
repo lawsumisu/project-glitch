@@ -21,6 +21,7 @@ namespace Physics {
         //Constructors
         Collision(FloatRect& G, FloatRect& C, FloatRect& L, FloatRect& R, float angle);
     public:
+        Collision();
         Collision(vector<FloatRect>& groundCollisions, vector<FloatRect>& ceilingCollisions,
             vector<FloatRect>& leftCollisions, vector<FloatRect>& rightCollisions);
 

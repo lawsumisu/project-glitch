@@ -23,6 +23,8 @@ Collision::Collision(vector<FloatRect>& groundCollisions, vector<FloatRect>& cei
 
 }
 
+Collision::Collision() : Collision(FloatRect(), FloatRect(), FloatRect(), FloatRect(), 0.f){}
+
 float Collision::calculateAngle(vector<FloatRect>& groundCollisions) {
     if (groundCollisions.size() <= 1) return 0;
 

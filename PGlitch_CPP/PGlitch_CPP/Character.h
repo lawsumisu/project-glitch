@@ -8,6 +8,9 @@
 #include <SFML/Graphics/Drawable.hpp>
 #include "GameState.h"
 #include "Knockback.h"
+#include "RaycastCollider.h"
+#include "Platform.h"
+#include "GameInfo.h"
 
 using namespace Physics;
 using namespace sf;
@@ -26,7 +29,10 @@ private:
     //Fields
     InputBuffer buffer;
     SensorCollider sensor;
+    RaycastCollider raycaster = RaycastCollider(Vector2f(),Vector2f(), 0);
     Vector2f _position, velocity, acceleration, _size, terminalVelocity; 
+
+    Vector2f platformVelocity;
     float angle;
     SpatialState sState;
     ActionState aState;
@@ -55,7 +61,7 @@ private:
     /// <summary>
     /// Checks for collisions, and if there are any, updates position to reflect these collisions.
     /// </summary>
-    void updateCollisions(std::vector<PillarCollider> colliders);
+    void updateCollisions(std::vector<PillarCollider> colliders, std::vector<Platform> platforms = {});
 
     bool isGrounded();
 
@@ -82,7 +88,7 @@ private:
 
 public:
     Character();
-    void update(vector<PillarCollider> colliders);
+    void update(vector<PillarCollider> colliders = {}, vector<Platform> platforms = {});
     void setSize(Vector2f newSize);
     Vector2f position();
     void setPosition(Vector2f newPosition) { _position = newPosition; }
@@ -115,20 +121,21 @@ Character::Character() : buffer(InputBuffer(10)) {
     buffer.addBinding(new AxisBinding(0, Joystick::Axis::X, InputCode::RIGHT, InputCode::LEFT));
     buffer.addBinding(new AxisBinding(0, Joystick::Axis::Y, InputCode::DOWN, InputCode::UP));
 
-    buffer.addBinding(new KeyboardBinding(Keyboard::A, InputCode::B5));
     buffer.addBinding(new KeyboardBinding(Keyboard::S, InputCode::B7));
     buffer.addBinding(new KeyboardBinding(Keyboard::D, InputCode::B6));
-    buffer.addBinding(new KeyboardBinding(Keyboard::W, InputCode::B8));
+    buffer.addBinding(new KeyboardBinding(Keyboard::A, InputCode::B8));
+
+    buffer.addBinding(new ButtonBinding(0, 4, InputCode::B5));
 
     
     //Set up sensor.
     sensor = SensorCollider(_position, Vector2f(_size.x/2, 5), Vector2f(_size.x, _size.x/2 + 16));
 }
-void Character::update(vector<PillarCollider> colliders) {
+void Character::update(vector<PillarCollider> colliders, vector<Platform> platforms) {
     buffer.update();
     updateState();
     updateKinematics();
-    updateCollisions(colliders);
+    updateCollisions(colliders, platforms);
 
     //if (VectorUtility::magnitude(velocity) != 0)cout << "Velocity: (" << velocity.x << "," << velocity.y << ")" << endl;
     //cout << "Angle: " << angle << endl;
@@ -174,7 +181,7 @@ void Character::updateState() {
             if (motionInfo.second != 0 && motionInfo.second != sign(velocity.x)) {
                 velocity.x = 0.f;
             }
-            //cout << current[motionInfo.first].strength()<< endl;
+            //cout << toString(velocity) << endl;
         }
 
 
@@ -197,10 +204,19 @@ void Character::updateState() {
     }
     else acceleration.y = 0;
 
-    if (current.containsIgnoreStrength(PlayerInput(InputCode::B5, InputType::PRESS))) {
+    if (current.containsIgnoreStrength(PlayerInput(InputCode::B8, InputType::PRESS))) {
         applyHit(35, 24, 1.1f, degToRad(215));
         cout << knockback.toString() << endl;
     }
+
+    //Check for PAUSE
+    if (current.isDown(InputCode::B5)) {
+        
+        float delta =  4.f * GameState::time().dt();
+        float gts = GameState::time().glitchedTimeScale();
+        GameState::time().glitchedTimeScale(max(0.f, gts - delta));
+    }
+    else GameState::time().glitchedTimeScale(1);
 }
 
 void Character::updateKinematics() {
@@ -213,18 +229,26 @@ void Character::updateKinematics() {
     attunedVelocity.x = velocity.x * cosf(angle) + velocity.y * sinf(angle);
     attunedVelocity.y = velocity.x * -sinf(angle) + velocity.y * cosf(angle);
 
-    Vector2f v = knockback.velocity(GameState::time().timestamp());
-    attunedVelocity += v;
+    Vector2f kbv = knockback.velocity(GameState::time().timestamp());
+    attunedVelocity += kbv;
+
+    //Set raycaster angle.
+    float raycasterAngle = atan2f(attunedVelocity.y, attunedVelocity.x);
+    if (magnitude(attunedVelocity) != 0)raycaster.angle(raycasterAngle);
 
     //if (VectorUtility::magnitude(v) != 0) cout << VectorUtility::toString(v) << endl;
     // Now, update position.
-    _position += attunedVelocity*dt*4.f;
+    _position += (attunedVelocity +  platformVelocity)*dt;
 }
 
-void Character::updateCollisions(std::vector<PillarCollider> colliders) {
+void Character::updateCollisions(std::vector<PillarCollider> colliders, std::vector<Platform> platforms) {
     sensor.setCenter(_position);
     Collision collision = sensor.collides(colliders);
+    pair<Collision, int> platformCollision = sensor.collides(platforms);
 
+    collision = collision.reduce(platformCollision.first);
+
+    //cout << collision.toString() << endl;
     //Update horizontal position based on left and right collisions.
     if (collision.withRight()) {
         _position.x = min(_position.x, collision.right() - _size.x / 2);
@@ -238,6 +262,9 @@ void Character::updateCollisions(std::vector<PillarCollider> colliders) {
     //Update vertical position based on ground and ceiling collisions.
     sensor.setCenter(_position);
     collision = sensor.collides(colliders);
+    platformCollision = sensor.collides(platforms);
+    collision = collision.reduce(platformCollision.first);
+
     if (collision.withGround() && velocity.y >= 0 && 
         (isGrounded() || _position.y + _size.y / 2 > collision.ground())) {
         _position.y = collision.ground() - _size.y / 2;
@@ -248,6 +275,10 @@ void Character::updateCollisions(std::vector<PillarCollider> colliders) {
             else if (velocity.x != 0) sState = SpatialState::WALK;
             else sState = SpatialState::STAND;
         }
+        if (platformCollision.second >= 0 && collision.ground() == platformCollision.first.ground()) {
+            platformVelocity = platforms[platformCollision.second].velocity();
+        }
+        else platformVelocity = Vector2f();
     }
     else if (collision.withCeiling()){
         _position.y = max(_position.y, collision.ceiling() + _size.y / 2);
@@ -257,9 +288,11 @@ void Character::updateCollisions(std::vector<PillarCollider> colliders) {
     if (!collision.withGround()) {
         sState = SpatialState::AIR;
         angle = 0;
+        platformVelocity = Vector2f();
     }
 
     sensor.setCenter(_position);
+    raycaster.setOrigin(_position);
 }
 
 void Character::applyHit(float damage, float baseKnockback, float knockbackScaling, float angle) {
@@ -300,13 +333,18 @@ std::pair<InputCode, int> Character::getMotionInfo() {
 }
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const { 
     target.draw(sensor, states);
+    target.draw(raycaster, states);
     FloatRect R = construct(Vector2f(_position), Vector2f(_size));
-    CustomUtilities::draw(R, Color(Color::White), target, states);
+    CustomUtilities::draw(R*GameInfo::pixelsPerUnit, Color::White, target, states);
+    
 }
 
 void Character::setSize(Vector2f newSize) {
     _size = newSize;
-    sensor = SensorCollider(_position, Vector2f(_size.x / 2, 5), Vector2f(_size.x -2, _size.y / 2 + 16));
+    float ppu = GameInfo::pixelsPerUnit;
+    sensor = SensorCollider(_position, Vector2f(_size.x / 2, 5/ppu), Vector2f(_size.x -2/ppu, _size.y / 2 + 16/ppu));
+
+    raycaster = RaycastCollider(_position, Vector2f(_size.y, _size.x), pi / 2, 5);
 }
 
 Vector2f Character::position() {

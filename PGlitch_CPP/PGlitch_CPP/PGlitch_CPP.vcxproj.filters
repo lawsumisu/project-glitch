@@ -99,6 +99,18 @@
     <ClInclude Include="Knockback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RaycastCollider.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="LineUtility.h">
+      <Filter>Header Files\CustomUtilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -148,6 +160,18 @@
     </ClCompile>
     <ClCompile Include="JoystickBinding.cpp">
       <Filter>Source Files\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="LineUtility.cpp">
+      <Filter>Source Files\CustomUtilities</Filter>
+    </ClCompile>
+    <ClCompile Include="RaycastCollider.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Platform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GameInfo.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

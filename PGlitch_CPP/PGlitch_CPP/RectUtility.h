@@ -35,6 +35,8 @@ namespace CustomUtilities {
     /// <summary>
     /// Draws an axis-aligned rectangle defined by the input <see cref="FloatRect"/>.
     /// </summary>
-    void draw(FloatRect&R, Color& color, sf::RenderTarget& target, sf::RenderStates states);
+    void draw(const FloatRect& R, const Color& color, sf::RenderTarget& target, sf::RenderStates states);
+
+    FloatRect operator*(const FloatRect& R, float f);
 }
 

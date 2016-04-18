@@ -9,6 +9,8 @@
 #include "SensorCollider.h"
 #include "Character.h"
 #include "GameState.h"
+#include "Platform.h"
+#include "GameInfo.h"
 
 using namespace Physics;
 
@@ -30,16 +32,33 @@ int main()
     VertexArray va = collider.toOutline();
 
     //Testing character
+    float ppu = GameInfo::pixelsPerUnit;
     GameState::reset();
     Character player = Character();
-    player.setSize(Vector2f(32, 72));
-    player.setPosition(Vector2f(200,300));
+    player.setSize(Vector2f(32/ppu, 72/ppu));
+    player.setPosition(Vector2f(50,60));
 
-    PillarCollider ground = PillarCollider::uniformDepth({-2,-10,-18,-18,-18,-18,-10, -2 }, 40, 0, Vector2f(70, 400));
-    PillarCollider ground2 = PillarCollider::uniformDepth({ -2,-4,-6,-8,-10,-12,-14 }, 10, 0, Vector2f(0, 400));
-    PillarCollider ground3 = PillarCollider::uniformDepth({ 10 }, 2000, 0, Vector2f(0, 600));
-    PillarCollider wall1 = PillarCollider::uniformDepth({ -200 }, 2, 0, Vector2f(0, 400));
-    PillarCollider wall2 = PillarCollider::uniformDepth({ -200 }, 2, 0, Vector2f(498, 400));
+    PillarCollider ground = PillarCollider::uniformDepth({-.5f,-2.5f,-4.5f,-4.5f,-4.5f,-4.5f,-2.5f, -.5f }, 
+        10, 0, Vector2f(17.5f, 100));
+    //PillarCollider ground2 = PillarCollider::uniformDepth({ -2,-4,-6,-8,-10,-12,-14 }, 10, 0, Vector2f(0, 400));
+    PillarCollider ground3 = PillarCollider::uniformDepth({ 2.5f }, 500, 0, Vector2f(0, 150));
+    PillarCollider wall1 = PillarCollider::uniformDepth({ -50 }, .5f, 0, Vector2f(0, 100));
+    PillarCollider wall2 = PillarCollider::uniformDepth({ -50 }, .5f, 0, Vector2f(124.5f, 100));
+
+    //Testing platform
+    PillarCollider ground4 = PillarCollider::uniformDepth({ 12.5f}, 20, 0, Vector2f(0, 150));
+    Platform p1 = Platform(ground4, Vector2f(15, 0), 1.f);
+
+    Platform p2 = Platform(ground4, Vector2f(0, -18.75f), 1.f);
+    Platform p3 = Platform(ground4, Vector2f(0, -26.5f), 2.5f);
+    Platform p4 = Platform(ground4, Vector2f(0, -6.25f), 4.f);
+
+    p1.origin(Vector2f(0, 148));
+    p2.origin(Vector2f(150, 137.5f));
+    p3.origin(Vector2f(180, 100));
+    p4.origin(Vector2f(210, 137.5f));
+
+    std::vector<Platform> platforms = { p1, p2, p3, p4 };
     while (window.isOpen())
     {
         sf::Event event;
@@ -56,19 +75,31 @@ int main()
         //std::cout << Joystick::getAxisPosition(0, Joystick::Axis::X) << std::endl;
         GameState::update();
         //std::cout << "FPS:" << 1.f / GameState::time().dt() << std::endl;
-        player.update({ ground, ground2, ground3, wall1, wall2 });
+        for (Platform& platform : platforms) {
+            platform.update();
+        }
+        player.update({ ground, ground3, wall1, wall2 }, platforms);
+        
+        
         window.clear();
         //Update view
         View view = window.getView();
-        view.setCenter(player.position());
+        view.setCenter(player.position()*ppu);
         window.setView(view);
         window.draw(ground.toOutline());
-        window.draw(ground2.toOutline());
+        //window.draw(ground2.toOutline());
         window.draw(ground3.toOutline());
         window.draw(ground.toPhysicalOutline());
         window.draw(wall1.toOutline());
         window.draw(wall2.toOutline());
         window.draw(player);
+        
+        for (Platform& platform : platforms) {
+            window.draw(platform);
+        }
+
+        //Line l = Line(player.position(), 0, 100.f);
+        //l.draw(sf::Color::Green, window);
         window.display();
     }
 

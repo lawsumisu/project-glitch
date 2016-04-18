@@ -35,6 +35,6 @@ public:
     /// Gets the <see cref="GameTime"/> of this <see cref="GameState"/>.
     /// </summary>
     /// <returns></returns>
-    static GameTime time();
+    static GameTime& time();
     
 };
