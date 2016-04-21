@@ -85,7 +85,6 @@ vector<FloatRect> PillarCollider::intersects(const FloatRect& collidingRect) con
 
     size_t iMin = (size_t)max(0.f, floorf(xMin / _width));
     size_t iMax = min(size-1, (size_t)floorf(xMax / _width));
-    //if (floorf(xMax / _width) == xMax / _width) --iMax;
 
     vector<FloatRect> output = {};
     for (size_t i = iMin; i <= iMax; ++i) {
@@ -96,22 +95,35 @@ vector<FloatRect> PillarCollider::intersects(const FloatRect& collidingRect) con
     return output;
 }
 
-pair<bool, float> PillarCollider::intersects(const Line& line) const{
-    bool foundIntersect = false;
-    float t = 0;
-    for (const FloatRect& R : pillars) {
-        Line l1 = Line(Vector2f(R.left, R.top), 0.f, R.width);
-        Line l2 = Line(Vector2f(R.left, R.top), pi / 2, R.height);
-        Line l3 = Line(Vector2f(R.left + R.width, R.top), pi / 2, R.height);
-        Line l4 = Line(Vector2f(R.left, R.top + R.height), 0, R.width);
-        vector<Line> lines = { l1,l2,l3,l4 };
+vector<FloatRect> PillarCollider::intersectsPillars(const FloatRect& collidingRect) const{
+    if (!maxBounds.intersects(collidingRect)) return{};
 
-        for (const Line& L : lines) {
-            pair<bool, float> intersection = line.intersects(L);
-            if (intersection.first) {
-                foundIntersect = true;
-                t = min(t, intersection.second);
-            }
+    //First need to determine span of indices to check.
+    float xMin = collidingRect.left - _origin.x;
+    float xMax = xMin + collidingRect.width;
+
+    // Check that bounds are legitimate for intersection.
+    if ((xMin < 0 && xMax <= 0) || (xMax < 0)) return{};
+
+    size_t iMin = (size_t)max(0.f, floorf(xMin / _width));
+    size_t iMax = min(size - 1, (size_t)floorf(xMax / _width));
+
+    vector<FloatRect> output = {};
+    for (size_t i = iMin; i <= iMax; ++i) {
+        if (collidingRect.intersects(pillars[i])) output.push_back(FloatRect(pillars[i]));
+
+    }
+    return output;
+}
+pair<bool, float> PillarCollider::intersects(const Line& line) const{
+    if (!line.intersects(maxBounds).first) return{ false, 0.f };
+    bool foundIntersect = false;
+    float t = 1;
+    for (const FloatRect& R : pillars) {
+        pair<bool, float> intersection = line.intersects(R);
+        if (intersection.first) {
+            foundIntersect = true;
+            t = min(t, intersection.second);
         }
     }
     return{ foundIntersect, t };

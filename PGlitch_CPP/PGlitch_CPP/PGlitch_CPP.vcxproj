@@ -164,6 +164,8 @@
     <ClInclude Include="MathUtility.h" />
     <ClInclude Include="PillarCollider.h" />
     <ClInclude Include="Platform.h" />
+    <ClInclude Include="Platform2.h" />
+    <ClInclude Include="PolygonalCollider.h" />
     <ClInclude Include="RaycastCollider.h" />
     <ClInclude Include="RectUtility.h" />
     <ClInclude Include="VectorUtility.h" />
@@ -194,6 +196,7 @@
     <ClCompile Include="PillarCollider.cpp" />
     <ClCompile Include="Platform.cpp" />
     <ClCompile Include="PlayerInput.cpp" />
+    <ClCompile Include="PolygonalCollider.cpp" />
     <ClCompile Include="RaycastCollider.cpp" />
     <ClCompile Include="RectUtility.cpp" />
     <ClCompile Include="SensorCollider.cpp" />

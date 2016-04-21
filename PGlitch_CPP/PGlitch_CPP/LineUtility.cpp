@@ -4,6 +4,7 @@
 #include <sstream>
 #include "LineUtility.h"
 #include "VectorUtility.h"
+#include "MathUtility.h"
 #include <SFML/Graphics/VertexArray.hpp>
 #include <SFML/Graphics/RenderTarget.hpp>
 
@@ -53,6 +54,65 @@ pair<bool, float> Line::intersects(const Line& line) const{
         else return{ false, 0.f };
     }
 
+}
+
+pair<bool, float> Line::intersects(const FloatRect& rect) const {
+    if (max(p1.x, p2.x) <= rect.left || min(p1.x, p2.x) >= rect.left + rect.width ||
+        max(p1.y, p2.y) <= rect.top || min(p1.y, p2.y) >= rect.top + rect.height) {
+        return{ false, 0.f };
+    }
+
+    else {
+        bool foundIntersect = false;
+        float t = 1;
+        Line l1 = Line(Vector2f(rect.left, rect.top), 0.f, rect.width);
+        Line l2 = Line(Vector2f(rect.left, rect.top), pi / 2, rect.height);
+        Line l3 = Line(Vector2f(rect.left + rect.width, rect.top), pi / 2, rect.height);
+        Line l4 = Line(Vector2f(rect.left, rect.top + rect.height), 0, rect.width);
+        vector<Line> lines = { l1,l2,l3,l4 };
+
+        for (const Line& L : lines) {
+            pair<bool, float> intersection = intersects(L);
+            if (intersection.first) {
+                foundIntersect = true;
+                t = min(t, intersection.second);
+            }
+        }
+        return{ foundIntersect, t };
+    }
+
+}
+
+vector<Vector2f> Line::findAllIntersections(const FloatRect& rect) const {
+    if (max(p1.x, p2.x) < rect.left || min(p1.x, p2.x) > rect.left + rect.width ||
+        max(p1.y, p2.y) < rect.top || min(p1.y, p2.y) > rect.top + rect.height) {
+        return {};
+    }
+
+    else {
+        vector<Vector2f> output = {};
+        Line l1 = Line(Vector2f(rect.left, rect.top), 0.f, rect.width);
+        Line l2 = Line(Vector2f(rect.left, rect.top), pi / 2, rect.height);
+        Line l3 = Line(Vector2f(rect.left + rect.width, rect.top), pi / 2, rect.height);
+        Line l4 = Line(Vector2f(rect.left, rect.top + rect.height), 0, rect.width);
+        vector<Line> lines = { l1,l2,l3,l4 };
+
+        for (const Line& L : lines) {
+            pair<bool, float> intersection = intersects(L);
+            if (intersection.first) {
+                output.push_back(atPoint(intersection.second));
+            }
+        }
+        return output;
+    }
+}
+
+vector<Vector2f> Line::findInteriorPoints(const FloatRect& rect) const {
+    vector<Vector2f> output = {};
+    if (rect.contains(p1)) output.push_back(p1);
+    if (rect.contains(p2)) output.push_back(p2);
+
+    return output;
 }
 
 string Line::toString() const {

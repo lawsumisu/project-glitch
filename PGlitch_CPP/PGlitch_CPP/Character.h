@@ -42,10 +42,18 @@ private:
     float gndAcceleration, gndDeceleration, friction, gravity, highJump, lowJump, walkSpeed, dashSpeed;
     float airAcceleration = 180.f;
     float dashTimer = 5.f;
+    float legLength = 16 / GameInfo::pixelsPerUnit;
+
+    //Future kinematics
+    Vector2f fPosition;
     
     // State Tracking Info: Jump
     InputCode jumpButton = InputCode::NONE;
     //TODO jumpAngle
+
+    // Pause
+    Vector2f ghostPosition;
+    bool ghostIsAttached;
 
     //Methods
 
@@ -66,6 +74,13 @@ private:
     bool isGrounded();
 
     /// <summary>
+    /// Tells whether or not colliding against a narrow pathway.
+    /// </summary>
+    /// <param name="collision"></param>
+    /// <returns></returns>
+    bool isNarrow(const Collision& collision) const;
+
+    /// <summary>
     /// Gets a code corresponding to a jump input if the button has been pressed this frame.
     /// Returns InputCode::NONE otherwise.
     /// </summary>
@@ -84,6 +99,7 @@ private:
     /// </summary>
     int getMotionSign(); 
     std::pair<InputCode, int> getMotionInfo();
+
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 public:
@@ -91,7 +107,7 @@ public:
     void update(vector<PillarCollider> colliders = {}, vector<Platform> platforms = {});
     void setSize(Vector2f newSize);
     Vector2f position();
-    void setPosition(Vector2f newPosition) { _position = newPosition; }
+    void setPosition(const Vector2f& newPosition);
 
     /// <summary>
     /// Applies a hit to this character.
@@ -122,10 +138,12 @@ Character::Character() : buffer(InputBuffer(10)) {
     buffer.addBinding(new AxisBinding(0, Joystick::Axis::Y, InputCode::DOWN, InputCode::UP));
 
     buffer.addBinding(new KeyboardBinding(Keyboard::S, InputCode::B7));
-    buffer.addBinding(new KeyboardBinding(Keyboard::D, InputCode::B6));
     buffer.addBinding(new KeyboardBinding(Keyboard::A, InputCode::B8));
 
     buffer.addBinding(new ButtonBinding(0, 4, InputCode::B5));
+    buffer.addBinding(new ButtonBinding(0, 5, InputCode::B6));
+    buffer.addBinding(new KeyboardBinding(Keyboard::Q, InputCode::B5));
+    buffer.addBinding(new KeyboardBinding(Keyboard::W, InputCode::B6));
 
     
     //Set up sensor.
@@ -184,12 +202,11 @@ void Character::updateState() {
             //cout << toString(velocity) << endl;
         }
 
-
-
         //Check for changes to vertical velocity due to input.
         if (isGrounded() && checkJump() != InputCode::NONE) {
             velocity.y = highJump;
             jumpButton = checkJump();
+            angle = 0;
         }
         else if (jumpButton != InputCode::NONE && velocity.y < lowJump &&
             current.containsIgnoreStrength(PlayerInput(jumpButton, InputType::RELEASE))) {
@@ -217,6 +234,14 @@ void Character::updateState() {
         GameState::time().glitchedTimeScale(max(0.f, gts - delta));
     }
     else GameState::time().glitchedTimeScale(1);
+
+    //Check for GHOST
+    if (current.containsIgnoreStrength(PlayerInput(InputCode::B6, InputType::RELEASE)) && !ghostIsAttached) {
+        _position = ghostPosition;
+        fPosition = ghostPosition;
+        velocity = Vector2f();
+        
+     }
 }
 
 void Character::updateKinematics() {
@@ -232,66 +257,187 @@ void Character::updateKinematics() {
     Vector2f kbv = knockback.velocity(GameState::time().timestamp());
     attunedVelocity += kbv;
 
+    
     //Set raycaster angle.
     float raycasterAngle = atan2f(attunedVelocity.y, attunedVelocity.x);
     if (magnitude(attunedVelocity) != 0)raycaster.angle(raycasterAngle);
 
-    //if (VectorUtility::magnitude(v) != 0) cout << VectorUtility::toString(v) << endl;
-    // Now, update position.
-    _position += (attunedVelocity +  platformVelocity)*dt;
+    //if (magnitude(kbv) != 0) cout << toString(kbv) << endl;
+    // Now, update future position.
+    fPosition += (attunedVelocity + platformVelocity)*dt;
 }
 
 void Character::updateCollisions(std::vector<PillarCollider> colliders, std::vector<Platform> platforms) {
-    sensor.setCenter(_position);
-    Collision collision = sensor.collides(colliders);
+    //Check for GHOST
+    bool ghosting = buffer.current().isDown(InputCode::B6);
+
+    /*//Initial popout check.
+    Line path = Line(_position, fPosition);
+    bool intersection = false;
+    float t = 1;
+
+    for (const Platform& platform : platforms) {
+        pair<bool, float> pillarIntersection = platform.pillars().intersects(path);
+        if (pillarIntersection.first) {
+            intersection = true;
+            t = min(t, pillarIntersection.second);
+        }
+    }
+    if (intersection) {
+        Vector2f edgePoint = path.atPoint(path.intersects(construct(_position, _size)).second);
+        if (ghosting && !(angle > degToRad(45) && angle < degToRad(135))) {
+            if (ghostIsAttached) {
+                ghostPosition = path.atPoint(t) - edgePoint + _position;
+            }
+        }
+        else {
+            fPosition = path.atPoint(t) - edgePoint + _position;
+        }
+        //cout << _position.y + _size.y / 2 << endl;
+        cout << toString(path.atPoint(t)) << " " << toString(edgePoint) << endl;
+    }*/
+    
+    //if (_position.y != fPosition.y) cout << _position.y + _size.y / 2 << " " << fPosition.y + _size.y / 2 << endl;
+    
+
+    sensor.setCenter(fPosition);
+   /* pair<Collision, pair<int, int>> hCollisionData = sensor.collidesHorizontal(colliders);
     pair<Collision, int> platformCollision = sensor.collides(platforms);
 
-    collision = collision.reduce(platformCollision.first);
+    Collision collision = hCollisionData.first.reduce(platformCollision.first);*/
 
-    //cout << collision.toString() << endl;
     //Update horizontal position based on left and right collisions.
-    if (collision.withRight()) {
-        _position.x = min(_position.x, collision.right() - _size.x / 2);
-        velocity.x = 0;
+    vector<pair<size_t, float>> lCollisionData = sensor.collidesLeft(platforms);
+    vector<pair<size_t, float>> rCollisionData = sensor.collidesRight(platforms);
+    bool hasRightCollision = rCollisionData.size() != 0, hasLeftCollision = lCollisionData.size() != 0;
+    float rightCollision = hasRightCollision ? rCollisionData[rCollisionData.size() - 1].second : 0;
+    float leftCollision = hasLeftCollision ? lCollisionData[lCollisionData.size() - 1].second : 0;
+    bool horizontalCollision = false;
+    float newX = 0;
+    
+
+    if (hasRightCollision && fPosition.x < rightCollision) {
+        newX = min(fPosition.x, rightCollision - _size.x / 2);     
+        horizontalCollision = true;
     }
-    else if (collision.withLeft()) {
-        _position.x = max(_position.x, collision.left() + _size.x / 2);
-        velocity.x = 0;
+    else if (hasLeftCollision && fPosition.x > leftCollision) {
+        newX = max(fPosition.x, leftCollision + _size.x / 2);
+        horizontalCollision = true;
     }
 
+    if (ghosting && horizontalCollision) {
+        if (ghostIsAttached) {
+            ghostPosition.x = newX;
+            ghostIsAttached = false;
+        }     
+    }
+    else if (horizontalCollision) {
+        fPosition.x = newX;
+        velocity.x = 0;
+    }
+    
     //Update vertical position based on ground and ceiling collisions.
-    sensor.setCenter(_position);
-    collision = sensor.collides(colliders);
-    platformCollision = sensor.collides(platforms);
-    collision = collision.reduce(platformCollision.first);
 
-    if (collision.withGround() && velocity.y >= 0 && 
-        (isGrounded() || _position.y + _size.y / 2 > collision.ground())) {
-        _position.y = collision.ground() - _size.y / 2;
-        angle = collision.groundAngle();
+    //Check for low ceilings if jumping this frame.
+    bool lowCeiling = isGrounded() && checkJump() != InputCode::NONE;
+
+    sensor.setCenter(fPosition);
+    /*pair<Collision, pair<int, int>> vCollisionData = sensor.collidesVertical(colliders);
+    platformCollision = sensor.collides(platforms);
+
+    collision = vCollisionData.first.reduce(platformCollision.first);*/
+
+    vector<pair<size_t, float>> gCollisionData = sensor.collidesGround(platforms);
+    vector<pair<size_t, float>> cCollisionData = sensor.collidesCeiling(platforms);
+    bool hasGroundCollision = false, hasCeilingCollision = cCollisionData.size() != 0;
+    float groundCollision = 0;
+    float ceilingCollision = hasCeilingCollision ? cCollisionData[cCollisionData.size() - 1].second : 0;
+    size_t pIndex = -1;
+
+    for (pair<size_t, float> gCollision : gCollisionData) {
+        if (ghosting || platforms[gCollision.first].type() != PlatformType::SOLID) {
+            //If moving through a nonsolid platform, only treat collisions at knee length or below as legitimate.
+            if (fPosition.y + _size.y / 2 - legLength < gCollision.second) {
+                if (!hasGroundCollision || gCollision.second < groundCollision) {
+                    hasGroundCollision = true;
+                    groundCollision = gCollision.second;
+                    pIndex = gCollision.first;
+                }
+            }
+        }
+        else {
+            //Else, stand on the highest platform possible.
+            if (!hasGroundCollision || gCollision.second < groundCollision) {
+                hasGroundCollision = true;
+                groundCollision = gCollision.second;
+                pIndex = gCollision.first;
+            }
+        }
+    }
+
+    if (!hasGroundCollision || (velocity + knockback.velocity(GameState::time().timestamp())).y < 0) {
+        sState = SpatialState::AIR;
+        angle = 0;
+        platformVelocity = Vector2f();
+        //cout << GameState::time().timestamp() << endl;
+    }
+
+    if (hasGroundCollision && (velocity + knockback.velocity(GameState::time().timestamp())).y >= 0 &&
+        (isGrounded() || fPosition.y + _size.y / 2 > groundCollision)) {
+        fPosition.y = groundCollision - _size.y / 2;
+        angle = sensor.groundAngle(platforms[pIndex]);
         velocity.y = 0;
         if (sState == SpatialState::AIR) {
             if (abs(velocity.x) == dashSpeed) sState = SpatialState::DASH;
             else if (velocity.x != 0) sState = SpatialState::WALK;
             else sState = SpatialState::STAND;
         }
-        if (platformCollision.second >= 0 && collision.ground() == platformCollision.first.ground()) {
-            platformVelocity = platforms[platformCollision.second].velocity();
+        platformVelocity = platforms[pIndex].velocity()*GameState::time().glitchedTimeScale();
+    }
+    else if (hasCeilingCollision && !isGrounded() && fPosition.y - _size.y/2 < ceilingCollision){
+        float newY = ceilingCollision + _size.y / 2;
+        if (ghosting) {
+            if (ghostIsAttached) {
+                ghostPosition.y = newY;
+                ghostIsAttached = false;
+            }
         }
-        else platformVelocity = Vector2f();
-    }
-    else if (collision.withCeiling()){
-        _position.y = max(_position.y, collision.ceiling() + _size.y / 2);
-        velocity.y = max(0.f, velocity.y);
-    }
-
-    if (!collision.withGround()) {
-        sState = SpatialState::AIR;
-        angle = 0;
-        platformVelocity = Vector2f();
+        else {
+            fPosition.y = newY;
+            velocity.y = max(0.f, velocity.y);
+        }        
     }
 
-    sensor.setCenter(_position);
+    //If passage is too narrow, restrict movement.
+    sensor.setCenter(fPosition);
+    /*collision = sensor.collides(colliders);
+    collision = collision.reduce(sensor.collides(platforms).first);*/
+    bool tooNarrow = (hasGroundCollision && hasCeilingCollision &&
+        groundCollision <= fPosition.y + _size.y / 2 && ceilingCollision >= fPosition.y - _size.y / 2) ||
+        (hasLeftCollision && hasRightCollision &&
+            leftCollision <= fPosition.x - _size.x / 2 && rightCollision >= fPosition.x + _size.x / 2);
+  
+    if (tooNarrow || lowCeiling) {
+        if (ghosting) {
+            if (ghostIsAttached) {
+                ghostPosition = _position;
+                ghostIsAttached = false;
+            }
+        }
+        else {
+            fPosition = _position;
+            //velocity.x = 0;
+        }
+    }
+
+    if (!ghosting || ghostIsAttached || (!(hasCeilingCollision && fPosition.y - _size.y / 2 < ceilingCollision)
+        && !horizontalCollision && !tooNarrow)) {
+        ghostPosition = fPosition;
+        ghostIsAttached = true;
+    }
+    _position = fPosition;
+
+    sensor.setCenter(fPosition);
     raycaster.setOrigin(_position);
 }
 
@@ -304,6 +450,12 @@ bool Character::isGrounded() {
     return sState != SpatialState::AIR;
 }
 
+bool Character::isNarrow(const Collision& collision) const {
+    return (collision.withGround() && collision.withCeiling() &&
+        collision.ground() <= fPosition.y + _size.y / 2 && collision.ceiling() >= fPosition.y - _size.y / 2) ||
+        (collision.withLeft() && collision.withRight() &&
+            collision.left() <= fPosition.x - _size.x / 2 && collision.right() >= fPosition.x + _size.x / 2);
+}
 InputCode Character::checkJump() {
     FrameInput current = buffer.current();
     if (current.containsIgnoreStrength(PlayerInput(InputCode::B1, InputType::PRESS))) return InputCode::B1;
@@ -331,10 +483,13 @@ std::pair<InputCode, int> Character::getMotionInfo() {
     }
     else return{ InputCode::NONE, 0 };
 }
+
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const { 
     target.draw(sensor, states);
     target.draw(raycaster, states);
     FloatRect R = construct(Vector2f(_position), Vector2f(_size));
+    FloatRect ghostBbox = construct(ghostPosition, _size);
+    CustomUtilities::draw(ghostBbox * GameInfo::pixelsPerUnit, Color::Cyan, target, states);
     CustomUtilities::draw(R*GameInfo::pixelsPerUnit, Color::White, target, states);
     
 }
@@ -342,11 +497,17 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 void Character::setSize(Vector2f newSize) {
     _size = newSize;
     float ppu = GameInfo::pixelsPerUnit;
-    sensor = SensorCollider(_position, Vector2f(_size.x / 2, 5/ppu), Vector2f(_size.x -2/ppu, _size.y / 2 + 16/ppu));
+    sensor = SensorCollider(_position, Vector2f(_size.x / 2, 16/ppu), Vector2f(_size.x, _size.y/2 + legLength));
 
     raycaster = RaycastCollider(_position, Vector2f(_size.y, _size.x), pi / 2, 5);
 }
 
 Vector2f Character::position() {
     return _position;
+}
+
+void Character::setPosition(const Vector2f& newPosition) {
+    _position = newPosition; 
+    ghostPosition = newPosition;
+    fPosition = newPosition;
 }

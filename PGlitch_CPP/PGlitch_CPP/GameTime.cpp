@@ -22,7 +22,7 @@ float GameTime::udt() const {
 }
 
 float GameTime::gdt() const {
-    return udt() * _glitchedTimeScale;
+    return dt() * _glitchedTimeScale;
 }
 
 void GameTime::timeScale(float newTimeScale) {

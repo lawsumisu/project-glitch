@@ -5,7 +5,7 @@
 
 using namespace CustomUtilities;
 
-FloatRect CustomUtilities::construct(Vector2f& center, Vector2f& dimensions) {
+FloatRect CustomUtilities::construct(const Vector2f& center, const Vector2f& dimensions) {
     return FloatRect(center.x - dimensions.x / 2, center.y - dimensions.y / 2, dimensions.x, dimensions.y);
 }
 

@@ -5,6 +5,7 @@
 #include <SFML/Graphics/Color.hpp>
 #include <utility>
 #include <string>
+#include <vector>
 
 namespace CustomUtilities {
 
@@ -61,6 +62,19 @@ namespace CustomUtilities {
         /// <param name="v"></param>
         /// <returns></returns>
         Line moveP1(const sf::Vector2f& v) const;
+
+        std::pair<bool, float> intersects(const sf::FloatRect& rect) const;
+
+        /// <summary>
+        /// Returns a list of points where this line intersects with an input rect.
+        /// </summary>
+        std::vector<sf::Vector2f> findAllIntersections(const sf::FloatRect& rect) const;
+
+        /// <summary>
+        /// Tells which endpoints of this line are within an input rect.
+        /// The returned list can have 0, 1, or 2 points.
+        /// </summary>d
+        std::vector<sf::Vector2f> findInteriorPoints(const sf::FloatRect& rect) const;
 
         void draw(const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
 

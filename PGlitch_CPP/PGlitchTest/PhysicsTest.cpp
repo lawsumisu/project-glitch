@@ -6,6 +6,7 @@
 #include "../PGlitch_CPP/MathUtility.h"
 #include "../PGlitch_CPP/VectorUtility.h"
 #include "../PGlitch_CPP/Knockback.h"
+#include "../PGlitch_CPP/PolygonalCollider.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace sf;
@@ -23,6 +24,9 @@ namespace Microsoft
                 RETURN_WIDE_STRING(toString(R).c_str());
             }
 
+            template<> static std::wstring ToString<Vector2f>(const Vector2f& v) {
+                RETURN_WIDE_STRING(toString(v).c_str());
+            }
             template<> static std::wstring ToString<Knockback>(const Knockback& kb) {
                 RETURN_WIDE_STRING(kb.toString().c_str());
             }
@@ -116,6 +120,15 @@ namespace PGlitchTest
             Assert::AreEqual(1U, actual.size());
             Assert::AreEqual(FloatRect(5, 3, 1, 1), actual[0]);
         }
+
+        TEST_METHOD(testIntersectsPillars) {
+            PillarCollider pillar = PillarCollider::uniformDepth({ -2,-4,-6 }, 1, 0, Vector2f(0, 0));
+            vector<FloatRect> actual = pillar.intersectsPillars(FloatRect(0.5, -5, 1, 5));
+
+            Assert::AreEqual(2U, actual.size());
+            Assert::AreEqual(FloatRect(0, -2, 1, 2), actual[0]);
+            Assert::AreEqual(FloatRect(1, -4, 1, 4), actual[1]);
+        }
 	};
 
     TEST_CLASS(SensorColliderTest) {
@@ -208,6 +221,63 @@ namespace PGlitchTest
             Logger::WriteMessage(kb.toString().c_str());
             Logger::WriteMessage(toString(kb.knockback(28.f/60)).c_str());
             Logger::WriteMessage(toString(Vector2f(cosf(0), sinf(0))*1.67f).c_str());
+        }
+    };
+
+    TEST_CLASS(PolygonalColliderClass) {
+        TEST_METHOD(testIntersects) {
+            FloatRect rect = FloatRect(0, -2, 5, 10);
+
+            PolygonalCollider poly = PolygonalCollider({ {0,0}, {2,-2}, {4, -2}, {6,0} });
+            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::UP);
+
+            Assert::IsTrue(intersection.first);
+            Assert::AreEqual(Vector2f(0, -12), intersection.second);
+            
+        }
+
+        TEST_METHOD(testIntersectsNone) {
+            FloatRect rect = FloatRect(0, 0, 5, 10);
+
+            PolygonalCollider poly = PolygonalCollider({ { 0,0 },{ 2,-2 },{ 4, -2 },{ 6,0 } });
+            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::UP);
+
+            Assert::IsFalse(intersection.first);
+        }
+
+        TEST_METHOD(testIntersectsInbetween) {
+            FloatRect rect = FloatRect(0, -1, 5, 10);
+
+            PolygonalCollider poly = PolygonalCollider({ { 0,0 },{ 2,-2 },{ 4, -2 },{ 6,0 } });
+            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::UP);
+
+            Assert::IsTrue(intersection.first);
+            Assert::AreEqual(Vector2f(0, -12), intersection.second);
+        }
+
+        TEST_METHOD(testIntersectsSelf) {
+            FloatRect rect = FloatRect(0, -1, 5, 10);
+
+            PolygonalCollider poly = PolygonalCollider(rect);
+
+            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::LEFT);
+            Assert::IsTrue(intersection.first);
+            Assert::AreEqual(Vector2f(-5, -1), intersection.second);
+        }
+
+        TEST_METHOD(testIntersectsInterior) {
+            FloatRect rect = FloatRect(4, -3, 1, 1);
+
+            PolygonalCollider poly = PolygonalCollider({ {2,0}, {2, -3}, {4, -6}, {6, -3}, {6, 0} });
+
+            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::RIGHT);
+            Assert::IsTrue(intersection.first);
+            Assert::AreEqual(Vector2f(6, -3), intersection.second);
+
+            intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::LEFT);
+            Assert::IsTrue(intersection.first);
+            Assert::AreEqual(Vector2f(1, -3), intersection.second);
+
         }
     };
 }

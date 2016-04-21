@@ -111,6 +111,12 @@
     <ClInclude Include="GameInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PolygonalCollider.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Platform2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -172,6 +178,9 @@
     </ClCompile>
     <ClCompile Include="GameInfo.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PolygonalCollider.cpp">
+      <Filter>Source Files\Physics</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

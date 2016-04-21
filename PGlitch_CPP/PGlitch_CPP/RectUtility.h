@@ -21,7 +21,7 @@ namespace CustomUtilities {
     /// <param name="center"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    FloatRect construct(Vector2f& center, Vector2f& dimensions);
+    FloatRect construct(const Vector2f& center, const Vector2f& dimensions);
     template <typename T> Rect<T> copy(Rect<T> R) {
         return Rect<T>(R);
     }

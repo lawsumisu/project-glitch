@@ -70,7 +70,7 @@ namespace PGlitchTest
         }
 
         TEST_METHOD(testToPoint) {
-            Assert::AreEqual(Vector2f(sqrt(2)/2, sqrtf(2)/2), toPoint(1.f, pi / 4));
+            Assert::AreEqual(Vector2f(sqrtf(2)/2, sqrtf(2)/2), toPoint(1.f, pi / 4));
         }
 	};
 
@@ -168,6 +168,28 @@ namespace PGlitchTest
             Line line = Line(Vector2f(), Vector2f(0, 5));
 
             Assert::AreEqual(.2f, line.getT(Vector2f(0, 1)));
+        }
+
+        TEST_METHOD(testIntersectsRect) {
+            Line line = Line(Vector2f(0, 2), Vector2f(5, 2));
+            FloatRect rect = FloatRect(0, 0, 4, 4);
+
+            Assert::IsTrue(line.intersects(rect).first);
+            Assert::IsTrue(line.intersects(rect).second <= .00001f);
+
+            FloatRect rect2 = FloatRect(2, 0, 4, 4);
+            Assert::IsTrue(line.intersects(rect2).first);
+            Assert::AreEqual(Vector2f(2, 2), line.atPoint(line.intersects(rect2).second));
+        }
+
+        TEST_METHOD(testIntersectRectNot) {
+            Line line = Line(Vector2f(0, 2), Vector2f(5, 2));
+            FloatRect rect = FloatRect(6, 0, 4, 4);
+
+            Assert::IsFalse(line.intersects(rect).first);
+
+            FloatRect rect2 = FloatRect(5, 0, 4, 4);
+            Assert::IsFalse(line.intersects(rect2).first);
         }
     };
 }

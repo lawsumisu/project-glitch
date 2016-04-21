@@ -35,6 +35,17 @@ namespace Physics {
         vector<FloatRect> intersects(const FloatRect& collidingRect) const;
 
         /// <summary>
+        /// Checks for collision between a <see cref="FloatRect"/> and this <see cref="PillarCollider"/>.
+        /// Returns a list of <see cref="FloatRect"/> objects l such that l[i] corresponds to a pillar that 
+        /// the input <see cref="FloatRect"/> has an intersection with. 
+        /// l[0] corresponds to the first pillar where there is an intersection, and l[l.size()-1]
+        /// corresponds to the last pillar.
+        /// </summary>
+        /// <param name="collidingRect"></param>
+        /// <returns></returns>
+        vector<FloatRect> intersectsPillars(const FloatRect& collidingRect) const;
+
+        /// <summary>
         /// Checks for collision between a line and this <see cref="PillarCollider"/>. If it finds one, 
         /// output.second is a value t such that line.pointAt(t) is the earliest point along that line where a collision
         /// was found.
@@ -42,6 +53,7 @@ namespace Physics {
         /// <param name="line"></param>
         /// <returns></returns>
         std::pair<bool, float> intersects(const Line& line) const;
+
         VertexArray toOutline() const;
 
         /// <summary>
