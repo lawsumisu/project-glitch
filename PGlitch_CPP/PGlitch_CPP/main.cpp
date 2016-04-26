@@ -38,7 +38,7 @@ int main()
     GameState::reset();
     Character player = Character();
     player.setSize(Vector2f(32/ppu, 72/ppu));
-    player.setPosition(Vector2f(50,60));
+    player.setPosition(Vector2f(50,0));
 
     Platform ground = Platform(PillarCollider::uniformDepth({-.5f,-2.5f,-4.5f,-4.5f,-4.5f,-4.5f,-2.5f, -.5f }, 
         10, 0, Vector2f(17.5f, 100)));
@@ -49,32 +49,49 @@ int main()
     Platform wall3 = Platform(PillarCollider::uniformDepth({ -100 }, 100, 0, Vector2f(250, 150)));
 
     vector<float> sinValues = {};
+    vector<Vector2f> sinValues2 = {};
     float amplitude = 40;
     size_t length = 400;
     for (size_t i = 0; i < length; ++i) {
         sinValues.push_back(-sinf(i * 2 * pi / length)*amplitude);
+        sinValues2.push_back(Vector2f((float) i, -sinf(i * 2 * pi / length)*amplitude));
     }
 
+    sinValues2.push_back(sinValues2[sinValues2.size() - 1] + Vector2f(0, amplitude));
+    sinValues2.push_back(Vector2f(0, amplitude));
     PillarCollider curve1 = PillarCollider::uniformDepth(sinValues, 1, amplitude, Vector2f(-75, 200));
     //Testing platform
-    PillarCollider ground4 = PillarCollider::uniformHeight({ 13.f}, 20, 0, Vector2f(0, 150));
+    PillarCollider ground4 = PillarCollider::uniformHeight({ 13.f}, 20, 0, Vector2f(-20, 50));
     Platform p1 = Platform(ground4, Vector2f(15, 0), 1.f, PlatformType::THICK);
 
     Platform p2 = Platform(ground4, Vector2f(0, -101.75f), .5f, PlatformType::THICK);
     Platform p3 = Platform(ground4, Vector2f(0, -55.5f), .9f, PlatformType::THICK);
     Platform p4 = Platform(ground4, Vector2f(0, -271.25f), .2f, PlatformType::THICK);
 
-    p1.origin(Vector2f(0, 148));
-    p2.origin(Vector2f(150, 137.f));
-    p3.origin(Vector2f(180, 100));
-    p4.origin(Vector2f(210, 137.5f));
+    p1.position(Vector2f(0, 148));
+    p2.position(Vector2f(150, 137.f));
+    p3.position(Vector2f(180, 100));
+    p4.position(Vector2f(210, 137.5f));
 
-    std::vector<Platform> platforms = { ground, ground3, wall1, wall2, wall3, curve1, p1, p2, p3, p4 };
+    PlatformPtr g1(new AffinePlatform(PolygonalCollider(FloatRect(0, 50, 500, 2.5))));
+    PlatformPtr g2(new AffinePlatform(PolygonalCollider(FloatRect(0, 0, 100, 100))));
+    PlatformPtr windmill(new AffinePlatform(PolygonalCollider(FloatRect(0, 0, 50, 10)), PlatformType::THICK, 90.f));
+
+    PlatformPtr curve(new AffinePlatform(sinValues2));
+    PlatformPtr g3(new Platform(ground4, Vector2f(-15, 0), 1.f, PlatformType::THICK));
+    curve->position(Vector2f(-75, 100));
+    windmill->position(Vector2f(90, 25));
+    g2->position(Vector2f(140, -50));
+
+    //std::vector<Platform> platforms = { ground, ground3, wall1, wall2, wall3, curve1, p1, p2, p3, p4 };
     std::vector<PillarCollider> pillars = {};
+    std::vector<PlatformPtr> pforms = {g1, curve, windmill, g2, g3};
 
-    //PolygonalCollider poly = PolygonalCollider(FloatRect(0, 0, 50, 20));
-    PolygonalCollider poly = PolygonalCollider({ { 2,0 },{ 2, -3 },{ 4, -6 },{ 6, -3 },{ 6, 0 } });
+       
+    //PolygonalCollider poly = PolygonalCollider({ { 2,0 },{ 2, -3 },{ 4, -6 },{ 6, -3 },{ 6, 0 } });
+    
     float theta = 0;
+    float x = 0;
     while (window.isOpen())
     {
         buffer.update();
@@ -92,11 +109,15 @@ int main()
 
         //std::cout << Joystick::getAxisPosition(0, Joystick::Axis::X) << std::endl;
         GameState::update();
-        std::cout << "FPS:" << 1.f / GameState::time().udt() << std::endl;
-        for (Platform& platform : platforms) {
-            platform.update();
+        //std::cout << "FPS:" << 1.f / GameState::time().udt() << std::endl;
+        theta -= GameState::time().dt()*20.f;
+        x += GameState::time().dt() * 5.f;
+        //pforms[2].angle(theta);
+        //pforms[2].position(Vector2f(x,25));
+        for (auto& ptr: pforms) {
+            ptr->update();
         }
-        player.update(pillars, platforms);
+        player.update(pforms);
         
         
         window.clear();
@@ -105,13 +126,13 @@ int main()
         view.setCenter(player.position()*ppu);
         window.setView(view);
         window.draw(player);
-        
-        for (Platform& platform : platforms) {
-            window.draw(platform);
+
+        for (PlatformPtr& ptr : pforms) {
+            window.draw(*ptr);
         }
 
-        theta += GameState::time().dt();
-        poly.draw(PolygonalColliderInfo(player.position(), theta, Vector2f()), window, sf::RenderStates::Default, Color::White);
+        
+        //poly.draw(PolygonalColliderInfo(player.position(), theta, Vector2f()), window, sf::RenderStates::Default, Color::White);
         //Line l = Line(player.position(), 0, 100.f);
         //l.draw(sf::Color::Green, window);
         window.display();

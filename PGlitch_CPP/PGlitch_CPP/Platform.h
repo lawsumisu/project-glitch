@@ -4,6 +4,7 @@
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include "Enumerators.h"
+#include "Platform2.h"
 
 using namespace Physics;
 
@@ -11,12 +12,15 @@ namespace Physics {
     class SensorCollider; //Forward declaration for friendship.
 }
 
-class Platform : public sf::Drawable {
+class Platform : public Platform2 {
 private:
     //Fields
 
     PillarCollider _pillars;
     Vector2f _velocity;
+    Vector2f _position;
+    float lastFlippedTime;
+    sf::Transform T;
 
     int direction = 1;
     Line path;
@@ -39,9 +43,7 @@ public:
 
     void update();
 
-    void origin(const sf::Vector2f& newOrigin);
-
-    sf::Vector2f velocity() const;
+    void position(const sf::Vector2f& newPosition);
 
     /// <summary>
     /// Gets the type of this <see cref="Platform"/>.
@@ -56,5 +58,13 @@ public:
     }
 
     friend class SensorCollider;
+
+    // ================= //
+    // Inherited Methods //
+    // ================= //
+
+    const sf::Transform& transform() const { return T; }
+    std::pair<bool, float> collides(const sf::FloatRect& rect, SurfaceType type) const;
+    float groundAngle(const sf::FloatRect& rect) const;
 };
 

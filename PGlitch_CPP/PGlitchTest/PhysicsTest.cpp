@@ -229,10 +229,10 @@ namespace PGlitchTest
             FloatRect rect = FloatRect(0, -2, 5, 10);
 
             PolygonalCollider poly = PolygonalCollider({ {0,0}, {2,-2}, {4, -2}, {6,0} });
-            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::UP);
+            pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::GROUND);
 
             Assert::IsTrue(intersection.first);
-            Assert::AreEqual(Vector2f(0, -12), intersection.second);
+            Assert::AreEqual(-2.f, intersection.second);
             
         }
 
@@ -240,7 +240,7 @@ namespace PGlitchTest
             FloatRect rect = FloatRect(0, 0, 5, 10);
 
             PolygonalCollider poly = PolygonalCollider({ { 0,0 },{ 2,-2 },{ 4, -2 },{ 6,0 } });
-            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::UP);
+            pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::GROUND);
 
             Assert::IsFalse(intersection.first);
         }
@@ -249,10 +249,10 @@ namespace PGlitchTest
             FloatRect rect = FloatRect(0, -1, 5, 10);
 
             PolygonalCollider poly = PolygonalCollider({ { 0,0 },{ 2,-2 },{ 4, -2 },{ 6,0 } });
-            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::UP);
+            pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::GROUND);
 
             Assert::IsTrue(intersection.first);
-            Assert::AreEqual(Vector2f(0, -12), intersection.second);
+            Assert::AreEqual(-2.f, intersection.second);
         }
 
         TEST_METHOD(testIntersectsSelf) {
@@ -260,9 +260,9 @@ namespace PGlitchTest
 
             PolygonalCollider poly = PolygonalCollider(rect);
 
-            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::LEFT);
+            pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::RIGHT);
             Assert::IsTrue(intersection.first);
-            Assert::AreEqual(Vector2f(-5, -1), intersection.second);
+            Assert::AreEqual(0.f, intersection.second);
         }
 
         TEST_METHOD(testIntersectsInterior) {
@@ -270,14 +270,27 @@ namespace PGlitchTest
 
             PolygonalCollider poly = PolygonalCollider({ {2,0}, {2, -3}, {4, -6}, {6, -3}, {6, 0} });
 
-            pair<bool, Vector2f> intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::RIGHT);
+            pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::LEFT);
             Assert::IsTrue(intersection.first);
-            Assert::AreEqual(Vector2f(6, -3), intersection.second);
+            Assert::AreEqual(6.f, intersection.second);
 
-            intersection = poly.intersects(PolygonalColliderInfo(), rect, CollisionDirection::LEFT);
+            intersection = poly.intersects(Transform(), rect, SurfaceType::RIGHT);
             Assert::IsTrue(intersection.first);
-            Assert::AreEqual(Vector2f(1, -3), intersection.second);
+            Assert::AreEqual(2.f, intersection.second);
 
+        }
+
+        TEST_METHOD(testFindInteriorPoints) {
+            FloatRect rect = FloatRect(0, 0, 2, 2);
+
+            PolygonalCollider poly = PolygonalCollider({ {-1,4}, {1, 0}, {3, 4} });
+            vector<Vector2f> points = poly.findSurfacePoints(Transform(), rect);
+
+            Assert::AreEqual(3U, points.size());
+            
+            Assert::AreEqual(Vector2f(0,2), points[0]);
+            Assert::AreEqual(Vector2f(1,0), points[1]);
+            Assert::AreEqual(Vector2f(2, 2), points[2]);
         }
     };
 }

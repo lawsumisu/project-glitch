@@ -30,3 +30,7 @@ Vector2f CustomUtilities::clamp(const Vector2f& v, const Vector2f& vmin, const V
 Vector2f CustomUtilities::toPoint(float radius, float angle) {
     return Vector2f(cosf(angle), sinf(angle)) * radius;
 }
+
+bool CustomUtilities::approximate(const Vector2f& v1, const Vector2f& v2) {
+    return magnitude(v1 - v2) < 0.001;
+}

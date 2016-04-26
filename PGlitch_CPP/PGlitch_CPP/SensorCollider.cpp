@@ -270,6 +270,43 @@ float SensorCollider::groundAngle(const Platform& platform) const {
     // normal cartesian coordinates.
     return atan(-linearRegression(points).y);
 }
+
+vector<pair<size_t, float>> SensorCollider::collides(const std::vector<PlatformPtr>& platforms, SurfaceType type) const {
+    vector<pair<size_t, float>> output = {};
+    size_t minIndex = 0;
+    float nearestValue = 0;
+    FloatRect collisionRect = _ground;
+    if (type == SurfaceType::CEILING) collisionRect = _ceiling;
+    else if (type == SurfaceType::RIGHT) collisionRect = _right;
+    else if (type == SurfaceType::LEFT) collisionRect = _left;
+
+    for (size_t i = 0; i < platforms.size(); ++i) {
+        //Only collide with solid platforms for ceiling, left, and right collisions.
+        if (type != SurfaceType::GROUND && platforms[i]->type() != PlatformType::SOLID) {
+            continue;
+        }
+
+        pair<bool, float> collision = platforms[i]->collides(collisionRect, type);
+        if (collision.first) {
+            if (output.size() == 0 ||
+                ((type == SurfaceType::GROUND|| type == SurfaceType::RIGHT) && collision.second < nearestValue) ||
+                (type == SurfaceType::CEILING || type == SurfaceType::LEFT && collision.second > nearestValue)) {
+                nearestValue = collision.second;
+                minIndex = i;
+            }
+            output.push_back({ i, collision.second });
+        }
+    }
+
+    // Add nearest value to end of list if not empty.
+    if (output.size() != 0) output.push_back({ minIndex, nearestValue });
+    return output;
+}
+
+float SensorCollider::groundAngle(const PlatformPtr& platform) const {
+    return platform->groundAngle(_ground);
+}
+
 void SensorCollider::setCenter(Vector2f newCenter) {
     Vector2f delta = newCenter - center;
     if (delta.x != 0 || delta.y != 0) {
@@ -286,8 +323,8 @@ void SensorCollider::setCenter(Vector2f newCenter) {
 }
 void SensorCollider::draw(sf::RenderTarget& target, sf::RenderStates states) const {
     float ppu = GameInfo::pixelsPerUnit;
-    CustomUtilities::draw(ground()*ppu, Color::Green, target, states);
-    CustomUtilities::draw(right()*ppu, Color::Red, target, states);
-    CustomUtilities::draw(left()*ppu, Color::Blue, target, states);
-    CustomUtilities::draw(ceiling()*ppu, Color::Cyan, target, states);
+    CustomUtilities::draw(ground(), Color::Green, target, states);
+    CustomUtilities::draw(right(), Color::Red, target, states);
+    CustomUtilities::draw(left(), Color::Blue, target, states);
+    CustomUtilities::draw(ceiling(), Color::Cyan, target, states);
 }

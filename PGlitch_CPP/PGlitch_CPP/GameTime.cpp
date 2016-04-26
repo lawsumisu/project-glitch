@@ -2,7 +2,7 @@
 #include "GameTime.h"
 #include <iostream>
 
-GameTime::GameTime() : clockHistory(RingBuffer<float>(500)) {
+GameTime::GameTime() : clockHistory(RingBuffer<float>(3)) {
     clockHistory.add(0);
     cachedTime = 0;
 }

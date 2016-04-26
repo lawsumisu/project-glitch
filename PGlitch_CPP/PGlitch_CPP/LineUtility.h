@@ -6,6 +6,7 @@
 #include <utility>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 namespace CustomUtilities {
 
@@ -68,14 +69,24 @@ namespace CustomUtilities {
         /// <summary>
         /// Returns a list of points where this line intersects with an input rect.
         /// </summary>
-        std::vector<sf::Vector2f> findAllIntersections(const sf::FloatRect& rect) const;
+        std::unordered_set<sf::Vector2f> findAllIntersections(const sf::FloatRect& rect) const;
 
         /// <summary>
         /// Tells which endpoints of this line are within an input rect.
         /// The returned list can have 0, 1, or 2 points.
         /// </summary>d
-        std::vector<sf::Vector2f> findInteriorPoints(const sf::FloatRect& rect) const;
+        std::unordered_set<sf::Vector2f> findInteriorPoints(const sf::FloatRect& rect) const;
 
+        /// <summary>
+        /// Finds the portion of this line that lies within a given rectangle.
+        /// If there is no inner line, then output.first == false.
+        /// </summary>
+        /// <param name="rect"></param>
+        /// <returns></returns>
+        std::pair<bool, Line> findInnerLine(const sf::FloatRect& rect) const;
+
+        sf::Vector2f start() const { return p1; }
+        sf::Vector2f end() const { return p2; }
         void draw(const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
 
         friend Line operator*(const Line& line, float f);

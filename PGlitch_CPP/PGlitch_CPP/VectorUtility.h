@@ -2,6 +2,7 @@
 
 #include <SFML/System/Vector2.hpp>
 #include <sstream>
+#include <tuple>
 
 using namespace sf;
 namespace CustomUtilities {
@@ -27,4 +28,14 @@ namespace CustomUtilities {
     /// Converts a polar coordinate to a cartesian coordinate.
     /// </summary>
     Vector2f toPoint(float radius, float angle);
+
+    bool approximate(const Vector2f& v1, const Vector2f& v2);
+}
+
+namespace std {
+    template <> struct std::hash<Vector2f> {
+        size_t operator()(const Vector2f &v) const {
+            return hash<float>()(v.x) ^ hash<float>()(v.y);
+        }
+    };
 }

@@ -7,6 +7,7 @@
 #include "Collision.h"
 #include "PillarCollider.h"
 #include "Platform.h"
+#include "Platform2.h"
 
 using namespace sf;
 using namespace CustomUtilities;
@@ -72,6 +73,8 @@ namespace Physics{
         std::vector<std::pair<size_t, float>> collidesRight(const std::vector<Platform>& platforms) const;
         float groundAngle(const Platform& platform) const;
 
+        std::vector<std::pair<size_t, float>> collides(const std::vector<PlatformPtr>& platforms, SurfaceType type) const;
+        float groundAngle(const PlatformPtr& platform) const;
 
         FloatRect ceiling() const{ return FloatRect(_ceiling); }
         FloatRect ground() const{ return FloatRect(_ground); }

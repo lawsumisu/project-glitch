@@ -182,5 +182,8 @@
     <ClCompile Include="PolygonalCollider.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
+    <ClCompile Include="AffinePlatform.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
