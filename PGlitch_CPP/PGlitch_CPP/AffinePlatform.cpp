@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "Platform2.h"
+#include "Platform.h"
 #include "MathUtility.h"
 #include "GameState.h"
 
@@ -7,7 +7,7 @@ using namespace sf;
 using namespace std;
 using namespace CustomUtilities;
 
-AffinePlatform::AffinePlatform(PolygonalCollider collider, PlatformType type, float angularVelocity) :
+AffinePlatform::AffinePlatform(FreeformCollider collider, PlatformType type, float angularVelocity) :
     collider(collider){
     this->angularVelocity = angularVelocity;
     _type = type;
@@ -18,12 +18,12 @@ void AffinePlatform::update() {
     createTransform();
 }
 
-pair<bool, float> AffinePlatform::collides(const FloatRect& r, SurfaceType type) const {
+pair<bool, float> AffinePlatform::collides(const FloatRect& r, SurfaceType type, bool findExterior) const {
     if (_type != PlatformType::SOLID && type != SurfaceType::GROUND) {
         //Non solid platforms can only have ground collisions.
         //return{ false, 0.f };
     }
-    return collider.intersects(T, r, type);
+    return collider.intersects(T, r, type, findExterior);
 }
 
 float AffinePlatform::groundAngle(const FloatRect& rect) const {
@@ -33,8 +33,21 @@ float AffinePlatform::groundAngle(const FloatRect& rect) const {
 }
 
 void AffinePlatform::createTransform() {
-    T = Transform().translate(_position).rotate(_angle).translate(_rotationalOffset);
+    T = Transform().translate(_position).rotate(_angle, _rotationalOffset);
 }
+
+vector<Vector2f> AffinePlatform::collides(const FloatRect& rect) const {
+    return collider.findInteriorPoints(T, rect);
+}
+
+pair<bool, float> AffinePlatform::collides(const Segment& line) const {
+    return collider.intersects(T, line);
+}
+
+vector<Segment> AffinePlatform::collides(Polygon& shape) const {
+    return collider.intersects(shape, T);
+}
+
 void AffinePlatform::angle(float newAngle) {
     if (_angle != newAngle) {
         _angle = newAngle;
@@ -56,6 +69,6 @@ void AffinePlatform::rotationalOffset(Vector2f newRotationalOffset) {
     }
 }
 
-void AffinePlatform::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    collider.draw(T, target, states, Color::White);
+void AffinePlatform::draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const {
+    collider.draw(T, target, states, Color::White, debug);
 }

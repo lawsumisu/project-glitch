@@ -4,13 +4,13 @@
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Color.hpp>
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <set>
 
-using namespace sf;
 namespace CustomUtilities {
 
-    template <typename T> std::string toString(const Rect<T>& R) {
+    template <typename T> std::string toString(const sf::Rect<T>& R) {
         std::stringstream ss;
         ss << "Rect:origin = (" << R.left << "," << R.top << "); width = "
             << R.width << "; height = " << R.height;
@@ -23,15 +23,15 @@ namespace CustomUtilities {
     /// <param name="center"></param>
     /// <param name="dimensions"></param>
     /// <returns></returns>
-    FloatRect construct(const Vector2f& center, const Vector2f& dimensions);
-    template <typename T> Rect<T> copy(Rect<T> R) {
-        return Rect<T>(R);
+    sf::FloatRect construct(const sf::Vector2f& center, const sf::Vector2f& dimensions);
+    template <typename T> sf::Rect<T> copy(sf::Rect<T> R) {
+        return sf::Rect<T>(R);
     }
 
     /// <summary>
     /// Gets the area of the input <see cref="Rect"/>.
     /// </summary>
-    template <typename T> T area(Rect<T> R) {
+    template <typename T> T area(sf::Rect<T> R) {
         return R.width*R.height;
     }
 
@@ -39,17 +39,23 @@ namespace CustomUtilities {
     /// <summary>
     /// Draws an axis-aligned rectangle defined by the input <see cref="FloatRect"/>.
     /// </summary>
-    void draw(const FloatRect& R, const Color& color, sf::RenderTarget& target, sf::RenderStates states);
-    void draw(const FloatRect& R, const sf::Transform& T, const Color& color,
+    void draw(const sf::FloatRect& R, const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states);
+    void draw(const sf::FloatRect& R, const sf::Transform& T, const sf::Color& color,
         sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default);
 
-    FloatRect operator*(const FloatRect& R, float f);
+    sf::FloatRect operator*(const sf::FloatRect& R, float f);
+    sf::FloatRect operator+(const sf::FloatRect& R, sf::Vector2f& v);
+    void operator+= (sf::FloatRect& rect, sf::Vector2f& v);
 
+
+    /// <summary>
+    /// Data type for sorting a series of rectangles.
+    /// </summary>
     class RectSorter {
     private:
         //Fields
 
-        std::vector<FloatRect> rects;
+        std::vector<sf::FloatRect> rects;
         class RValue {
         private:
             bool _startNotEnd;
@@ -74,7 +80,9 @@ namespace CustomUtilities {
 
         std::vector<size_t> xStartIndices, yStartIndices, yEndIndices;
         std::vector<size_t> xEndIndices;
-        std::vector<size_t> xStartToEndLinks, xEndToStartLinks;
+
+        //Lists that store the index of where a rectangle is sorted 
+        std::vector<size_t> xStartToEndLinks, xEndToStartLinks, yStartToEndLinks, yEndToStartLinks;
 
         //Methods
         int find(float value, size_t start, size_t end, bool xNotY, bool startNotEnd) const;
@@ -83,11 +91,11 @@ namespace CustomUtilities {
     public:
         //Constructor
 
-        RectSorter(const std::vector<FloatRect>& rects);
+        RectSorter(const std::vector<sf::FloatRect>& rects);
 
         //Methods
 
-        std::vector<size_t> findIntersects(const FloatRect& rect) const;
+        std::vector<size_t> findIntersects(const sf::FloatRect& rect) const;
         std::string toString() const;
 
     };

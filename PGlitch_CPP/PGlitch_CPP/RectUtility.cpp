@@ -50,8 +50,17 @@ FloatRect CustomUtilities::operator*(const FloatRect& R, float f) {
     return FloatRect(R.left * f, R.top*f, R.width*f, R.height*f);
 }
 
+FloatRect CustomUtilities::operator+(const FloatRect& R, Vector2f& v) {
+    return FloatRect(R.left + v.x, R.top + v.y, R.width, R.height);
+}
 
-RectSorter::RectSorter(const vector<FloatRect>& rects): xEndToStartLinks(rects.size()), xStartToEndLinks(rects.size()) {
+void CustomUtilities::operator+=(FloatRect& R, Vector2f& v) {
+    R.left += v.x;
+    R.top += v.y;
+}
+
+RectSorter::RectSorter(const vector<FloatRect>& rects): 
+    xEndToStartLinks(rects.size()), xStartToEndLinks(rects.size()), yStartToEndLinks(rects.size()), yEndToStartLinks(rects.size()) {
     this->rects = rects;
     size_t n = rects.size();
     for (size_t i = 0; i < rects.size(); ++i) {
@@ -92,14 +101,20 @@ RectSorter::RectSorter(const vector<FloatRect>& rects): xEndToStartLinks(rects.s
 
     //Now build links between start and end indices.
 
-    unordered_map<size_t, size_t> xEndMap;
+    unordered_map<size_t, size_t> xEndMap, yEndMap;
     for (size_t i = 0; i < xEndIndices.size(); ++i) {
         xEndMap.insert({ xEndIndices[i], i });
-        xStartToEndLinks.push_back(0);
+        //xStartToEndLinks.push_back(0);
+
+        yEndMap.insert({ yEndIndices[i], i });
+        //yStartToEndLinks.push_back(0);
     }
     for (size_t i = 0; i < n; ++i) {
         xStartToEndLinks[i] = xEndMap[xStartIndices[i]];
         xEndToStartLinks[xEndMap[xStartIndices[i]]] = i;
+
+        yStartToEndLinks[i] = yEndMap[yStartIndices[i]];
+       yEndToStartLinks[yEndMap[yStartIndices[i]]] = i;
     }
 }
 
@@ -159,19 +174,21 @@ float RectSorter::rvalue(size_t i, bool xNotY, bool startNotEnd) const {
 vector<size_t> RectSorter::findIntersects(const FloatRect& rect) const {
     int xMinEnd = find(rect.left, 0, xStartIndices.size()-1, true, true);
     int xMaxStart = find(rect.left + rect.width, 0, xEndIndices.size() - 1, true, false);
-    if (xMinEnd == -1 || xMaxStart == -1) return{};
+
+    int yMinEnd = find(rect.top, 0, yStartIndices.size() - 1, false, true);
+    int yMaxStart = find(rect.top + rect.height, 0, yEndIndices.size() - 1, false, false);
+    if (xMinEnd == -1 || xMaxStart == -1 || yMinEnd == -1 || yMaxStart == -1) return{};
     else {
         set<size_t> xIndices = {};
         //Choose the smaller distance from which to build output.
         if (rects.size() - (size_t) xMinEnd -1 < (size_t) xMaxStart) {
-            //cout << rects.size() - (size_t)xMinEnd << endl;
+            
             size_t upperStartIndex = xEndToStartLinks[xMinEnd];
             for (size_t i = xMinEnd; i < rects.size(); ++i) {
                 if (xEndToStartLinks[i] <= (size_t) xMaxStart) xIndices.insert(xEndIndices[i]);
             }
         }
         else {
-           // cout << "Or " << xMaxStart << endl;
             for (size_t i = 0; i <= (size_t)xMaxStart; ++i) {
                 if (xStartToEndLinks[i] >= (size_t) xMinEnd) xIndices.insert(xStartIndices[i]);
             }

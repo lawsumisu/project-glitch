@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Enumerators.h"
 
+using namespace std;
+
 std::string EnumeratorUtilities::toSymbol(const InputCode& code) {
     switch (code) {
     case InputCode::NONE:
@@ -44,4 +46,18 @@ std::string EnumeratorUtilities::toSymbol(const InputType& type) {
     default:
         return "";
     }
+}
+
+std::string toSymbol(PlatformType type) {
+    switch (type) {
+    case PlatformType::SOLID: return "SOLID";
+    case PlatformType::THICK: return "THICK";
+    case PlatformType::THIN: return "THIN";
+    default: return "unidentified platform type";
+    }
+}
+
+ostream& operator<<(ostream& os, PlatformType& type) {
+    os << toSymbol(type);
+    return os;
 }

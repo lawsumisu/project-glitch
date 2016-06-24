@@ -73,10 +73,14 @@ VertexArray PillarCollider::toPhysicalOutline() const {
     return output;
 }
 
-void PillarCollider::draw(const Transform& T, RenderTarget& target, RenderStates states, const Color& color) const {
+void PillarCollider::draw(const Transform& T, RenderTarget& target, RenderStates states, const Color& color, bool debug) const {
     for (auto& pillar : pillars) {
-        CustomUtilities::draw(T.transformRect(pillar), color, target, states);
+        if (debug) {
+            CustomUtilities::draw(pillar, Color::Red, target, states);
+        }
+        CustomUtilities::draw(T.transformRect(pillar), color, target, states);        
     }
+    
 }
 
 pair<bool, float> PillarCollider::intersects(const Transform& T, const FloatRect& rect, SurfaceType type) const {
@@ -98,22 +102,26 @@ pair<bool, float> PillarCollider::intersects(const Transform& T, const FloatRect
     float nearestValue = 0;
     for (size_t i = iMin; i <= iMax; ++i) {
         if (effectiveRect.intersects(pillars[i])){
-            if (!foundIntersection || (type == SurfaceType::GROUND && pillars[i].top < nearestValue)){
+            if (type == SurfaceType::GROUND && (!foundIntersection || pillars[i].top < nearestValue)){
                 nearestValue = pillars[i].top;
             }
-            else if (!foundIntersection || (type == SurfaceType::CEILING && pillars[i].top + pillars[i].height > nearestValue)) {
+            else if (type == SurfaceType::CEILING && (!foundIntersection || pillars[i].top + pillars[i].height > nearestValue)) {
                 nearestValue = pillars[i].top + pillars[i].height;
             }
-            else if (!foundIntersection || (type == SurfaceType::RIGHT && pillars[i].left < nearestValue)) {
+            else if (type == SurfaceType::RIGHT && (!foundIntersection || pillars[i].left < nearestValue)) {
                 nearestValue = pillars[i].left;
             }
-            else if (!foundIntersection || (type == SurfaceType::LEFT && pillars[i].left + pillars[i].width > nearestValue)) {
+            else if (type == SurfaceType::LEFT && (!foundIntersection && pillars[i].left + pillars[i].width > nearestValue)) {
                 nearestValue = pillars[i].left + pillars[i].width;
             }
             foundIntersection = true;
         }
     }
-    return{ foundIntersection, nearestValue };
+    //TODO transform back point.
+    if (type == SurfaceType::GROUND || type == SurfaceType::CEILING) {
+        return{ foundIntersection, T.transformPoint(Vector2f(0, nearestValue)).y };
+    }
+    else return{ foundIntersection, T.transformPoint(Vector2f(nearestValue, 0)).x};
 }
 
 vector<Vector2f> PillarCollider::findSurfacePoints(const Transform& T, const FloatRect& rect) const{
@@ -133,25 +141,77 @@ vector<Vector2f> PillarCollider::findSurfacePoints(const Transform& T, const Flo
 
     vector<Vector2f> output;
     for (size_t i = iMin; i <= iMax; ++i) {
-        if (effectiveRect.intersects(pillars[i])) output.push_back(Vector2f(pillars[i].left, pillars[i].top));
+        if (effectiveRect.intersects(pillars[i])) {
+            output.push_back(T.transformPoint(Vector2f(pillars[i].left, pillars[i].top)));
+            output.push_back(T.transformPoint(Vector2f(pillars[i].left + pillars[i].width, pillars[i].top)));
+        }
     }
     return output;
 }
-vector<FloatRect> PillarCollider::intersects(const FloatRect& collidingRect) const {
-    if (!maxBounds.intersects(collidingRect)) return{};
+
+pair<int, int> PillarCollider::getBoundIndices(sf::FloatRect& bounds) const {
+    if (!maxBounds.intersects(bounds)) return{ -1,-1 };
+    //First need to determine span of indices to check.
+    float xMin = bounds.left - _origin.x;
+    float xMax = xMin + bounds.width;
+
+    // Check that bounds are legitimate for intersection.
+    //if ((xMin < 0 && xMax <= 0) || (xMax < 0)) return{};
+
+    size_t iMin = (size_t)max(0.f, floorf(xMin / _width));
+    size_t iMax = min(size - 1, (size_t)floorf(xMax / _width));
+
+    return{ iMin, iMax };
+}
+
+vector<Segment> PillarCollider::intersects(Polygon& shape) const {
+    pair<int, int> indices = getBoundIndices(shape.bounds());
+
+    if (indices.first == -1) return{};
+    else {
+        vector<Segment> output = {};
+        for (int i = indices.first; i <= indices.second; ++i) {
+            FloatRect R = FloatRect();
+            vector<Segment> innerLines = shape.findInternalLines(pillars[i]);
+            output.insert(output.end(), innerLines.begin(), innerLines.end());
+        }
+        return output;
+    }
+}
+vector<Vector2f> PillarCollider::findInteriorPoints(const Transform& T, const FloatRect& rect) const {
+    FloatRect effectiveRect = T.getInverse().transformRect(rect);
+
+    if (!maxBounds.intersects(effectiveRect)) return{};
 
     //First need to determine span of indices to check.
-    float xMin = collidingRect.left - _origin.x;
-    float xMax = xMin + collidingRect.width;
+    float xMin = effectiveRect.left - _origin.x;
+    float xMax = xMin + effectiveRect.width;
 
     // Check that bounds are legitimate for intersection.
     if ((xMin < 0 && xMax <= 0) || (xMax < 0)) return{};
 
     size_t iMin = (size_t)max(0.f, floorf(xMin / _width));
-    size_t iMax = min(size-1, (size_t)floorf(xMax / _width));
+    size_t iMax = min(size - 1, (size_t)floorf(xMax / _width));
+
+    vector<Vector2f> output = {};
+    for (size_t i = iMin; i <= iMax; ++i) {
+        FloatRect R = FloatRect();
+        effectiveRect.intersects(pillars[i], R);
+        
+        if (area(R) != 0) {
+            vector<Vector2f> rPoints = toPoints(R);
+            output.insert(output.end(), rPoints.begin(), rPoints.end());
+        }
+    }
+    return output;
+
+}
+vector<FloatRect> PillarCollider::intersects(const FloatRect& collidingRect) const {
+    pair<int, int> indices = getBoundIndices(FloatRect(collidingRect));
+    if (indices.first == -1) return{};
 
     vector<FloatRect> output = {};
-    for (size_t i = iMin; i <= iMax; ++i) {
+    for (int i = indices.first; i <= indices.second; ++i) {
         FloatRect R = FloatRect();
         collidingRect.intersects(pillars[i], R);
         if (area(R) != 0)output.push_back(R);
@@ -179,7 +239,7 @@ vector<FloatRect> PillarCollider::intersectsPillars(const FloatRect& collidingRe
     }
     return output;
 }
-pair<bool, float> PillarCollider::intersects(const Line& line) const{
+pair<bool, float> PillarCollider::intersects(const Segment& line) const{
     if (!line.intersects(maxBounds).first) return{ false, 0.f };
     bool foundIntersect = false;
     float t = 1;

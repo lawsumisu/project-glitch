@@ -50,3 +50,10 @@ Vector2f CustomUtilities::linearRegression(std::vector<Vector2f> coordinates) {
 float CustomUtilities::degToRad(float degree) {
     return degree * pi / 180;
 }
+
+float CustomUtilities::clamp(float value, float f1, float f2) {
+    float minValue = min(f1, f2);
+    float maxValue = max(f1, f2);
+
+    return min(max(value, minValue), maxValue);
+}

@@ -5,9 +5,7 @@
 #include <utility>
 #include "RectUtility.h"
 #include "Collision.h"
-#include "PillarCollider.h"
 #include "Platform.h"
-#include "Platform2.h"
 
 using namespace sf;
 using namespace CustomUtilities;
@@ -18,11 +16,16 @@ namespace Physics{
     private:
         enum class SensorType{GROUND, CEILING, LEFT, RIGHT};
         FloatRect _ceiling, _ground, _left, _right;
+        FloatRect secondaryCeiling, secondaryGround, secondaryLeft, secondaryRight;
         Vector2f center;
+        Vector2f size;
+        sf::Vector2f gROrigin, cROrigin, lROrigin, rROrigin;
 
+        std::pair<int, sf::Vector2f> findNearestWithinBounds(sf::FloatRect& bounds, SurfaceType type, std::vector<std::vector<Segment>>& segmentList) const;
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
-        std::vector<std::pair<size_t, float>> collides(const std::vector<Platform>& platforms, SensorType type) const;
+        
+
     public:
         SensorCollider() : SensorCollider(Vector2f(), Vector2f(), Vector2f()){}
         SensorCollider(Vector2f& center, Vector2f& horizontalDimensions, Vector2f& verticalDimensions);
@@ -31,56 +34,24 @@ namespace Physics{
 
         Collision collides(const vector<PillarCollider>& colliders) const ;
 
-        Collision collides(const Platform& platform) const;
-        /// <summary>
-        /// Gets collision data from this <see cref="SensorCollider"/> and a series of <see cref="Platforms"/>.
-        /// Returns a pair constituting collision data and location of the platform this sensor has ground contact with
-        /// within the input list. This index is -1 if no contact is being made between this sensor's ground and a
-        /// platform.
-        /// </summary>
-        /// <param name="platforms"></param>
-        /// <returns></returns>
-        std::pair<Collision, int> collides(const vector<Platform>& platforms) const ;
-
-        /// <summary>
-        /// Gets collision data from this <see cref="SensorCollider"/> and a <see cref="PillarCollider"/>.
-        /// Specificially returns a <see cref="Collision"/> for left and right collisions.
-        /// </summary>
-        Collision collidesHorizontal(const PillarCollider& collider) const;
-
-        /// <summary>
-        /// Gets collision data from this <see cref="SensorCollider"/> and a <see cref="PillarCollider"/>.
-        /// Specificially returns a <see cref="Collision"/> for ground and ceiling collisions.
-        /// </summary>
-        Collision collidesVertical(const PillarCollider& collider) const;
-
-        /// <summary>
-        /// Gets collision data from this <see cref="SensorCollider"/> and a series of <see cref="PillarColliders"/>.
-        /// Return a pair constituting collision data and the indices of the pillars this sensor has collided with
-        /// within the input list.
-        /// Given an output o, o.second.first is the index for a left collision, and o.second.second is the index for a 
-        /// right collision. If there is no collision on the right or left, the value is -1 accordingly.
-        /// </summary>
-        /// <param name="colliders"></param>
-        /// <returns></returns>
-        std::pair<Collision, std::pair<int, int>> collidesHorizontal(const vector<PillarCollider>& colliders) const;
-        std::pair<Collision, std::pair<int, int>> collidesVertical(const vector<PillarCollider>& colliders) const;
-
-
-        std::vector<std::pair<size_t, float>> collidesGround(const std::vector<Platform>& platforms) const;
-        std::vector<std::pair<size_t, float>> collidesCeiling(const std::vector<Platform>& platforms) const;
-        std::vector<std::pair<size_t, float>> collidesLeft(const std::vector<Platform>& platforms) const;
-        std::vector<std::pair<size_t, float>> collidesRight(const std::vector<Platform>& platforms) const;
-        float groundAngle(const Platform& platform) const;
-
         std::vector<std::pair<size_t, float>> collides(const std::vector<PlatformPtr>& platforms, SurfaceType type) const;
+        std::vector<std::pair<size_t, float>> checkSecondaryCollisions(const std::vector<PlatformPtr>& platforms,
+            SurfaceType type) const;
         float groundAngle(const PlatformPtr& platform) const;
+        std::pair<sf::Vector2f, sf::Vector2f> checkNarrow(const std::vector<PlatformPtr>& platforms, bool checkHorizontalNotVertical)const;
 
         FloatRect ceiling() const{ return FloatRect(_ceiling); }
         FloatRect ground() const{ return FloatRect(_ground); }
         FloatRect left() const{ return FloatRect(_left); }
         FloatRect right() const{ return FloatRect(_right); }
         void setCenter(Vector2f newCenter);
+
+        Polygon getCollider(sf::Vector2f cPosition, sf::Vector2f fPosition) const;
+        std::vector<std::vector<Segment>> collides(sf::Vector2f& cPosition, sf::Vector2f& fPosition, const std::vector<PlatformPtr>& platforms) const;
+
+        std::pair<int, sf::Vector2f> findNearestCollision(sf::Vector2f& cPosition, sf::Vector2f& fPosition, SurfaceType type, 
+            std::vector<std::vector<Segment>>& segmentList, float xMin, float xMax, float yMin, float yMax) const;
+        std::pair<int, sf::Vector2f> findNearestSurface(sf::Vector2f& fPosition, SurfaceType type, std::vector<std::vector<Segment>>& segmentList) const;
     };
 }
 

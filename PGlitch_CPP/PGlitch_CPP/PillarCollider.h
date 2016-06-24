@@ -7,6 +7,7 @@
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Transform.hpp>
 #include "Enumerators.h"
+#include "Polygon.h"
 
 using namespace sf;
 using namespace std;
@@ -20,11 +21,24 @@ namespace Physics {
     class PillarCollider {
     private:
         float _width, maxHeight, maxDepth;
-        Vector2f _origin;
+        sf::Vector2f _origin;
         size_t size;
-        vector<FloatRect> pillars;
-        FloatRect maxBounds;
+        std::vector<sf::FloatRect> pillars;
+        sf::FloatRect maxBounds;
       
+        // ======= //
+        // Methods //
+        // ======= //
+
+        /// <summary>
+        /// Gets the minimum and maximum indices that correspond to the pillars that the specified bounds could potentially intersect within
+        /// the pillar vector.
+        /// If the bounds have no potential intersection at all, returns {-1,-1}. 
+        /// </summary>
+        /// <param name="bounds"></param>
+        /// <returns></returns>
+        std::pair<int, int> getBoundIndices(sf::FloatRect& bounds) const;
+
     public:
         // ======= //
         // Methods //
@@ -38,13 +52,15 @@ namespace Physics {
         /// *Follows the convention that positive y-coordinates from y = 0 correspond to "down" and 
         /// negative y-coordinates from y = 0 correspond to "up".
         /// </summary>
-        PillarCollider(std::vector<float> heightMap, vector<float> depthMap, float width, Vector2f origin);
+        PillarCollider(std::vector<float> heightMap, std::vector<float> depthMap, float width, sf::Vector2f origin);
 
         vector<FloatRect> intersects(const FloatRect& collidingRect) const;
 
         std::pair<bool, float> intersects(const sf::Transform& T, const sf::FloatRect& rect, SurfaceType direction) const;
 
         std::vector<Vector2f> findSurfacePoints(const sf::Transform& T, const sf::FloatRect& rect) const;
+
+        std::vector<Vector2f> findInteriorPoints(const sf::Transform& T, const sf::FloatRect& rect) const;
         /// <summary>
         /// Checks for collision between a <see cref="FloatRect"/> and this <see cref="PillarCollider"/>.
         /// Returns a list of <see cref="FloatRect"/> objects l such that l[i] corresponds to a pillar that 
@@ -54,7 +70,7 @@ namespace Physics {
         /// </summary>
         /// <param name="collidingRect"></param>
         /// <returns></returns>
-        vector<FloatRect> intersectsPillars(const FloatRect& collidingRect) const;
+        vector<FloatRect> intersectsPillars(const sf::FloatRect& collidingRect) const;
 
         /// <summary>
         /// Checks for collision between a line and this <see cref="PillarCollider"/>. If it finds one, 
@@ -63,8 +79,14 @@ namespace Physics {
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>
-        std::pair<bool, float> intersects(const Line& line) const;
+        std::pair<bool, float> intersects(const CustomUtilities::Segment& line) const;
 
+        /// <summary>
+        /// Gets a list of segments such for each segment s, s.p() and s.q() are points along this collider that lie along or within the Polygon.
+        /// </summary>
+        /// <param name="shape"></param>
+        /// <returns></returns>
+        std::vector<CustomUtilities::Segment> intersects(Polygon& shape) const;
         VertexArray toOutline() const;
 
         /// <summary>
@@ -73,13 +95,13 @@ namespace Physics {
         /// </summary>
         VertexArray toPhysicalOutline() const;
 
-        void draw(const sf::Transform& info, sf::RenderTarget& target, sf::RenderStates states, const sf::Color& color) const;
+        void draw(const sf::Transform& info, sf::RenderTarget& target, sf::RenderStates states, const sf::Color& color, bool debug) const;
 
-        void origin(const Vector2f& newOrigin);
-        Vector2f origin() const;
+        void origin(const sf::Vector2f& newOrigin);
+        sf::Vector2f origin() const;
 
-        static PillarCollider uniformHeight(vector<float> depthMap, float width, float height, Vector2f position);
-        static PillarCollider uniformDepth(vector<float> heightMap, float width, float depth, Vector2f position);
+        static PillarCollider uniformHeight(std::vector<float> depthMap, float width, float height, sf::Vector2f position);
+        static PillarCollider uniformDepth(std::vector<float> heightMap, float width, float depth, sf::Vector2f position);
 
     };
 }

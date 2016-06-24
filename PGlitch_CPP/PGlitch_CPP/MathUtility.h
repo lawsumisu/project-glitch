@@ -25,4 +25,10 @@ namespace CustomUtilities {
     /// Converts degrees to radians.
     /// </summary>
     float degToRad(float degree);
+
+    /// <summary>
+    /// Clamps a value between a min and a max. 
+    /// Does not require the min and max values to be ordered.
+    /// </summary>
+    float clamp(float value, float f1, float f2);
 }

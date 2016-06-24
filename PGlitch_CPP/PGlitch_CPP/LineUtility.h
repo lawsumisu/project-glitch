@@ -10,11 +10,14 @@
 
 namespace CustomUtilities {
 
-    class Line {
+    /// <summary>
+    /// Represents a directed line segment between two 2D points.
+    /// </summary>
+    class Segment {
     private:
         //Fields
 
-        sf::Vector2f p1, p2;
+        sf::Vector2f p, q;
 
         //Methods
 
@@ -23,20 +26,24 @@ namespace CustomUtilities {
     public:
         //Constructors
 
-        Line(const sf::Vector2f& p1, const sf::Vector2f& p2);
-        Line(const sf::Vector2f& origin, float angle, float distance);
+        Segment(const sf::Vector2f& p1, const sf::Vector2f& p2);
+        Segment(const sf::Vector2f& origin, float angle, float distance);
 
         //Methods
         /// <summary>
         /// Checks for intersection with another line. If there is an intersection, 
         /// output.first == true and output.second will be a value t (0 &lt;= t &lt;= 1) 
-        /// such that atPoint(t) corresponds to the earliest found intersection.
+        /// such that atPoint(t) corresponds to the earliest found intersection. 
         /// 
-        /// If there is no intersection, then intersects.first == false.
+        /// If isInfiniteLine == true, then this line is treated as one of infinite length passing through 
+        /// p1 and p2, resulting in potential intersections with t &lt; 0 or t &gt; 1.
+        /// 
+        /// If there is no intersection, then intersects.first == false. 
+        /// However, if isInfiniteLine, then t 
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>
-        std::pair<bool, float> intersects(const Line& line) const;
+        std::pair<bool, float> intersects(const Segment& line, bool isInfiniteLine = false) const;
 
         std::string toString() const;
 
@@ -62,7 +69,9 @@ namespace CustomUtilities {
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        Line moveP1(const sf::Vector2f& v) const;
+        Segment moveP1(const sf::Vector2f& v) const;
+
+        sf::FloatRect bounds() const;
 
         std::pair<bool, float> intersects(const sf::FloatRect& rect) const;
 
@@ -83,13 +92,19 @@ namespace CustomUtilities {
         /// </summary>
         /// <param name="rect"></param>
         /// <returns></returns>
-        std::pair<bool, Line> findInnerLine(const sf::FloatRect& rect) const;
+        std::pair<bool, Segment> findInnerLine(const sf::FloatRect& rect) const;
 
-        sf::Vector2f start() const { return p1; }
-        sf::Vector2f end() const { return p2; }
+        Segment transform(const sf::Transform& T) const;
+
+        sf::Vector2f start() const { return p; }
+        sf::Vector2f end() const { return q; }
+
+        bool operator==(const Segment& otherSegment) const;
+
         void draw(const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
 
-        friend Line operator*(const Line& line, float f);
+        friend Segment operator*(const Segment& line, float f);
+        friend std::ostream& operator<<(std::ostream& os, const Segment& shape);
 
     };
 

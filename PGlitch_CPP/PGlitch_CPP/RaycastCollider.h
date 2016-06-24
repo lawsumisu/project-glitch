@@ -27,7 +27,7 @@ namespace Physics {
         //RI: >= 2.
         size_t rayCount = 2;
 
-        std::vector<Line> rays;
+        std::vector<Segment> rays;
 
         //Methods
 

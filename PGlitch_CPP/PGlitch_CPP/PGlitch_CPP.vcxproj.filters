@@ -34,6 +34,12 @@
     <Filter Include="Header Files\Physics">
       <UniqueIdentifier>{d96103e6-fe5c-453f-9d3c-73efbad05a6e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Physics\Geometry">
+      <UniqueIdentifier>{a2ea8601-e12f-4020-ab47-9a03df48ffe2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Physics\Geometry">
+      <UniqueIdentifier>{7a152103-d380-46ff-b1fe-122b51b78fe9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -96,26 +102,32 @@
     <ClInclude Include="JoystickBinding.h">
       <Filter>Header Files\Input</Filter>
     </ClInclude>
-    <ClInclude Include="Knockback.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RaycastCollider.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
     <ClInclude Include="LineUtility.h">
       <Filter>Header Files\CustomUtilities</Filter>
     </ClInclude>
-    <ClInclude Include="Platform.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GameInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PolygonalCollider.h">
+    <ClInclude Include="FreeformCollider.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="Platform2.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Platform.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Knockback.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Quadtree.h">
+      <Filter>Header Files\CustomUtilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Line.h">
+      <Filter>Header Files\Physics\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Polygon.h">
+      <Filter>Header Files\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -173,17 +185,26 @@
     <ClCompile Include="RaycastCollider.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="Platform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GameInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PolygonalCollider.cpp">
-      <Filter>Source Files\Physics</Filter>
-    </ClCompile>
     <ClCompile Include="AffinePlatform.cpp">
       <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="FreeformCollider.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="SimplePlatform.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Quadtree.cpp">
+      <Filter>Source Files\CustomUtilities</Filter>
+    </ClCompile>
+    <ClCompile Include="Polygon.cpp">
+      <Filter>Source Files\Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Line.cpp">
+      <Filter>Source Files\Physics\Geometry</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

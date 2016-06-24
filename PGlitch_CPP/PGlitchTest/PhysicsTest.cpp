@@ -6,7 +6,7 @@
 #include "../PGlitch_CPP/MathUtility.h"
 #include "../PGlitch_CPP/VectorUtility.h"
 #include "../PGlitch_CPP/Knockback.h"
-#include "../PGlitch_CPP/PolygonalCollider.h"
+#include "../PGlitch_CPP/FreeformCollider.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace sf;
@@ -224,11 +224,11 @@ namespace PGlitchTest
         }
     };
 
-    TEST_CLASS(PolygonalColliderClass) {
+    TEST_CLASS(FreeformColliderClass) {
         TEST_METHOD(testIntersects) {
             FloatRect rect = FloatRect(0, -2, 5, 10);
 
-            PolygonalCollider poly = PolygonalCollider({ {0,0}, {2,-2}, {4, -2}, {6,0} });
+            FreeformCollider poly = FreeformCollider({ {0,0}, {2,-2}, {4, -2}, {6,0} });
             pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::GROUND);
 
             Assert::IsTrue(intersection.first);
@@ -239,7 +239,7 @@ namespace PGlitchTest
         TEST_METHOD(testIntersectsNone) {
             FloatRect rect = FloatRect(0, 0, 5, 10);
 
-            PolygonalCollider poly = PolygonalCollider({ { 0,0 },{ 2,-2 },{ 4, -2 },{ 6,0 } });
+            FreeformCollider poly = FreeformCollider({ { 0,0 },{ 2,-2 },{ 4, -2 },{ 6,0 } });
             pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::GROUND);
 
             Assert::IsFalse(intersection.first);
@@ -248,7 +248,7 @@ namespace PGlitchTest
         TEST_METHOD(testIntersectsInbetween) {
             FloatRect rect = FloatRect(0, -1, 5, 10);
 
-            PolygonalCollider poly = PolygonalCollider({ { 0,0 },{ 2,-2 },{ 4, -2 },{ 6,0 } });
+            FreeformCollider poly = FreeformCollider({ { 0,0 },{ 2,-2 },{ 4, -2 },{ 6,0 } });
             pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::GROUND);
 
             Assert::IsTrue(intersection.first);
@@ -258,7 +258,7 @@ namespace PGlitchTest
         TEST_METHOD(testIntersectsSelf) {
             FloatRect rect = FloatRect(0, -1, 5, 10);
 
-            PolygonalCollider poly = PolygonalCollider(rect);
+            FreeformCollider poly = FreeformCollider(rect);
 
             pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::RIGHT);
             Assert::IsTrue(intersection.first);
@@ -268,7 +268,7 @@ namespace PGlitchTest
         TEST_METHOD(testIntersectsInterior) {
             FloatRect rect = FloatRect(4, -3, 1, 1);
 
-            PolygonalCollider poly = PolygonalCollider({ {2,0}, {2, -3}, {4, -6}, {6, -3}, {6, 0} });
+            FreeformCollider poly = FreeformCollider({ {2,0}, {2, -3}, {4, -6}, {6, -3}, {6, 0} });
 
             pair<bool, float> intersection = poly.intersects(Transform(), rect, SurfaceType::LEFT);
             Assert::IsTrue(intersection.first);
@@ -283,7 +283,7 @@ namespace PGlitchTest
         TEST_METHOD(testFindInteriorPoints) {
             FloatRect rect = FloatRect(0, 0, 2, 2);
 
-            PolygonalCollider poly = PolygonalCollider({ {-1,4}, {1, 0}, {3, 4} });
+            FreeformCollider poly = FreeformCollider({ {-1,4}, {1, 0}, {3, 4} });
             vector<Vector2f> points = poly.findSurfacePoints(Transform(), rect);
 
             Assert::AreEqual(3U, points.size());

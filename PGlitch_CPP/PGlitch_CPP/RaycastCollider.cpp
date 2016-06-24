@@ -19,7 +19,7 @@ RaycastCollider::RaycastCollider(const Vector2f& origin, const Vector2f& size, f
 std::pair<bool, float> RaycastCollider::collides(PillarCollider& pillar) const {
     bool foundIntersection = false;
     float t = 1;
-    for (const Line& ray : rays) {
+    for (const Segment& ray : rays) {
         pair<bool, float> intersection = pillar.intersects(ray);
         if (intersection.first) {
             foundIntersection = true;
@@ -41,7 +41,7 @@ void RaycastCollider::constructRays() {
     Vector2f offset = toPoint(size.y / 2, _angle - pi / 2);
     for (size_t i = 0; i < rayCount; ++i) {
         Vector2f w = toPoint(size.y * i / (rayCount - 1), _angle - pi / 2);
-        rays.push_back(Line(origin - offset + w, _angle, size.x / 2));
+        rays.push_back(Segment(origin - offset + w, _angle, size.x / 2));
     }
 }
 
@@ -54,7 +54,7 @@ float RaycastCollider::angle() const {
     return _angle;
 }
 void RaycastCollider::draw(sf::RenderTarget& target, sf::RenderStates states) const {
-    for (const Line& ray : rays) {
+    for (const Segment& ray : rays) {
         (ray*GameInfo::pixelsPerUnit).draw(Color::Red, target, states);
     }
 }

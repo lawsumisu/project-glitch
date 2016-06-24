@@ -115,23 +115,48 @@ namespace PGlitchTest
             Assert::IsTrue(abs(-1.68448f -  output.y) <= 0.001f);        
         }
 
+        TEST_METHOD(testClampOutsideBounds) {
+            Assert::AreEqual(2.f, clamp(1.f, 2.f, 3.f));
+            Assert::AreEqual(3.f, clamp(4.f, 2.f, 3.f));
+        }
+
+        TEST_METHOD(testClampAtBounds) {
+            Assert::AreEqual(2.f, clamp(2.f, 2.f, 3.f));
+            Assert::AreEqual(-2.f, clamp(-2.f, -3.f, -2.f));
+        }
+
+        TEST_METHOD(testClampWithinBounds) {
+            Assert::AreEqual(2.f, clamp(2.f, 1.f, 3.f));
+        }
+
+        TEST_METHOD(testClampUnorderedBounds) {
+            Assert::AreEqual(clamp(2.f, 0.f, 1.f), clamp(2.f, 1.f, 0.f));
+            Assert::AreEqual(1.f, clamp(2.f, 0.f, 1.f));
+        }
+
+        TEST_METHOD(testClampSameBounds) {
+            Assert::AreEqual(0.f, clamp(0.f, 0.f, 0.f));
+            Assert::AreEqual(0.f, clamp(-1.f, 0.f, 0.f));
+            Assert::AreEqual(0.f, clamp(1.f, 0.f, 0.f));
+        }
+
    
     };
 
     TEST_CLASS(LineUtilityTest) {
         TEST_METHOD(testToString) {
-            Line l = Line(Vector2f(), Vector2f(1, 1));
+            Segment l = Segment(Vector2f(), Vector2f(1, 1));
 
             Assert::AreEqual("Line:[(0,0) -> (1,1)]", l.toString().c_str());
 
-            Line l2 = Line(Vector2f(), pi / 2, 3);
+            Segment l2 = Segment(Vector2f(), pi / 2, 3);
 
             Logger::WriteMessage(l2.toString().c_str());
         }
 
         TEST_METHOD(testIntersects) {
-            Line l1 = Line(Vector2f(), Vector2f(1, 1));
-            Line l2 = Line(Vector2f(-1, 1), Vector2f());
+            Segment l1 = Segment(Vector2f(), Vector2f(1, 1));
+            Segment l2 = Segment(Vector2f(-1, 1), Vector2f());
 
             std::pair<bool, float> intersection = l1.intersects(l2);
 
@@ -140,8 +165,8 @@ namespace PGlitchTest
         }
 
         TEST_METHOD(testIntersectsNonAxisAligned) {
-            Line l1 = Line(Vector2f(), Vector2f(1, 1));
-            Line l2 = Line(Vector2f(1, 0), Vector2f(0,1));
+            Segment l1 = Segment(Vector2f(), Vector2f(1, 1));
+            Segment l2 = Segment(Vector2f(1, 0), Vector2f(0,1));
 
             std::pair<bool, float> intersection = l1.intersects(l2);
 
@@ -150,8 +175,8 @@ namespace PGlitchTest
         }
 
         TEST_METHOD(testIntersectsFalse) {
-            Line l1 = Line(Vector2f(), Vector2f(1, 1));
-            Line l2 = Line(Vector2f(.5f, 0), 0, 3);
+            Segment l1 = Segment(Vector2f(), Vector2f(1, 1));
+            Segment l2 = Segment(Vector2f(.5f, 0), 0, 3);
 
             std::pair<bool, float> intersection = l1.intersects(l2);
 
@@ -159,13 +184,13 @@ namespace PGlitchTest
         }
 
         TEST_METHOD(testAtPoint) {
-            Line line = Line(Vector2f(), Vector2f(1, 1));
+            Segment line = Segment(Vector2f(), Vector2f(1, 1));
 
             Assert::AreEqual(Vector2f(.5f, .5f), line.atPoint(.5f));
         }
 
         TEST_METHOD(testGetT) {
-            Line line = Line(Vector2f(), Vector2f(1, 1));
+            Segment line = Segment(Vector2f(), Vector2f(1, 1));
 
             Assert::AreEqual(1.f, line.getT(Vector2f(1, 1)));
             Assert::AreEqual(0.f, line.getT(Vector2f(0, 0)));
@@ -173,17 +198,17 @@ namespace PGlitchTest
         }
 
         TEST_METHOD(testGetTAxisAligned) {
-            Line line = Line(Vector2f(), Vector2f(0, 5));
+            Segment line = Segment(Vector2f(), Vector2f(0, 5));
 
             Assert::AreEqual(.2f, line.getT(Vector2f(0, 1)));
         }
 
         TEST_METHOD(testIntersectsRect) {
-            Line line = Line(Vector2f(0, 2), Vector2f(5, 2));
+            Segment line = Segment(Vector2f(0, 2), Vector2f(5, 2));
             FloatRect rect = FloatRect(0, 0, 4, 4);
 
             Assert::IsTrue(line.intersects(rect).first);
-            Assert::IsTrue(line.intersects(rect).second <= .00001f);
+            Assert::AreEqual(0.f, line.intersects(rect).second);
 
             FloatRect rect2 = FloatRect(2, 0, 4, 4);
             Assert::IsTrue(line.intersects(rect2).first);
@@ -191,17 +216,14 @@ namespace PGlitchTest
         }
 
         TEST_METHOD(testIntersectRectNot) {
-            Line line = Line(Vector2f(0, 2), Vector2f(5, 2));
+            Segment line = Segment(Vector2f(0, 2), Vector2f(5, 2));
             FloatRect rect = FloatRect(6, 0, 4, 4);
 
             Assert::IsFalse(line.intersects(rect).first);
-
-            FloatRect rect2 = FloatRect(5, 0, 4, 4);
-            Assert::IsFalse(line.intersects(rect2).first);
         }
 
         TEST_METHOD(testInnerLine) {
-            Line line(Vector2f(0, 2), Vector2f(5, 2));
+            Segment line(Vector2f(0, 2), Vector2f(5, 2));
             FloatRect rect(3, -2, 4, 5);
 
             Assert::IsTrue(line.findInnerLine(rect).first);
@@ -209,8 +231,18 @@ namespace PGlitchTest
             Assert::AreEqual(.6f, line.intersects(line.findInnerLine(rect).second).second);
         }
 
+        TEST_METHOD(testInnerLineCollinear) {
+            Segment line(Vector2f(0, 0), Vector2f(5, 0));
+            FloatRect rect(2, 0, 2, 2);
+
+            pair<bool, Segment> innerLine = line.findInnerLine(rect);
+            Assert::IsTrue(innerLine.first);
+            Assert::AreEqual(Vector2f(2, 0), innerLine.second.start());
+            Assert::AreEqual(Vector2f(4, 0), innerLine.second.end());
+        }
+
         TEST_METHOD(testInnerLineExterior) {
-            Line line(Vector2f(0, 2), Vector2f(10, 2));
+            Segment line(Vector2f(0, 2), Vector2f(10, 2));
             FloatRect rect(3, -2, 4, 5);
 
             Assert::IsTrue(line.findInnerLine(rect).first);
@@ -254,4 +286,5 @@ namespace PGlitchTest
 
         }
     };
+
 }

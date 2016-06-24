@@ -9,9 +9,7 @@
 #include "SensorCollider.h"
 #include "Character.h"
 #include "GameState.h"
-#include "Platform.h"
 #include "GameInfo.h"
-#include "PolygonalCollider.h"
 
 using namespace Physics;
 
@@ -40,13 +38,13 @@ int main()
     player.setSize(Vector2f(32/ppu, 72/ppu));
     player.setPosition(Vector2f(50,0));
 
-    Platform ground = Platform(PillarCollider::uniformDepth({-.5f,-2.5f,-4.5f,-4.5f,-4.5f,-4.5f,-2.5f, -.5f }, 
+    SimplePlatform ground = SimplePlatform(PillarCollider::uniformDepth({-.5f,-2.5f,-4.5f,-4.5f,-4.5f,-4.5f,-2.5f, -.5f }, 
         10, 0, Vector2f(17.5f, 100)));
     //PillarCollider ground2 = PillarCollider::uniformDepth({ -2,-4,-6,-8,-10,-12,-14 }, 10, 0, Vector2f(0, 400));
-    Platform ground3 = Platform(PillarCollider::uniformHeight({ 2.5f }, 500, 0, Vector2f(0, 150)));
-    Platform wall1 = Platform(PillarCollider::uniformDepth({ -50 }, .5f, 0, Vector2f(0, 100)));
-    Platform wall2 = Platform(PillarCollider::uniformDepth({ -50 }, .5f, 0, Vector2f(124.5f, 100)));
-    Platform wall3 = Platform(PillarCollider::uniformDepth({ -100 }, 100, 0, Vector2f(250, 150)));
+    SimplePlatform ground3 = SimplePlatform(PillarCollider::uniformHeight({ 2.5f }, 500, 0, Vector2f(0, 150)));
+    SimplePlatform wall1 = SimplePlatform(PillarCollider::uniformDepth({ -50 }, .5f, 0, Vector2f(0, 100)));
+    SimplePlatform wall2 = SimplePlatform(PillarCollider::uniformDepth({ -50 }, .5f, 0, Vector2f(124.5f, 100)));
+    SimplePlatform wall3 = SimplePlatform(PillarCollider::uniformDepth({ -100 }, 100, 0, Vector2f(250, 150)));
 
     vector<float> sinValues = {};
     vector<Vector2f> sinValues2 = {};
@@ -62,34 +60,52 @@ int main()
     PillarCollider curve1 = PillarCollider::uniformDepth(sinValues, 1, amplitude, Vector2f(-75, 200));
     //Testing platform
     PillarCollider ground4 = PillarCollider::uniformHeight({ 13.f}, 20, 0, Vector2f(-20, 50));
-    Platform p1 = Platform(ground4, Vector2f(15, 0), 1.f, PlatformType::THICK);
+    SimplePlatform p1 = SimplePlatform(ground4, Vector2f(15, 0), 1.f, PlatformType::THICK);
 
-    Platform p2 = Platform(ground4, Vector2f(0, -101.75f), .5f, PlatformType::THICK);
-    Platform p3 = Platform(ground4, Vector2f(0, -55.5f), .9f, PlatformType::THICK);
-    Platform p4 = Platform(ground4, Vector2f(0, -271.25f), .2f, PlatformType::THICK);
+    SimplePlatform p2 = SimplePlatform(ground4, Vector2f(0, -101.75f), .5f, PlatformType::THICK);
+    SimplePlatform p3 = SimplePlatform(ground4, Vector2f(0, -55.5f), .9f, PlatformType::THICK);
+    SimplePlatform p4 = SimplePlatform(ground4, Vector2f(0, -271.25f), .2f, PlatformType::THICK);
 
     p1.position(Vector2f(0, 148));
     p2.position(Vector2f(150, 137.f));
     p3.position(Vector2f(180, 100));
     p4.position(Vector2f(210, 137.5f));
 
-    PlatformPtr g1(new AffinePlatform(PolygonalCollider(FloatRect(0, 50, 500, 2.5))));
-    PlatformPtr g2(new AffinePlatform(PolygonalCollider(FloatRect(0, 0, 100, 100))));
-    PlatformPtr windmill(new AffinePlatform(PolygonalCollider(FloatRect(0, 0, 50, 10)), PlatformType::THICK, 90.f));
+    PlatformPtr g1(new AffinePlatform(FreeformCollider(FloatRect(0, 50, 500, 2.5))));
+    PlatformPtr g2(new AffinePlatform(FreeformCollider(FloatRect(0, 0, 100, 100))));
+    FreeformCollider windmillCollider = FreeformCollider(FloatRect(0, 0, 50, 10));
+    Vector2f windmillPosition(80, 0);
+    PlatformPtr windmill(new AffinePlatform(windmillCollider, PlatformType::SOLID, -75.f));
+    AffinePlatform* blade1 = new AffinePlatform(windmillCollider, PlatformType::SOLID, -75.f);
+    AffinePlatform* blade2 = new AffinePlatform(windmillCollider, PlatformType::SOLID, -75.f);
+    AffinePlatform* blade3 = new AffinePlatform(windmillCollider, PlatformType::SOLID, -75.f);
+    blade1->angle(180); blade1->position(windmillPosition);
+    blade2->angle(90); blade2->position(windmillPosition);
+    blade3->angle(270); blade3->position(windmillPosition);
+
 
     PlatformPtr curve(new AffinePlatform(sinValues2));
-    PlatformPtr g3(new Platform(ground4, Vector2f(-15, 0), 1.f, PlatformType::THICK));
-    curve->position(Vector2f(-75, 100));
-    windmill->position(Vector2f(90, 25));
-    g2->position(Vector2f(140, -50));
+    PlatformPtr g3(new SimplePlatform(ground4, Vector2f(0, 15), 3.f, PlatformType::THICK));
+    PlatformPtr g4(new SimplePlatform(ground4, Vector2f(0, -75.f), .8f, PlatformType::THICK));
+    PlatformPtr g5(new SimplePlatform(ground4, Vector2f(0, -50.5f), .9f, PlatformType::THICK));
+    PlatformPtr g6(new SimplePlatform(ground4, Vector2f(0, -150.25f), .3f, PlatformType::THICK));
+    PlatformPtr g7(new SimplePlatform(ground4, Vector2f(250, 0), 1.5f, PlatformType::THICK));
+    curve->position(Vector2f(-75, 150));
+    windmill->position(windmillPosition);
+    g2->position(Vector2f(200, -50));
+    g4->position(Vector2f(180, -25));
+    g5->position(Vector2f(330, -10.f));
+    g6->position(Vector2f(370, -57.5f));
+    g7->position(Vector2f(350, 45));
 
     //std::vector<Platform> platforms = { ground, ground3, wall1, wall2, wall3, curve1, p1, p2, p3, p4 };
     std::vector<PillarCollider> pillars = {};
-    std::vector<PlatformPtr> pforms = {g1, curve, windmill, g2, g3};
+    std::vector<PlatformPtr> pforms = {g1, curve, windmill, g2, g3, g4, g5, g6, g7 ,PlatformPtr(blade1), PlatformPtr(blade2), PlatformPtr(blade3)};
+    //std::vector<PlatformPtr> pforms = { g1, g3 };
 
        
-    //PolygonalCollider poly = PolygonalCollider({ { 2,0 },{ 2, -3 },{ 4, -6 },{ 6, -3 },{ 6, 0 } });
-    
+    //FreeformCollider poly = FreeformCollider({ { 2,0 },{ 2, -3 },{ 4, -6 },{ 6, -3 },{ 6, 0 } });
+    GameState::time().timeScale(1);
     float theta = 0;
     float x = 0;
     while (window.isOpen())
@@ -125,14 +141,15 @@ int main()
         View view = window.getView();
         view.setCenter(player.position()*ppu);
         window.setView(view);
-        window.draw(player);
+        
 
         for (PlatformPtr& ptr : pforms) {
             window.draw(*ptr);
         }
+        window.draw(player);
 
         
-        //poly.draw(PolygonalColliderInfo(player.position(), theta, Vector2f()), window, sf::RenderStates::Default, Color::White);
+        //poly.draw(FreeformColliderInfo(player.position(), theta, Vector2f()), window, sf::RenderStates::Default, Color::White);
         //Line l = Line(player.position(), 0, 100.f);
         //l.draw(sf::Color::Green, window);
         window.display();
