@@ -30,6 +30,18 @@ namespace PGlitchTest
 	TEST_CLASS(PolygonTest)
 	{
 	public:
+        TEST_METHOD(testContainsPoint) {
+            vector<Vector2f> points = { Vector2f(0,0), Vector2f(1,0), Vector2f(.5, .5f) };
+            Polygon triangle(points);
+
+            Assert::IsTrue(triangle.containsPoint(Vector2f(.5f, .1f)));
+        }
+        TEST_METHOD(testContainsPointNot) {
+            vector<Vector2f> points = { Vector2f(0,0), Vector2f(1,0), Vector2f(.5, .5f) };
+            Polygon triangle(points);
+
+            Assert::IsFalse(triangle.containsPoint(Vector2f(-1, -1)));
+        }
 		TEST_METHOD(testInnerLine)
 		{
             vector<Vector2f> points = { Vector2f(0,0), Vector2f(1,0), Vector2f(.5, .5f) };

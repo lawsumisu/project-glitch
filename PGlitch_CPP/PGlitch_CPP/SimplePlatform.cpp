@@ -46,6 +46,11 @@ vector<Segment> SimplePlatform::collides(Polygon& shape) const {
     for (size_t i = 0; i < segments.size(); ++i) segments[i] = segments[i].transform(T);
     return segments;
 }
+
+bool SimplePlatform::contains(Vector2f& v) const {
+    return _pillars.contains(v, T);
+}
+
 float SimplePlatform::groundAngle(const sf::FloatRect& rect) const {
     Vector2f LR = linearRegression(_pillars.findSurfacePoints(T, rect));
     if (isnan(LR.y)) return 0;
@@ -62,4 +67,8 @@ void SimplePlatform::position(const Vector2f& newPosition) {
 
 void SimplePlatform::draw(RenderTarget& target, RenderStates states, bool debug) const {
     _pillars.draw(T, target, states, Color::White, debug);
+}
+
+void SimplePlatform::draw(const Color& color, RenderTarget& target, RenderStates states) const {
+    _pillars.draw(T, target, states, color, false);
 }

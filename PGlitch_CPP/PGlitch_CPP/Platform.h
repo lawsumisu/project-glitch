@@ -30,8 +30,17 @@ public:
     virtual float groundAngle(const sf::FloatRect& rect) const = 0;
     void draw(sf::RenderTarget& target, sf::RenderStates states)const { draw(target, states, true); }
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const = 0;
+    virtual void draw(const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states) const = 0;
     virtual const sf::Transform& transform() const = 0;
     virtual std::vector<CustomUtilities::Segment> collides(Polygon& shape) const = 0;
+
+    /// <summary>
+    /// Checks whether or a not a point exists within this platform.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
+    virtual bool contains(sf::Vector2f& v) const = 0;
+
     PlatformType type() const { return _type; }
 };
 
@@ -79,10 +88,13 @@ public:
     std::pair<bool, float> collides(const sf::FloatRect& rect, SurfaceType type, bool findExterior) const;
     std::vector<sf::Vector2f> collides(const sf::FloatRect& rect) const;
     std::pair<bool, float> collides(const Segment& line) const;
+    bool contains(sf::Vector2f& v) const;
 
     std::vector<CustomUtilities::Segment> collides(Polygon& shape) const;
     float groundAngle(const sf::FloatRect& rect) const;
     void draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const;
+    void draw(const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states) const;
+    
 };
 
 class AffinePlatform : public Platform {
@@ -116,10 +128,12 @@ public:
     std::pair<bool, float> collides(const sf::FloatRect& rect, SurfaceType type, bool findExterior) const;
     std::vector<sf::Vector2f> collides(const sf::FloatRect& rect) const;
     std::pair<bool, float> collides(const Segment& line) const;
+    bool contains(sf::Vector2f& v) const;
 
     std::vector<CustomUtilities::Segment> collides(Polygon& shape) const;
     float groundAngle(const sf::FloatRect& rect) const;
     void draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const;
+    void draw(const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states) const;
 
 };
 

@@ -173,6 +173,10 @@ vector<Segment> FreeformCollider::intersects(const Polygon& shape, const sf::Tra
     for (size_t i = 0; i < segments.size(); ++i) segments[i] = segments[i].transform(T);
     return segments;
 }
+
+bool FreeformCollider::contains(Vector2f& v, const Transform& localToWorld) const {
+    return colliderShape.containsPoint(localToWorld.getInverse().transformPoint(v));
+}
 vector<Vector2f> FreeformCollider::findSurfacePoints(const Transform& info, const FloatRect& rect) const {
     FloatRect effectiveMaxBounds = info.transformRect(maxBounds);
 

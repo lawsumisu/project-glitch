@@ -37,14 +37,11 @@ Polygon::Polygon(const vector<Vector2f>& points, const Transform& T) {
 }
 Polygon::Polygon(const vector<Vector2f>& points) : Polygon(points, Transform::Identity){}
 
-Polygon::Polygon(FloatRect& rect) {
-    points = toPoints(rect);
-    maxBounds = rect;
-}
+Polygon::Polygon(FloatRect& rect) : Polygon(toPoints(rect), Transform::Identity) {}
 
 bool Polygon::containsPoint(const Vector2f& v) const {
     //Detect internal points by calculating the winding number of the shape given this point.
-    int windingNumber = 0;
+    /*int windingNumber = 0;
     for (size_t i = 0; i < points.size(); ++i) {
         //Detect intersections between this shape's edges and a horizontal line originating from v.
         Vector2f p = points[i], q = points[(i + 1) % points.size()];
@@ -62,7 +59,9 @@ bool Polygon::containsPoint(const Vector2f& v) const {
             if (v.x < ix) --windingNumber;
         }
     }
-    return windingNumber != 0;
+    return windingNumber != 0;*/
+    if (!maxBounds.contains(v)) return false;
+    else return quadtree.getWindingNumber(v) != 0;
 }
 
 pair<bool, float> Polygon::intersects(const Segment& line) const {
@@ -323,6 +322,36 @@ vector<Segment> Polygon::PolygonalQuadtree::findOverlappingLines(Polygon& shape)
     return output;
 }
 
+int Polygon::PolygonalQuadtree::getWindingNumber(const Vector2f& v) const {
+    //Count winding number from elements stored at this node.
+    int windingNumber = 0;
+    for (auto& element : elements) {
+        //Detect intersections between this shape's edges and a horizontal line originating from v.
+        Vector2f p = element.start(), q = element.end();
+        if (q.y > p.y) {
+            //Upward edge, so omit intersections exactly with q.
+            if (v.y >= q.y || v.y < p.y) continue;
+            float ix = (v.y - p.y) * (q.x - p.x) / (q.y - p.y) + p.x;
+            if (v.x < ix) ++windingNumber;
+        }
+        else if (p.y > q.y) {
+            //Downward edge, so omit start point from potential intersection.
+            if (v.y >= p.y || v.y < q.y) continue;
+            float ix = (v.y - p.y) * (q.x - p.x) / (q.y - p.y) + p.x;
+            if (v.x < ix) --windingNumber;
+        }
+    }
+    //Recurse on all nodes that can contain a point w such that w.x >= x and w.y == v.y.
+    for (auto& node : nodes) {
+        if (node) {
+            if (node->bounds.top <= v.y && node->bounds.top + node->bounds.height >= v.y && node->bounds.left + node->bounds.width >= v.x) {
+                windingNumber += node->getWindingNumber(v);
+            }
+        }
+    }
+
+    return windingNumber;
+}
 void Polygon::PolygonalQuadtree::draw(RenderTarget& target, RenderStates states) const {
     if (drawColor != Color::Black) CustomUtilities::draw(bounds, drawColor, target, states);
     //CustomUtilities::draw(bounds, Color::Blue, target, states);

@@ -48,6 +48,10 @@ vector<Segment> AffinePlatform::collides(Polygon& shape) const {
     return collider.intersects(shape, T);
 }
 
+bool AffinePlatform::contains(Vector2f& v) const {
+    return collider.contains(v, T);
+}
+
 void AffinePlatform::angle(float newAngle) {
     if (_angle != newAngle) {
         _angle = newAngle;
@@ -71,4 +75,8 @@ void AffinePlatform::rotationalOffset(Vector2f newRotationalOffset) {
 
 void AffinePlatform::draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const {
     collider.draw(T, target, states, Color::White, debug);
+}
+
+void AffinePlatform::draw(const Color& color, RenderTarget& target, RenderStates states) const {
+    collider.draw(T, target, states, color, false);
 }

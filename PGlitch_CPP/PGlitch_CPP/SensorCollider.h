@@ -6,6 +6,7 @@
 #include "RectUtility.h"
 #include "Collision.h"
 #include "Platform.h"
+#include "Line.h"
 
 using namespace sf;
 using namespace CustomUtilities;
@@ -14,6 +15,16 @@ namespace Physics{
 
     class SensorCollider : public Drawable {
     private:
+
+        // Data Structure //
+        // ============== //
+
+        struct Constraint {
+            sf::FloatRect bounds;
+            std::pair<Line, Line> lines;
+
+            Constraint(sf::FloatRect& bounds, std::pair<Line, Line>& lines);
+        };
         enum class SensorType{GROUND, CEILING, LEFT, RIGHT};
         FloatRect _ceiling, _ground, _left, _right;
         FloatRect secondaryCeiling, secondaryGround, secondaryLeft, secondaryRight;
@@ -21,7 +32,8 @@ namespace Physics{
         Vector2f size;
         sf::Vector2f gROrigin, cROrigin, lROrigin, rROrigin;
 
-        std::pair<int, sf::Vector2f> findNearestWithinBounds(sf::FloatRect& bounds, SurfaceType type, std::vector<std::vector<Segment>>& segmentList) const;
+        std::pair<int, sf::Vector2f> findNearestWithinBounds(Constraint& constraints, SurfaceType type, 
+            std::vector<std::vector<Segment>>& segmentList) const;
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
         
@@ -52,6 +64,7 @@ namespace Physics{
         std::pair<int, sf::Vector2f> findNearestCollision(sf::Vector2f& cPosition, sf::Vector2f& fPosition, SurfaceType type, 
             std::vector<std::vector<Segment>>& segmentList, float xMin, float xMax, float yMin, float yMax) const;
         std::pair<int, sf::Vector2f> findNearestSurface(sf::Vector2f& fPosition, SurfaceType type, std::vector<std::vector<Segment>>& segmentList) const;
+        std::vector<PlatformPtr> within(sf::Vector2f& position, std::vector<PlatformPtr>& platforms) const;
     };
 }
 

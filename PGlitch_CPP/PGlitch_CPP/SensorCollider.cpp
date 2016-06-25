@@ -4,7 +4,6 @@
 #include "RectUtility.h"
 #include "MathUtility.h"
 #include "GameInfo.h"
-#include "Line.h"
 
 using namespace Physics;
 
@@ -261,12 +260,31 @@ vector<vector<Segment>> SensorCollider::collides(Vector2f& cPosition, Vector2f& 
     }
     return output;
 }
-pair<int, Vector2f> SensorCollider::findNearestWithinBounds(FloatRect& bounds, SurfaceType type, vector<vector<Segment>>& segmentList) const {
+
+vector<PlatformPtr> SensorCollider::within(sf::Vector2f& position, std::vector<PlatformPtr>& platforms) const {
+    FloatRect bounds = construct(position, size * .99f);
+    //Ignore ground.
+    bounds.height = bounds.height / 2;
+    vector<Vector2f> boundPoints = toPoints(bounds);
+    vector<PlatformPtr> output;
+    for (auto& ptr : platforms) {
+        for (auto& v : boundPoints) {
+            //If found at least one point, add corresponding platform, and move on to next one.
+            if (ptr->contains(v)) {
+                output.push_back(ptr);
+                break;
+            }
+        }
+    }
+    return output;
+}
+pair<int, Vector2f> SensorCollider::findNearestWithinBounds(Constraint& constraint, SurfaceType type, vector<vector<Segment>>& segmentList) const {
     Vector2f nearestCollision;
     int ncIndex = -1;
     for (size_t i = 0; i < segmentList.size(); ++i) {
         for (size_t j = 0; j < segmentList[i].size(); ++j) {
-            pair<bool, Segment> innerLine = segmentList[i][j].findInnerLine(bounds);
+            if (type == SurfaceType::GROUND && segmentList[i][j].start().x == segmentList[i][j].end().x) continue;
+            pair<bool, Segment> innerLine = segmentList[i][j].findInnerLine(constraint.bounds);
             if (innerLine.first) {
                 vector<Vector2f> points = { innerLine.second.start(), innerLine.second.end() };
                 for (auto& p : points) {
@@ -343,7 +361,8 @@ pair<int, Vector2f> SensorCollider::findNearestCollision(Vector2f& cPosition, Ve
     }
     //Now find the nearest collision.
     FloatRect searchBounds(xMin, yMin, xMax - xMin, yMax - yMin);
-    return findNearestWithinBounds(searchBounds, type, segmentList);
+    pair<Line, Line> lines = { lineA, lineB };
+    return findNearestWithinBounds(Constraint(searchBounds, lines), type, segmentList);
 }
 
 pair<int, Vector2f> SensorCollider::findNearestSurface(Vector2f& fPosition, SurfaceType type, vector<vector<Segment>>& segmentList) const {
@@ -368,7 +387,8 @@ pair<int, Vector2f> SensorCollider::findNearestSurface(Vector2f& fPosition, Surf
     }
 
     FloatRect searchBounds(relativeOrigin.x + fPosition.x, relativeOrigin.y + fPosition.y, sensorDimensions.x, sensorDimensions.y);
-    return findNearestWithinBounds(searchBounds, type, segmentList);
+    pair<Line, Line> lines = { Line(0,0,0), Line(0,0,0) };
+    return findNearestWithinBounds(Constraint(searchBounds, lines), type, segmentList);
 }
 
 void SensorCollider::draw(sf::RenderTarget& target, sf::RenderStates states) const {
@@ -385,3 +405,8 @@ void SensorCollider::draw(sf::RenderTarget& target, sf::RenderStates states) con
     CustomUtilities::draw(secondaryLeft, Color(0, 0, 255, opacity), target, states);*/
 
 }
+
+// Constraints Definitions //
+// ======================= //
+
+SensorCollider::Constraint::Constraint(FloatRect& bounds, pair<Line, Line>& lines) : bounds(bounds), lines(lines) {}

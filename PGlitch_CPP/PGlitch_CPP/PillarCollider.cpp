@@ -124,6 +124,12 @@ pair<bool, float> PillarCollider::intersects(const Transform& T, const FloatRect
     else return{ foundIntersection, T.transformPoint(Vector2f(nearestValue, 0)).x};
 }
 
+bool PillarCollider::contains(Vector2f& v, const Transform& localToWorld) const {
+    Vector2f w = localToWorld.getInverse().transformPoint(v);
+    int i = (int)((w.x - _origin.x) / _width);
+    if (i < 0 || i >= pillars.size()) return false;
+    else return pillars[i].contains(w);
+}
 vector<Vector2f> PillarCollider::findSurfacePoints(const Transform& T, const FloatRect& rect) const{
     FloatRect effectiveRect = T.getInverse().transformRect(rect);
 

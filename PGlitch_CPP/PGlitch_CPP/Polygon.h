@@ -66,6 +66,13 @@ private:
         std::pair<bool, float> intersects(const CustomUtilities::Segment& segment) const;
 
         /// <summary>
+        /// Gets the winding number of a point within this quadtree with respect to all of its contained elements.
+        /// </summary>
+        /// <param name="segment"></param>
+        /// <returns></returns>
+        int getWindingNumber(const sf::Vector2f& v) const;
+
+        /// <summary>
         /// Returns a subset of segments within this shape that overlap the input shape.
         /// </summary>
         std::vector<CustomUtilities::Segment> findOverlappingLines(Polygon& shape) const;

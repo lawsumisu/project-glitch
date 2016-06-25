@@ -87,6 +87,12 @@ namespace Physics {
         /// <param name="shape"></param>
         /// <returns></returns>
         std::vector<CustomUtilities::Segment> intersects(Polygon& shape) const;
+
+        /// <summary>
+        /// Checks if this collider contains a specified point.
+        /// </summary>
+        bool contains(sf::Vector2f& v, const sf::Transform& localToWorld) const;
+
         VertexArray toOutline() const;
 
         /// <summary>

@@ -65,6 +65,7 @@ private:
     float afterimageDelay = .05f;
     float lastAfterimageTime = 0;
     float breakingDuration = .22f, breakingStartTime;
+    vector<PlatformPtr> ghostingPlatforms;
 
     // Platforms
     Vector2f localPosition;
@@ -260,7 +261,7 @@ void Character::updateState() {
     else acceleration.y = 0;
 
     if (current.containsIgnoreStrength(PlayerInput(InputCode::B8, InputType::PRESS))) {
-        applyHit(35, 24, 1.1f, degToRad(90));
+        applyHit(35, 24, 1.1f, degToRad(0));
         cout << knockback.toString() << endl;
     }
 
@@ -306,7 +307,10 @@ void Character::updateKinematics() {
 }
 
 void Character::updateCollisions2(vector<PlatformPtr>& platforms) {
-    
+    //Check for GHOST
+    if (isBreaking) return;
+    bool ghosting = buffer.current().isDown(InputCode::B6);
+
     vector<vector<Segment>> collisions = sensor.collides(_position, fPosition, platforms);
     currentSegments = collisions;
     float xMin = -FLT_MAX, xMax = FLT_MAX, yMin = -FLT_MAX, yMax = FLT_MAX;
@@ -315,14 +319,17 @@ void Character::updateCollisions2(vector<PlatformPtr>& platforms) {
     //Check horizontal collisions.
     pair<int, Vector2f> rightNC = sensor.findNearestCollision(_position, fPosition, SurfaceType::RIGHT, collisions, xMin, xMax, yMin, yMax);
     pair<int, Vector2f> leftNC = sensor.findNearestCollision(_position, fPosition, SurfaceType::LEFT, collisions, xMin, xMax, yMin, yMax);
+    float newX;
     if (rightNC.first >= 0) {
         xMax = rightNC.second.x;
-        fPosition.x = clamp(xMax - _size.x / 2, _position.x, fPosition.x);
-        velocity.x = 0;
+        newX = clamp(xMax - _size.x / 2, _position.x, fPosition.x);
     }   
     else if (leftNC.first >= 0) {
         xMin = leftNC.second.x;
-        fPosition.x = clamp(xMin + _size.x / 2, _position.x, fPosition.x);
+        newX = clamp(xMin + _size.x / 2, _position.x, fPosition.x);
+    }
+    if (!ghosting && (rightNC.first >= 0 || leftNC.first >= 0)) {
+        fPosition.x = newX;
         velocity.x = 0;
     }
 
@@ -338,17 +345,30 @@ void Character::updateCollisions2(vector<PlatformPtr>& platforms) {
     }
 
     //Now, update position based on objects colliding with player at future position.
-
+    Vector2f modifiedFPosition = fPosition;
+    if (ghosting && (leftNC.first >= 0 || rightNC.first >= 0)) {
+        modifiedFPosition.x = newX;
+    }
     //Horizontal Checks
-    pair<int, Vector2f> rightNS = sensor.findNearestSurface(fPosition, SurfaceType::RIGHT, collisions);
-    pair<int, Vector2f> leftNS = sensor.findNearestSurface(fPosition, SurfaceType::LEFT, collisions);
+    pair<int, Vector2f> rightNS = sensor.findNearestSurface(modifiedFPosition, SurfaceType::RIGHT, collisions);
+    pair<int, Vector2f> leftNS = sensor.findNearestSurface(modifiedFPosition, SurfaceType::LEFT, collisions);
+    bool wallOnRight = rightNS.first >= 0, wallOnLeft = leftNS.first >= 0;
     if (rightNS.first >= 0) {
-        fPosition.x = rightNS.second.x - _size.x / 2;
-        cout << "On your right." << endl;
+        newX = rightNS.second.x - _size.x / 2;
+        //cout << "On your right." << endl;
     }
     else if (leftNS.first >= 0) {
-        fPosition.x = leftNS.second.x + _size.x / 2;
-        cout << "On your left." << endl;
+        newX = leftNS.second.x + _size.x / 2;
+        //cout << "On your left." << endl;
+    }
+
+    // If ghosting, pass through collisions, but set ghost if necessary.
+    if (ghosting && (wallOnLeft || wallOnRight || rightNC.first >= 0 || leftNC.first >= 0)) {
+        startGhosting(Vector2f(newX, ghostPosition.y));
+    }
+    else if (wallOnLeft || wallOnRight) {
+        fPosition.x = newX;
+        velocity.x = 0;
     }
 
     //Vertical Checks
@@ -387,14 +407,25 @@ void Character::updateCollisions2(vector<PlatformPtr>& platforms) {
        
     }
     else if (ceilingNS.first >= 0 && !isGrounded() && (velocity + knockback.velocity(GameState::time().timestamp())).y < 0) {
-        fPosition.y = ceilingNS.second.y + _size.y / 2;
-        velocity.y = max(0.f, velocity.y);
+        float newY = ceilingNS.second.y + _size.y / 2;
+        if (ghosting) {
+            startGhosting(Vector2f(ghostPosition.x, newY));
+        }
+        else {
+            fPosition.y = newY;
+            velocity.y = max(0.f, velocity.y);
+        }
     }
+    
 
     _position = fPosition;
     sensor.setCenter(_position);
     if (currentPlatform) localPosition = currentPlatform->transform().getInverse().transformPoint(_position);
     else localPosition = _position;
+    
+    //Update platforms currently ghosting through.
+    ghostingPlatforms = sensor.within(fPosition, platforms);
+    updateGhost(_position);
 
  }
 void Character::updateCollisions(std::vector<PlatformPtr>& colliders) {
@@ -607,16 +638,20 @@ void Character::updateCollisions(std::vector<PlatformPtr>& colliders) {
 
 void Character::startGhosting(Vector2f& newGhostPosition) {
     if (!ghostIsAttached) return;
-    else {
-        ghostIsAttached = false;
+    else {        
         ghostPositions = {};
-        updateGhost(newGhostPosition);
+        ghostPosition = newGhostPosition;
+        ghostIsAttached = false;
     }
 }
 
 void Character::updateGhost(Vector2f& newGhostPosition) {
-    if (ghostIsAttached) return;
-    if (GameState::time().timestamp() - lastAfterimageTime >= afterimageDelay) {
+    ghostIsAttached = ghostIsAttached || ghostingPlatforms.size() == 0;
+    if (ghostIsAttached) {
+        ghostPosition = _position;
+        return;
+    }
+    else if (GameState::time().timestamp() - lastAfterimageTime >= afterimageDelay) {
         ghostPositions.push(newGhostPosition);
         lastAfterimageTime = GameState::time().timestamp();
     }
@@ -693,6 +728,9 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states, bool deb
         ray.draw(Color::Red, target, states);
         for (vector<Segment> segmentList : currentSegments) {
             for (auto& s : segmentList) s.draw(Color::Yellow, target, states);
+        }
+        for (auto& ptr : ghostingPlatforms) {
+            ptr->draw(Color::Cyan, target, states);
         }
     }   
     

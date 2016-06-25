@@ -67,6 +67,13 @@ public:
 
     std::vector<CustomUtilities::Segment> intersects(const Polygon& shape, const sf::Transform& T) const;
 
+    /// <summary>
+    /// Checks if a point is located within this collider.
+    /// </summary>
+    /// <param name="v"></param>
+    /// <returns></returns>
+    bool contains(sf::Vector2f& v, const sf::Transform& localToWorld) const;
+
     std::vector<sf::Vector2f> findSurfacePoints(const sf::Transform& T, const sf::FloatRect& rect) const;
 
     std::vector<sf::Vector2f> findInteriorPoints(const sf::Transform& T, const sf::FloatRect& rect) const;
