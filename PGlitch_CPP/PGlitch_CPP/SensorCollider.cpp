@@ -249,18 +249,32 @@ Polygon SensorCollider::getCollider(Vector2f cPosition, Vector2f fPosition) cons
         return Polygon(points);
     }
 }
-vector<vector<Segment>> SensorCollider::collides(Vector2f& cPosition, Vector2f& fPosition, const vector<PlatformPtr>& platforms) const {
+vector<pair<PlatformPtr, vector<Segment>>> SensorCollider::collides(Vector2f& cPosition, Vector2f& fPosition, const vector<PlatformPtr>& platforms) const {
     Polygon colliderShape = getCollider(cPosition, fPosition);
-    vector<vector<Segment>> output;
+    vector<pair<PlatformPtr, vector<Segment>>> output;
     size_t count = 0;
     for (size_t i = 0; i < platforms.size(); ++i) {
         PlatformPtr ptr = platforms[i];
         vector<Segment> segments = ptr->collides(colliderShape);
-        output.push_back(segments);
+        output.push_back({ ptr, segments });
     }
     return output;
 }
 
+bool SensorCollider::within(sf::Vector2f& position, PlatformPtr& ptr, vector<Vector2f>& boundPoints) const {
+    for (auto& v : boundPoints) {
+        if (ptr->contains(v)) return true;
+    }
+    return false;
+}
+
+bool SensorCollider::within(Vector2f& position, PlatformPtr& ptr) const {
+    FloatRect bounds = construct(position, size * .99f);
+    //Ignore ground.
+    bounds.height = bounds.height / 2;
+    vector<Vector2f> boundPoints = toPoints(bounds);
+    return within(position, ptr, boundPoints);
+}
 vector<PlatformPtr> SensorCollider::within(sf::Vector2f& position, std::vector<PlatformPtr>& platforms) const {
     FloatRect bounds = construct(position, size * .99f);
     //Ignore ground.
@@ -268,23 +282,24 @@ vector<PlatformPtr> SensorCollider::within(sf::Vector2f& position, std::vector<P
     vector<Vector2f> boundPoints = toPoints(bounds);
     vector<PlatformPtr> output;
     for (auto& ptr : platforms) {
-        for (auto& v : boundPoints) {
-            //If found at least one point, add corresponding platform, and move on to next one.
-            if (ptr->contains(v)) {
-                output.push_back(ptr);
-                break;
-            }
-        }
+        if (within(position, ptr, boundPoints)) output.push_back(ptr);
     }
     return output;
 }
-pair<int, Vector2f> SensorCollider::findNearestWithinBounds(Constraint& constraint, SurfaceType type, vector<vector<Segment>>& segmentList) const {
+vector<pair<size_t, Vector2f>> SensorCollider::findNearestWithinBounds(Constraint& constraint, SurfaceType type, 
+    vector<pair<PlatformPtr, vector<Segment>>>& segmentList) const {
+    vector<pair<size_t, Vector2f>> output;
     Vector2f nearestCollision;
     int ncIndex = -1;
     for (size_t i = 0; i < segmentList.size(); ++i) {
-        for (size_t j = 0; j < segmentList[i].size(); ++j) {
-            if (type == SurfaceType::GROUND && segmentList[i][j].start().x == segmentList[i][j].end().x) continue;
-            pair<bool, Segment> innerLine = segmentList[i][j].findInnerLine(constraint.bounds);
+        Vector2f ithNearestCollision;
+        bool foundCollision = false;
+        if (type != SurfaceType::GROUND && (segmentList[i].first->type() == PlatformType::THICK || segmentList[i].first->type() == PlatformType::THIN)) {
+            continue;
+        }
+        for (size_t j = 0; j < segmentList[i].second.size(); ++j) {
+            //if (type == SurfaceType::GROUND && segmentList[i][j].start().x == segmentList[i][j].end().x) continue;
+            pair<bool, Segment> innerLine = segmentList[i].second[j].findInnerLine(constraint.bounds);
             if (innerLine.first) {
                 vector<Vector2f> points = { innerLine.second.start(), innerLine.second.end() };
                 for (auto& p : points) {
@@ -296,15 +311,24 @@ pair<int, Vector2f> SensorCollider::findNearestWithinBounds(Constraint& constrai
                         nearestCollision = p;
                         ncIndex = i;
                     }
+                    if (!foundCollision ||
+                        (type == SurfaceType::GROUND && p.y < ithNearestCollision.y) ||
+                        (type == SurfaceType::CEILING && p.y > ithNearestCollision.y) ||
+                        (type == SurfaceType::RIGHT && p.x < ithNearestCollision.x) ||
+                        (type == SurfaceType::LEFT && p.x > ithNearestCollision.x)) {
+                        ithNearestCollision = p;
+                        foundCollision = true;
+                    }
                 }
             }
-
         }
+        if (foundCollision) output.push_back({ i, ithNearestCollision });
     }
-    return{ ncIndex, nearestCollision };
+    if (output.size() > 0) output.push_back({ ncIndex, nearestCollision });
+    return output;
 }
-pair<int, Vector2f> SensorCollider::findNearestCollision(Vector2f& cPosition, Vector2f& fPosition, SurfaceType type, 
-    vector<vector<Segment>>& segmentList, float xMin, float xMax, float yMin, float yMax) const {
+vector<pair<size_t, Vector2f>> SensorCollider::findNearestCollision(Vector2f& cPosition, Vector2f& fPosition, SurfaceType type, 
+    vector<pair<PlatformPtr, vector<Segment>>>& segmentList, float xMin, float xMax, float yMin, float yMax) const {
 
     //cout << xMin << " " << xMax << " " << yMin << " " << yMax << endl;
     Vector2f diff = fPosition - cPosition;
@@ -365,7 +389,8 @@ pair<int, Vector2f> SensorCollider::findNearestCollision(Vector2f& cPosition, Ve
     return findNearestWithinBounds(Constraint(searchBounds, lines), type, segmentList);
 }
 
-pair<int, Vector2f> SensorCollider::findNearestSurface(Vector2f& fPosition, SurfaceType type, vector<vector<Segment>>& segmentList) const {
+vector<pair<size_t, Vector2f>> SensorCollider::findNearestSurface(Vector2f& fPosition, SurfaceType type, 
+    vector<pair<PlatformPtr, vector<Segment>>>& segmentList) const {
     Vector2f relativeOrigin;
     Vector2f sensorDimensions;
 

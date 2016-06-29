@@ -32,8 +32,11 @@ namespace Physics{
         Vector2f size;
         sf::Vector2f gROrigin, cROrigin, lROrigin, rROrigin;
 
-        std::pair<int, sf::Vector2f> findNearestWithinBounds(Constraint& constraints, SurfaceType type, 
-            std::vector<std::vector<Segment>>& segmentList) const;
+        std::vector<std::pair<size_t, sf::Vector2f>> findNearestWithinBounds(Constraint& constraints, SurfaceType type, 
+            std::vector<pair<PlatformPtr, std::vector<Segment>>>& segmentList) const;
+
+        bool within(sf::Vector2f& position, PlatformPtr& ptr, std::vector<sf::Vector2f>& boundPoints) const;
+
         void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
         
@@ -59,12 +62,14 @@ namespace Physics{
         void setCenter(Vector2f newCenter);
 
         Polygon getCollider(sf::Vector2f cPosition, sf::Vector2f fPosition) const;
-        std::vector<std::vector<Segment>> collides(sf::Vector2f& cPosition, sf::Vector2f& fPosition, const std::vector<PlatformPtr>& platforms) const;
+        std::vector<std::pair<PlatformPtr, std::vector<Segment>>> collides(sf::Vector2f& cPosition, sf::Vector2f& fPosition, const std::vector<PlatformPtr>& platforms) const;
 
-        std::pair<int, sf::Vector2f> findNearestCollision(sf::Vector2f& cPosition, sf::Vector2f& fPosition, SurfaceType type, 
-            std::vector<std::vector<Segment>>& segmentList, float xMin, float xMax, float yMin, float yMax) const;
-        std::pair<int, sf::Vector2f> findNearestSurface(sf::Vector2f& fPosition, SurfaceType type, std::vector<std::vector<Segment>>& segmentList) const;
+        std::vector<std::pair<size_t, sf::Vector2f>> findNearestCollision(sf::Vector2f& cPosition, sf::Vector2f& fPosition, SurfaceType type, 
+            std::vector<std::pair<PlatformPtr, std::vector<Segment>>>& segmentList, float xMin, float xMax, float yMin, float yMax) const;
+        std::vector<std::pair<size_t, sf::Vector2f>> findNearestSurface(sf::Vector2f& fPosition, SurfaceType type, 
+            std::vector<std::pair<PlatformPtr, std::vector<Segment>>>& segmentList) const;
         std::vector<PlatformPtr> within(sf::Vector2f& position, std::vector<PlatformPtr>& platforms) const;
+        bool within(sf::Vector2f& position, PlatformPtr& ptr) const;
     };
 }
 
