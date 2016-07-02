@@ -33,6 +33,21 @@ SensorCollider::SensorCollider(Vector2f& center, Vector2f& size, Vector2f& horiz
     secondaryLeft = FloatRect(_left.left, center.y - size.y / 2, _left.width, size.y);
     secondaryRight = FloatRect(_right.left, center.y - size.y / 2, _right.width, size.y);
 }
+
+SensorCollider::SensorCollider(Vector2f& center, Vector2f& size, float armLength, float legLength): center(center), size(size) {
+    Vector2f hDimensions(size.x / 2, armLength * 2);
+    cout << toString(hDimensions) << endl;
+    _right = construct(center + Vector2f(hDimensions.x / 2, 0), hDimensions);
+    _left = construct(center - Vector2f(hDimensions.x / 2, 0), hDimensions);
+
+    _ground = construct(center + Vector2f(0, size.y / 2), Vector2f(size.x - 1, legLength * 2));
+    _ceiling = construct(center - Vector2f(0, size.y / 4), Vector2f(size.x - 1, size.y / 2));
+
+    cROrigin = Vector2f(_ceiling.left - center.x, _ceiling.top - center.y);
+    gROrigin = Vector2f(_ground.left - center.x, _ground.top - center.y);
+    lROrigin = Vector2f(_left.left - center.x, _left.top - center.y);
+    rROrigin = Vector2f(_right.left - center.x, _right.top - center.y);
+}
 Collision SensorCollider::collides(const PillarCollider& collider) const {
     vector<FloatRect> groundCollisions = collider.intersectsPillars(_ground);
     vector<FloatRect> ceilingCollisions = collider.intersectsPillars(_ceiling);
@@ -303,6 +318,7 @@ vector<pair<size_t, Vector2f>> SensorCollider::findNearestWithinBounds(Constrain
             if (innerLine.first) {
                 vector<Vector2f> points = { innerLine.second.start(), innerLine.second.end() };
                 for (auto& p : points) {
+                    //if (constraint.lines.first.sign(p) == constraint.lines.second.sign(p)) continue;
                     if (ncIndex == -1 ||
                         (type == SurfaceType::GROUND && p.y < nearestCollision.y) ||
                         (type == SurfaceType::CEILING && p.y > nearestCollision.y) ||
@@ -412,7 +428,7 @@ vector<pair<size_t, Vector2f>> SensorCollider::findNearestSurface(Vector2f& fPos
     }
 
     FloatRect searchBounds(relativeOrigin.x + fPosition.x, relativeOrigin.y + fPosition.y, sensorDimensions.x, sensorDimensions.y);
-    pair<Line, Line> lines = { Line(0,0,0), Line(0,0,0) };
+    pair<Line, Line> lines = { Line(1,0,-FLT_MAX), Line(1,0,FLT_MAX) };
     return findNearestWithinBounds(Constraint(searchBounds, lines), type, segmentList);
 }
 

@@ -45,6 +45,7 @@ namespace Physics{
         SensorCollider() : SensorCollider(Vector2f(), Vector2f(), Vector2f()){}
         SensorCollider(Vector2f& center, Vector2f& horizontalDimensions, Vector2f& verticalDimensions);
         SensorCollider(Vector2f& center, Vector2f& size, Vector2f& horizontalRange, Vector2f& verticalRange);
+        SensorCollider(Vector2f& center, Vector2f& size, float armLength, float legLength);
         Collision collides(const PillarCollider& collider) const ;
 
         Collision collides(const vector<PillarCollider>& colliders) const ;

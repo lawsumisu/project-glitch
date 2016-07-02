@@ -303,6 +303,7 @@ void Character::updateKinematics() {
     //Set raycaster angle.
     Vector2f effectiveVelocity = (fPosition - _position) / dt;
     raycaster.angle(atan2f(effectiveVelocity.y, effectiveVelocity.x));
+    //cout << raycaster.angle() << endl;
     
 }
 
@@ -323,10 +324,13 @@ void Character::updateCollisions2(vector<PlatformPtr>& platforms) {
     if (rightNC.size() > 0) {
         xMax = rightNC[rightNC.size()-1].second.x;
         newX = clamp(xMax - _size.x / 2, _position.x, fPosition.x);
+        //xMax = newX + _size.x / 2;
+        cout << "On your right" << endl;
     }   
     else if (leftNC.size() > 0) {
         xMin = leftNC[leftNC.size()-1].second.x;
         newX = clamp(xMin + _size.x / 2, _position.x, fPosition.x);
+        //xMin = newX - _size.x/2;
     }
     if (!ghosting && (rightNC.size() > 0 || leftNC.size() > 0)) {
         fPosition.x = newX;
@@ -405,8 +409,8 @@ void Character::updateCollisions2(vector<PlatformPtr>& platforms) {
         int groundIndex = -1;
         float highestGround = FLT_MAX;
         for (size_t i = 0; i < groundNS.size() - 1; ++i) {
-            if (groundNS[i].second.y < highestGround && !sensor.within(Vector2f(fPosition.x, groundNS[i].second.y - _size.y/2), 
-                platforms[groundNS[i].first])) {
+            if (groundNS[i].second.y < highestGround &&
+                !sensor.within(Vector2f(fPosition.x, groundNS[i].second.y - _size.y/2), platforms[groundNS[i].first])) {
                 highestGround = groundNS[i].second.y;
                 groundIndex = i;
             }
@@ -736,7 +740,7 @@ std::pair<InputCode, int> Character::getMotionInfo() {
 }
 
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const {
-    //target.draw(sensor, states); 
+    target.draw(sensor, states); 
     FloatRect R = construct(_position, _size);
     CustomUtilities::draw(R, Color::White, target, states);
     if (debug) {
@@ -766,7 +770,8 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const {
 void Character::setSize(Vector2f newSize) {
     _size = newSize;
     float ppu = GameInfo::pixelsPerUnit;
-    sensor = SensorCollider(_position, _size, Vector2f(_size.x / 2, 36/ppu), Vector2f(_size.x - 1 , _size.y/2 + legLength));
+    //sensor = SensorCollider(_position, _size, Vector2f(_size.x / 2, 36/ppu), Vector2f(_size.x - 1 , _size.y/2 + legLength));
+    sensor = SensorCollider(_position, _size, 18 / ppu, legLength);
 
     raycaster = RaycastCollider(_position, Vector2f(_size.y, _size.x), pi / 2, 5);
 }
