@@ -3,7 +3,6 @@
 
 using namespace sf;
 using namespace std;
-using namespace CustomUtilities;
 
 Line::Line(float a, float b, float c) : a(a), b(b), c(c){}
 Line::Line(Vector2f& p1, Vector2f& p2) : a(p2.y - p1.y), b(p1.x - p2.x), c(p1.x*p2.y - p2.x*p1.y) {}

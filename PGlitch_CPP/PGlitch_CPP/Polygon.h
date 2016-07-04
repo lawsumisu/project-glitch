@@ -3,7 +3,7 @@
 #include <SFML/System/Vector2.hpp>
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Transform.hpp>
-#include "LineUtility.h"
+#include "Segment.h"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -27,7 +27,7 @@ private:
         bool hasInner = false;
         mutable bool setColor = false;
         mutable sf::Color drawColor;
-        std::vector<CustomUtilities::Segment> elements = {};
+        std::vector<Segment> elements = {};
         sf::FloatRect bounds;
         std::vector<PolygonalQuadtree*> nodes = { nullptr, nullptr, nullptr, nullptr };
     public:
@@ -61,9 +61,9 @@ private:
         /// Inserts a segment into this quadtree.
         /// </summary>
         /// <param name="segment"></param>
-        void insert(CustomUtilities::Segment& segment);
+        void insert(Segment& segment);
 
-        std::pair<bool, float> intersects(const CustomUtilities::Segment& segment) const;
+        std::pair<bool, float> intersects(const Segment& segment) const;
 
         /// <summary>
         /// Gets the winding number of a point within this quadtree with respect to all of its contained elements.
@@ -75,7 +75,7 @@ private:
         /// <summary>
         /// Returns a subset of segments within this shape that overlap the input shape.
         /// </summary>
-        std::vector<CustomUtilities::Segment> findOverlappingLines(Polygon& shape) const;
+        std::vector<Segment> findOverlappingLines(Polygon& shape) const;
 
         void draw(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
     };
@@ -97,7 +97,7 @@ private:
     // Methods //
     // ======= //
 
-    std::pair<bool, float> intersects(const CustomUtilities::Segment& line) const;
+    std::pair<bool, float> intersects(const Segment& line) const;
 
 public:
     // ============ //
@@ -119,32 +119,34 @@ public:
     /// </summary>
     /// <param name="line"></param>
     /// <returns></returns>
-    std::pair<bool, CustomUtilities::Segment> findInnerLine(const CustomUtilities::Segment& line) const;
+    std::pair<bool, Segment> findInnerLine(const Segment& line) const;
 
-    std::vector<sf::Vector2f> findInternalPoints(const std::vector<CustomUtilities::Segment>& lines) const;
+    std::vector<sf::Vector2f> findInternalPoints(const std::vector<Segment>& lines) const;
     
-    std::vector<CustomUtilities::Segment> findInternalLines(const std::vector<CustomUtilities::Segment>& lines) const;
-    std::vector<CustomUtilities::Segment> findInternalLines(const sf::FloatRect& rect) const;
+    std::vector<Segment> findInternalLines(const std::vector<Segment>& lines) const;
+    std::vector<Segment> findInternalLines(const sf::FloatRect& rect) const;
 
     /// <summary>
     /// Returns a subset of segments within this shape that overlap the input shape.
     /// </summary>
     /// <param name="shape"></param>
     /// <returns></returns>
-    std::vector<CustomUtilities::Segment> findOverlappingLines(Polygon& shape) const;
+    std::vector<Segment> findOverlappingLines(Polygon& shape) const;
 
     /// <summary>
     /// Returns a shape that represents this shape being transformed by a transform T.
     /// </summary>
     /// <param name="T"></param>
     /// <returns></returns>
-    Polygon transform(sf::Transform& T) const;
+    Polygon transform(const sf::Transform& T) const;
 
     std::string toString() const;
 
     friend std::ostream& operator<<(std::ostream& os, const Polygon& shape);
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
+    void draw(sf::RenderTarget& target, sf::RenderStates states, const sf::Color& color) const;
 
     void drawTree(sf::RenderTarget& target, sf::RenderStates states = sf::RenderStates::Default) const;
 

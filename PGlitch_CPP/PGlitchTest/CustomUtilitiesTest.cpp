@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 #include "../PGlitch_CPP/VectorUtility.h"
 #include "../PGlitch_CPP/MathUtility.h"
-#include "../PGlitch_CPP/LineUtility.h"
+#include "../PGlitch_CPP/Segment.h"
 #include "../PGlitch_CPP/RectUtility.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -248,42 +248,6 @@ namespace PGlitchTest
             Assert::IsTrue(line.findInnerLine(rect).first);
             Logger::WriteMessage(line.findInnerLine(rect).second.toString().c_str());
             //Assert::AreEqual(.6f, line.intersects(line.findInnerLine(rect).second).second);
-        }
-    };
-
-    TEST_CLASS(RectSorterTest) {
-        TEST_METHOD(testToString) {
-            FloatRect r1(0, 0, 4, 4);
-            FloatRect r2(4, 0, 5, 2);
-            FloatRect r3(1, 0, 2, 1);
-            vector<FloatRect> rects = { r1, r2, r3 };
-            RectSorter sorter(rects);
-
-            Logger::WriteMessage(sorter.toString().c_str());
-            Logger::WriteMessage(toString(rects[0]).c_str());
-            Logger::WriteMessage(toString(rects[2]).c_str());
-            Logger::WriteMessage(toString(rects[1]).c_str());
-
-            FloatRect r(3, 1, 2, 1);
-            vector<size_t> indices = sorter.findIntersects(r);
-
-            Assert::AreEqual(2U, indices.size());
-            Assert::AreEqual(r1, rects[indices[0]]);
-            Assert::AreEqual(r2, rects[indices[1]]);
-        }
-        TEST_METHOD(testIntersectsSingle) {
-            FloatRect r1(0, 0, 5, 2);
-            vector<FloatRect>rects = { r1 };
-            RectSorter sorter(rects);
-
-            FloatRect r(1, -1, 2, 2);
-            vector<size_t> indices = sorter.findIntersects(r);
-
-            Assert::AreEqual(1U, indices.size());
-        }
-
-        TEST_METHOD(testIntersectsLast) {
-
         }
     };
 

@@ -29,7 +29,7 @@ public:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const = 0;
     virtual void draw(const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states) const = 0;
     virtual const sf::Transform& transform() const = 0;
-    virtual std::vector<CustomUtilities::Segment> collides(Polygon& shape) const = 0;
+    virtual std::vector<Segment> collides(Polygon& shape) const = 0;
 
     /// <summary>
     /// Checks whether or a not a point exists within this platform.
@@ -84,7 +84,7 @@ public:
     const sf::Transform& transform() const { return T; }
     bool contains(sf::Vector2f& v) const;
 
-    std::vector<CustomUtilities::Segment> collides(Polygon& shape) const;
+    std::vector<Segment> collides(Polygon& shape) const;
     float groundAngle(const sf::FloatRect& rect) const;
     void draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const;
     void draw(const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states) const;
@@ -121,7 +121,7 @@ public:
     }
     bool contains(sf::Vector2f& v) const;
 
-    std::vector<CustomUtilities::Segment> collides(Polygon& shape) const;
+    std::vector<Segment> collides(Polygon& shape) const;
     float groundAngle(const sf::FloatRect& rect) const;
     void draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const;
     void draw(const sf::Color& color, sf::RenderTarget& target, sf::RenderStates states) const;

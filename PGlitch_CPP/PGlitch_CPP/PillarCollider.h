@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System/Vector2.hpp>
 #include <vector>
-#include "LineUtility.h"
+#include "Segment.h"
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Transform.hpp>
 #include "Enumerators.h"
@@ -11,7 +11,6 @@
 
 using namespace sf;
 using namespace std;
-using namespace CustomUtilities;
 
 namespace Physics {
     
@@ -77,14 +76,14 @@ namespace Physics {
         /// </summary>
         /// <param name="line"></param>
         /// <returns></returns>
-        std::pair<bool, float> intersects(const CustomUtilities::Segment& line) const;
+        std::pair<bool, float> intersects(const Segment& line) const;
 
         /// <summary>
         /// Gets a list of segments such for each segment s, s.p() and s.q() are points along this collider that lie along or within the Polygon.
         /// </summary>
         /// <param name="shape"></param>
         /// <returns></returns>
-        std::vector<CustomUtilities::Segment> intersects(Polygon& shape) const;
+        std::vector<Segment> intersects(Polygon& shape) const;
 
         /// <summary>
         /// Checks if this collider contains a specified point.

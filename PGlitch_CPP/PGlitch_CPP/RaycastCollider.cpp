@@ -7,6 +7,7 @@
 
 using namespace Physics;
 using namespace sf;
+using namespace CustomUtilities;
 
 RaycastCollider::RaycastCollider(const Vector2f& origin, const Vector2f& size, float angle, size_t rayCount) {
     this->_angle = angle;

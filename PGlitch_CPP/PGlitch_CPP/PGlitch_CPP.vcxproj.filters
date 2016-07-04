@@ -105,9 +105,6 @@
     <ClInclude Include="RaycastCollider.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="LineUtility.h">
-      <Filter>Header Files\CustomUtilities</Filter>
-    </ClInclude>
     <ClInclude Include="GameInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -120,14 +117,14 @@
     <ClInclude Include="Knockback.h">
       <Filter>Header Files\Physics</Filter>
     </ClInclude>
-    <ClInclude Include="Quadtree.h">
-      <Filter>Header Files\CustomUtilities</Filter>
-    </ClInclude>
     <ClInclude Include="Line.h">
       <Filter>Header Files\Physics\Geometry</Filter>
     </ClInclude>
     <ClInclude Include="Polygon.h">
       <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Segment.h">
+      <Filter>Header Files\Physics\Geometry</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -179,9 +176,6 @@
     <ClCompile Include="JoystickBinding.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
-    <ClCompile Include="LineUtility.cpp">
-      <Filter>Source Files\CustomUtilities</Filter>
-    </ClCompile>
     <ClCompile Include="RaycastCollider.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
@@ -197,13 +191,13 @@
     <ClCompile Include="SimplePlatform.cpp">
       <Filter>Source Files\Physics</Filter>
     </ClCompile>
-    <ClCompile Include="Quadtree.cpp">
-      <Filter>Source Files\CustomUtilities</Filter>
-    </ClCompile>
     <ClCompile Include="Polygon.cpp">
       <Filter>Source Files\Physics\Geometry</Filter>
     </ClCompile>
     <ClCompile Include="Line.cpp">
+      <Filter>Source Files\Physics\Geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="Segment.cpp">
       <Filter>Source Files\Physics\Geometry</Filter>
     </ClCompile>
   </ItemGroup>

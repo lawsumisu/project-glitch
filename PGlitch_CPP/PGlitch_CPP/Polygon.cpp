@@ -138,15 +138,20 @@ vector<Segment> Polygon::findOverlappingLines(Polygon& shape) const {
     return quadtree.findOverlappingLines(shape);
 }
 
-Polygon Polygon::transform(Transform& T) const {
+Polygon Polygon::transform(const Transform& T) const {
     return Polygon(points, T);
 }
-void Polygon::draw(RenderTarget& target, RenderStates states) const {
+void Polygon::draw(RenderTarget& target, RenderStates states, const Color& color) const {
     float ppu = GameInfo::pixelsPerUnit;
     VertexArray va = VertexArray(LinesStrip);
-    for (size_t i = 0; i < points.size(); ++i) va.append(Vertex(points[i] * ppu, Color(255, 255 * i*1.f / points.size(), 255 * i*1.f/points.size())));
+    for (size_t i = 0; i < points.size(); ++i) va.append(Vertex(points[i] * ppu, color));
     va.append(va[0]);
     target.draw(va, states);
+}
+
+
+void Polygon::draw(RenderTarget& target, RenderStates states) const {
+    draw(target, states, Color::White);
 }
 
 void Polygon::drawTree(RenderTarget& target, RenderStates states) const {

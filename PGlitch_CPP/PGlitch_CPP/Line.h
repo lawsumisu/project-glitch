@@ -1,5 +1,5 @@
 #pragma once
-#include "LineUtility.h"
+#include "Segment.h"
 
 /// <summary>
 /// Represents the Ax + By = C form of a line. Immutable
@@ -19,7 +19,7 @@ public:
     /// <summary>
     /// Gets the line the input is a segment of.
     /// </summary>
-    static Line toLine(CustomUtilities::Segment& segment);
+    static Line toLine(Segment& segment);
 
     /// <summary>
     /// Gets a value that corresponds to which side of the line a specific point is.

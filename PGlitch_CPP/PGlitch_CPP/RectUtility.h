@@ -47,57 +47,5 @@ namespace CustomUtilities {
     sf::FloatRect operator+(const sf::FloatRect& R, sf::Vector2f& v);
     void operator+= (sf::FloatRect& rect, sf::Vector2f& v);
 
-
-    /// <summary>
-    /// Data type for sorting a series of rectangles.
-    /// </summary>
-    class RectSorter {
-    private:
-        //Fields
-
-        std::vector<sf::FloatRect> rects;
-        class RValue {
-        private:
-            bool _startNotEnd;
-            size_t index;
-            float value;
-
-        public:
-            RValue(size_t index, float value, bool startNotEnd) : index(index), value(value), _startNotEnd(startNotEnd) {}
-
-            friend bool operator<(const RValue& rp1, const RValue& rp2) {
-                if (rp1.value == rp2.value) return rp1.index < rp2.index;
-                else return (rp1.value < rp2.value);
-            }
-
-            bool startNotEnd() const { return _startNotEnd; }
-            size_t i() const { return index; }
-            float v() const { return value; }
-        };
-
-        std::vector<RValue> xIndices;
-        std::vector<RValue> yIndices;
-
-        std::vector<size_t> xStartIndices, yStartIndices, yEndIndices;
-        std::vector<size_t> xEndIndices;
-
-        //Lists that store the index of where a rectangle is sorted 
-        std::vector<size_t> xStartToEndLinks, xEndToStartLinks, yStartToEndLinks, yEndToStartLinks;
-
-        //Methods
-        int find(float value, size_t start, size_t end, bool xNotY, bool startNotEnd) const;
-        float rvalue(size_t i, bool xNotY, bool startNotEnd) const;
-
-    public:
-        //Constructor
-
-        RectSorter(const std::vector<sf::FloatRect>& rects);
-
-        //Methods
-
-        std::vector<size_t> findIntersects(const sf::FloatRect& rect) const;
-        std::string toString() const;
-
-    };
 }
 

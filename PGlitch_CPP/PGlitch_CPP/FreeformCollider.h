@@ -8,7 +8,7 @@
 #include <vector>
 #include "Enumerators.h"
 #include "RectUtility.h"
-#include "Quadtree.h"
+#include "Polygon.h"
 
 /// <summary>
 /// Represents a collider whose shape is a free form polygon.
@@ -18,19 +18,6 @@ class FreeformCollider{
 
 private:
     //Fields
-
-    //List of points that compose the outline of this polygonal collider.
-    //RI: points.size() >= 3.
-    std::vector<sf::Vector2f> points;
-
-    //std::vector<size_t> sortedXCoordinates = {}, sortedYCoordinates = {};
-
-    //Rectangle that represents a hull for this collider. Every point in points lies within this rectangle.
-    sf::FloatRect maxBounds;
-    std::vector<sf::FloatRect> boundsList = {};
-    std::vector<size_t> boundIndices = {};
-    CustomUtilities::RectSorter sorter;
-    Quadtree quadtree;
     Polygon colliderShape;
 
 public:
@@ -47,7 +34,7 @@ public:
     // Methods //
     // ======= //
 
-    std::vector<CustomUtilities::Segment> intersects(const Polygon& shape, const sf::Transform& T) const;
+    std::vector<Segment> intersects(const Polygon& shape, const sf::Transform& T) const;
 
     /// <summary>
     /// Checks if a point is located within this collider.

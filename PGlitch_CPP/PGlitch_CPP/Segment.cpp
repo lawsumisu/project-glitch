@@ -2,7 +2,7 @@
 #include <math.h>
 #include <algorithm>
 #include <sstream>
-#include "LineUtility.h"
+#include "Segment.h"
 #include "VectorUtility.h"
 #include "MathUtility.h"
 #include "RectUtility.h"
@@ -157,7 +157,7 @@ string Segment::toString() const {
     return ss.str();
 }
 
-ostream& CustomUtilities::operator<<(ostream& os, const Segment& segment) {
+ostream& operator<<(ostream& os, const Segment& segment) {
     return os << segment.toString();
 }
 void Segment::draw(const Color& color, sf::RenderTarget& target, sf::RenderStates states) const {
@@ -203,6 +203,6 @@ Segment Segment::moveP1(const Vector2f& v) const {
     return Segment(v, q + diff);
 }
 
-Segment CustomUtilities::operator*(const Segment& line, float f) {
+Segment operator*(const Segment& line, float f) {
     return Segment(line.p *f, line.q*f);
 }

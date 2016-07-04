@@ -8,6 +8,7 @@
 using namespace sf;
 using namespace std;
 using namespace Physics;
+using namespace CustomUtilities;
 
 SimplePlatform::SimplePlatform(PillarCollider pillars, Vector2f& velocity, float flipTime, PlatformType type) :
     _pillars(pillars), path(Vector2f(), Vector2f() + flipTime*velocity), _velocity(velocity) {
