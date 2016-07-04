@@ -37,7 +37,7 @@ Polygon::Polygon(const vector<Vector2f>& points, const Transform& T) {
 }
 Polygon::Polygon(const vector<Vector2f>& points) : Polygon(points, Transform::Identity){}
 
-Polygon::Polygon(FloatRect& rect) : Polygon(toPoints(rect), Transform::Identity) {}
+Polygon::Polygon(const FloatRect& rect) : Polygon(toPoints(rect), Transform::Identity) {}
 
 bool Polygon::containsPoint(const Vector2f& v) const {
     //Detect internal points by calculating the winding number of the shape given this point.

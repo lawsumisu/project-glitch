@@ -16,6 +16,7 @@ namespace Physics{
     class SensorCollider : public Drawable {
     private:
 
+        // ============== //
         // Data Structure //
         // ============== //
 
@@ -50,11 +51,7 @@ namespace Physics{
 
         Collision collides(const vector<PillarCollider>& colliders) const ;
 
-        std::vector<std::pair<size_t, float>> collides(const std::vector<PlatformPtr>& platforms, SurfaceType type) const;
-        std::vector<std::pair<size_t, float>> checkSecondaryCollisions(const std::vector<PlatformPtr>& platforms,
-            SurfaceType type) const;
         float groundAngle(const PlatformPtr& platform) const;
-        std::pair<sf::Vector2f, sf::Vector2f> checkNarrow(const std::vector<PlatformPtr>& platforms, bool checkHorizontalNotVertical)const;
 
         FloatRect ceiling() const{ return FloatRect(_ceiling); }
         FloatRect ground() const{ return FloatRect(_ground); }

@@ -30,17 +30,6 @@ void SimplePlatform::update() {
     
 }
 
-pair<bool, float> SimplePlatform::collides(const sf::FloatRect& rect, SurfaceType type, bool findExterior) const {
-    return _pillars.intersects(T, rect, type);
-}
-vector<Vector2f> SimplePlatform::collides(const FloatRect& rect) const {
-    return _pillars.findInteriorPoints(T, rect);
-}
-
-pair<bool, float> SimplePlatform::collides(const Segment& line) const {
-    return _pillars.intersects(Segment(T.getInverse().transformPoint(line.start()), T.getInverse().transformPoint(line.end())));
-}
-
 vector<Segment> SimplePlatform::collides(Polygon& shape) const {
     vector<Segment> segments = _pillars.intersects(shape.transform(T.getInverse()));
     for (size_t i = 0; i < segments.size(); ++i) segments[i] = segments[i].transform(T);

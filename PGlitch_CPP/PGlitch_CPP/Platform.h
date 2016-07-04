@@ -24,9 +24,6 @@ protected:
 public:
     virtual void update() = 0;
     virtual void position(const Vector2f& newPosition) = 0;
-    virtual std::pair<bool, float> collides(const sf::FloatRect& rect, SurfaceType type, bool findExterior = true) const = 0;
-    virtual std::vector<Vector2f> collides(const sf::FloatRect& rect) const = 0;
-    virtual std::pair<bool, float> collides(const Segment& rect) const = 0;
     virtual float groundAngle(const sf::FloatRect& rect) const = 0;
     void draw(sf::RenderTarget& target, sf::RenderStates states)const { draw(target, states, true); }
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states, bool debug) const = 0;
@@ -85,9 +82,6 @@ public:
     // ================= //
 
     const sf::Transform& transform() const { return T; }
-    std::pair<bool, float> collides(const sf::FloatRect& rect, SurfaceType type, bool findExterior) const;
-    std::vector<sf::Vector2f> collides(const sf::FloatRect& rect) const;
-    std::pair<bool, float> collides(const Segment& line) const;
     bool contains(sf::Vector2f& v) const;
 
     std::vector<CustomUtilities::Segment> collides(Polygon& shape) const;
@@ -125,9 +119,6 @@ public:
     const sf::Transform& transform() const {
         return T;
     }
-    std::pair<bool, float> collides(const sf::FloatRect& rect, SurfaceType type, bool findExterior) const;
-    std::vector<sf::Vector2f> collides(const sf::FloatRect& rect) const;
-    std::pair<bool, float> collides(const Segment& line) const;
     bool contains(sf::Vector2f& v) const;
 
     std::vector<CustomUtilities::Segment> collides(Polygon& shape) const;

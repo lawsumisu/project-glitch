@@ -47,24 +47,6 @@ public:
     // Methods //
     // ======= //
 
-    /// <summary>
-    /// Determines whether or not the input rect is intersecting with this collider.
-    /// output.second is a point that represents where the rect's origin should be located 
-    /// to not be colliding with this collider, given that is pushed outward in a direction denoted by type.
-    /// </summary>
-    std::pair<bool, float> intersects(const sf::Transform& T, const sf::FloatRect& rect, SurfaceType type, 
-        bool findExterior = true) const;
-
-    /// <summary>
-    /// Determines whether or not the input line is intersecting with this collider.
-    /// output.second is a value in [0,1] that represents where along the the line the earliest collision was found.
-    /// If there is no found intersection, output.first = false.
-    /// </summary>
-    /// <param name="T"></param>
-    /// <param name="line"></param>
-    /// <returns></returns>
-    std::pair<bool, float> intersects(const sf::Transform& T, const CustomUtilities::Segment& line)const;
-
     std::vector<CustomUtilities::Segment> intersects(const Polygon& shape, const sf::Transform& T) const;
 
     /// <summary>
@@ -74,9 +56,6 @@ public:
     /// <returns></returns>
     bool contains(sf::Vector2f& v, const sf::Transform& localToWorld) const;
 
-    std::vector<sf::Vector2f> findSurfacePoints(const sf::Transform& T, const sf::FloatRect& rect) const;
-
-    std::vector<sf::Vector2f> findInteriorPoints(const sf::Transform& T, const sf::FloatRect& rect) const;
     /// <summary>
     /// Draws an outline of this collider. If debug is 'true', then also draws inner bboxes and local space outer bbox.
     /// </summary>

@@ -105,7 +105,7 @@ public:
     // ============ //
     Polygon(const std::vector<sf::Vector2f>& points, const sf::Transform& T);
     Polygon(const std::vector<sf::Vector2f>& points);
-    Polygon(sf::FloatRect& rect);
+    Polygon(const sf::FloatRect& rect);
     
     // ======= //
     // Methods //

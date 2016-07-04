@@ -90,8 +90,6 @@ private:
     /// </summary>
     void updateCollisions(std::vector<PlatformPtr>& platforms);
 
-    void updateCollisions2(std::vector<PlatformPtr>& platforms);
-
     void finishGhosting();
     void updateGhost(Vector2f& newGhostPosition);
     void startGhosting(Vector2f& newGhostPosition);
@@ -181,7 +179,7 @@ void Character::update(vector<PlatformPtr>& pforms) {
     updateState();
     finishGhosting();
     updateKinematics();
-    updateCollisions2(pforms);
+    updateCollisions(pforms);
     
     
 
@@ -307,7 +305,7 @@ void Character::updateKinematics() {
     
 }
 
-void Character::updateCollisions2(vector<PlatformPtr>& platforms) {
+void Character::updateCollisions(vector<PlatformPtr>& platforms) {
     //Check for GHOST
     if (isBreaking) return;
     bool ghosting = buffer.current().isDown(InputCode::B6);
@@ -453,213 +451,7 @@ void Character::updateCollisions2(vector<PlatformPtr>& platforms) {
     updateGhost(_position);
 
  }
-void Character::updateCollisions(std::vector<PlatformPtr>& colliders) {
-    if (isBreaking) return;
-    //Check for GHOST
-    bool ghosting = buffer.current().isDown(InputCode::B6);
 
-    currentSegments = sensor.collides(_position, fPosition, colliders);
-    
-
-    //Initial popout check.
-    Segment path = Segment(_position, raycaster.angle(), _size.y/2);
-    Vector2f newPathEnd = path.atPoint(path.intersects(construct(_position, _size)).second)+fPosition - _position;
-    path = Segment(_position, newPathEnd);
-    bool intersection = false;
-    float t = 1;
-
-    for (auto& platform : colliders) {
-        pair<bool, float> pillarIntersection = platform->collides(path);
-        if (pillarIntersection.first) {
-            intersection = true;
-            t = min(t, pillarIntersection.second);
-        }
-    }
-    if (intersection) {
-        //cout << path.toString() << " " << toString(construct(_position, _size)) << endl;
-        pair<bool, float> edgeIntersection = path.intersects(construct(_position, _size));
-        //cout << edgeIntersection.first << endl;
-        Vector2f edgePoint = path.atPoint(path.intersects(construct(_position, _size)).second);
-        if (ghosting && !(angle > degToRad(45) && angle < degToRad(135))) {
-            if (ghostIsAttached) {
-                ghostPosition = path.atPoint(t) - edgePoint + _position;
-            }
-        }
-        else {
-            fPosition += path.atPoint(t) - path.end();
-        }
-        //cout << _position.y + _size.y / 2 << endl;
-        //cout << toString(_position) << " " << toString(path.atPoint(t)) << " " << toString(path.end()) << endl;
-    }
-    
-    //if (_position.y != fPosition.y) cout << _position.y + _size.y / 2 << " " << fPosition.y + _size.y / 2 << endl;
-    
-
-    sensor.setCenter(fPosition);
-
-    //Update horizontal position based on left and right collisions.
-    vector<pair<size_t, float>> lCollisionData = sensor.collides(colliders, SurfaceType::LEFT);
-    vector<pair<size_t, float>> rCollisionData = sensor.collides(colliders, SurfaceType::RIGHT);
-    bool hasRightCollision = rCollisionData.size() != 0, hasLeftCollision = lCollisionData.size() != 0;
-    float rightCollision = hasRightCollision ? rCollisionData[rCollisionData.size() - 1].second : 0;
-    float leftCollision = hasLeftCollision ? lCollisionData[lCollisionData.size() - 1].second : 0;
-    bool wallOnRight = hasRightCollision && fPosition.x - _size.x / 2 < rightCollision;
-    bool wallOnLeft = hasLeftCollision && fPosition.x + _size.x / 2> leftCollision;
-    float newX = 0;
-    
-    //Prioritize right side collisions over left.
-    if (wallOnRight) {
-        newX = min(fPosition.x, rightCollision - _size.x / 2);
-        cout << "On your right?" << " " << rightCollision-fPosition.x <<  endl;
-    }
-    else if (wallOnLeft) {
-        newX = max(fPosition.x, leftCollision + _size.x / 2);
-        cout << "On your left" << endl;
-    }
-
-    // If ghosting, pass through collisions, but set ghost if necessary.
-    if (ghosting && (wallOnLeft || wallOnRight)) {
-        startGhosting(Vector2f(newX, ghostPosition.y));
-    }
-    else if (wallOnLeft || wallOnRight) {
-        fPosition.x = newX;
-        velocity.x = 0;
-    }
-    
-    //Update vertical position based on ground and ceiling collisions.
-
-    //Check for low ceilings if jumping this frame.
-    bool lowCeiling = isGrounded() && checkJump() != InputCode::NONE;
-
-    sensor.setCenter(fPosition);
-
-    vector<pair<size_t, float>> gCollisionData = sensor.collides(colliders, SurfaceType::GROUND);
-    vector<pair<size_t, float>> cCollisionData = sensor.collides(colliders, SurfaceType::CEILING);
-    bool hasGroundCollision = false, hasCeilingCollision = cCollisionData.size() != 0;    
-    float ceilingCollision = hasCeilingCollision ? cCollisionData[cCollisionData.size() - 1].second : 0;
-    bool wallAbove = hasCeilingCollision && fPosition.y + _size.y / 2 > ceilingCollision;
-
-    //With the ground collision data, need to detect if the highest terrain that is steppable.
-    bool steppableBelow = false;
-    float groundCollision = 0;
-    size_t platformIndex = -1;
-    for (pair<size_t, float> gCollision : gCollisionData) {
-        if (fPosition.y + _size.y/2 -legLength  < gCollision.second && (!steppableBelow || (gCollision.second < groundCollision))) {
-            steppableBelow = true;
-            groundCollision = gCollision.second;
-            platformIndex = gCollision.first;
-            
-        }
-    }
-    float fAngle = 0;
-    if (steppableBelow) fAngle = sensor.groundAngle(colliders[platformIndex]);
-    //If found no steppable terrain, or ascending, assume that currently in the air.
-    if (!steppableBelow || (velocity + knockback.velocity(GameState::time().timestamp())).y < 0) {
-        sState = SpatialState::AIR;
-        angle = 0;
-        platformVelocity = Vector2f();
-        currentPlatform = nullptr;
-    }
-
-
-    //Check to see if ground can be acquired.
-    if (steppableBelow && (velocity + knockback.velocity(GameState::time().timestamp())).y >= 0 &&
-        (isGrounded() || fPosition.y + _size.y / 2 > groundCollision)&& abs(fAngle) < .9f) {       
-        fPosition.y = groundCollision - _size.y / 2;
-        sensor.setCenter(fPosition);
-        angle = sensor.groundAngle(colliders[platformIndex]);
-        velocity.y = 0;
-        if (sState == SpatialState::AIR) {
-            if (abs(velocity.x) == dashSpeed) sState = SpatialState::DASH;
-            else if (velocity.x != 0) sState = SpatialState::WALK;
-            else sState = SpatialState::STAND;
-        }
-        currentPlatform = colliders[platformIndex].get();
-    }
-    //Else, check for ceiling collisions.
-    else if (wallAbove && !isGrounded() && (velocity + knockback.velocity(GameState::time().timestamp())).y < 0){
-        cout << ceilingCollision << endl;
-        float newY = ceilingCollision + _size.y / 2;
-        if (ghosting) {
-            startGhosting(Vector2f(ghostPosition.x, newY));
-        }
-        else {
-            fPosition.y = newY;
-            velocity.y = max(0.f, velocity.y);
-        }
-        hasCeilingCollision = false;
-    }
-
-    //If passage is too narrow, restrict movement.
-    /*bool tooNarrow = (isSteppable && hasCeilingCollision &&
-        groundCollision <= fPosition.y + _size.y / 2 && ceilingCollision >= fPosition.y - _size.y / 2) ||
-        (hasLeftCollision && hasRightCollision &&
-            leftCollision <= fPosition.x - _size.x / 2 && rightCollision >= fPosition.x + _size.x / 2);*/
-    
-    //Check for narrow passage ways.
-    
-    if (lowCeiling) {
-        if (ghosting) {
-            startGhosting(_position);
-        }
-        else {
-            fPosition = _position;
-            //velocity.x = 0;
-        }
-    }
-
-    /*sensor.setCenter(fPosition);
-    if (wallOnLeft && wallOnRight && (!steppableBelow || !wallAbove)) {
-        vector<pair<size_t, float>> scCollisionData = sensor.checkSecondaryCollisions(colliders, SurfaceType::CEILING);
-        vector<pair<size_t, float>> sgCollisionData = sensor.checkSecondaryCollisions(colliders, SurfaceType::GROUND);
-
-        if (scCollisionData.size() != 0 && sgCollisionData.size() != 0) {
-            cout << "Squished horizontally!" << endl;
-        }
-        else if (scCollisionData.size() != 0 && !wallAbove) {
-            //fPosition.y = scCollisionData[scCollisionData.size() - 1].second + _size.y / 2;
-        }
-        else if (sgCollisionData.size() != 0 && !steppableBelow) {
-            //fPosition.y = sgCollisionData[sgCollisionData.size() - 1].second - _size.y / 2;
-            //TODO plaform acquisition,etc.
-        }
-    }
-    else if (steppableBelow && wallAbove && (!wallOnLeft || !wallOnRight)) {
-        vector<pair<size_t, float>> srCollisionData = sensor.checkSecondaryCollisions(colliders, SurfaceType::RIGHT);
-        vector<pair<size_t, float>> slCollisionData = sensor.checkSecondaryCollisions(colliders, SurfaceType::LEFT);
-        //cout << "Narrow" << endl;
-        if (srCollisionData.size() != 0 && slCollisionData.size() != 0) {
-            //cout << "Squished vertically!" << endl;
-        }
-        else if (srCollisionData.size() != 0 && !wallOnRight) {
-            cout << "Right" << endl;
-            fPosition.x = srCollisionData[srCollisionData.size() - 1].second - _size.x / 2;
-        }
-        else if (slCollisionData.size() != 0) {
-            cout << slCollisionData[slCollisionData.size() - 1].second << endl;
-            fPosition.x = slCollisionData[slCollisionData.size() - 1].second + _size.x / 2;
-        }
-    }*/
-    //Reset ghost's position if there are no current collisions besides ones with steppable terrain.
-    if (!ghosting || ghostIsAttached || (!(hasCeilingCollision && fPosition.y - _size.y / 2 < ceilingCollision)
-        && !(hasRightCollision || hasLeftCollision) && !(groundCollision && !steppableBelow))) {
-        ghostPosition = fPosition;
-        ghostIsAttached = true;
-    }
-
-    //Finally set new position based on found collisions.
-    _position = fPosition;
-
-    sensor.setCenter(fPosition);
-    raycaster.setOrigin(fPosition);
-
-    if (currentPlatform) localPosition = currentPlatform->transform().getInverse().transformPoint(_position);
-    else localPosition = _position;
-
-    if (ghosting)  updateGhost(_position);
-    
-
-}
 
 void Character::startGhosting(Vector2f& newGhostPosition) {
     if (!ghostIsAttached) return;

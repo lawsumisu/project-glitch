@@ -56,11 +56,9 @@ namespace Physics {
 
         vector<FloatRect> intersects(const FloatRect& collidingRect) const;
 
-        std::pair<bool, float> intersects(const sf::Transform& T, const sf::FloatRect& rect, SurfaceType direction) const;
 
         std::vector<Vector2f> findSurfacePoints(const sf::Transform& T, const sf::FloatRect& rect) const;
 
-        std::vector<Vector2f> findInteriorPoints(const sf::Transform& T, const sf::FloatRect& rect) const;
         /// <summary>
         /// Checks for collision between a <see cref="FloatRect"/> and this <see cref="PillarCollider"/>.
         /// Returns a list of <see cref="FloatRect"/> objects l such that l[i] corresponds to a pillar that 

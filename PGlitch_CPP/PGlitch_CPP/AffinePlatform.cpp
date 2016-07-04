@@ -18,30 +18,49 @@ void AffinePlatform::update() {
     createTransform();
 }
 
-pair<bool, float> AffinePlatform::collides(const FloatRect& r, SurfaceType type, bool findExterior) const {
-    if (_type != PlatformType::SOLID && type != SurfaceType::GROUND) {
-        //Non solid platforms can only have ground collisions.
-        //return{ false, 0.f };
-    }
-    return collider.intersects(T, r, type, findExterior);
-}
-
 float AffinePlatform::groundAngle(const FloatRect& rect) const {
-    Vector2f LR = linearRegression(collider.findSurfacePoints(T, rect));
+    vector<Segment> foundLines = collider.intersects(Polygon(rect), T);
+
+    //Only want the top most lines, so need to sort these segments and find those segments.
+    //Sort found lines by lines with the highest (minimum) start or end point.
+    sort(foundLines.begin(), foundLines.end(), [](const Segment& l1, const Segment& l2) {
+        float y1 = min(l1.start().y, l1.end().y);
+        float y2 = min(l2.start().y, l2.start().y);
+        return y1 > y2;
+    });
+
+    vector<FloatRect> rects = {};
+    vector<Vector2f> topPoints = {};
+    for (const Segment& l : foundLines) {
+        FloatRect lRect(min(l.start().x, l.end().x), min(l.start().y, l.end().x),
+            abs(l.start().x - l.end().x), abs(l.start().y - l.end().y));
+        bool isLegitimate = true;
+        for (const FloatRect& r : rects) {
+            if (r.intersects(lRect)) {
+                isLegitimate = false;
+                break;
+            }
+        }
+        if (isLegitimate) {
+            topPoints.push_back(l.start());
+            topPoints.push_back(l.end());
+            //cout << l.toString() << endl;
+        }
+        rects.push_back(lRect);
+    }
+    //sort output according to smallest x coordinate to largest x coordinate.
+
+    sort(topPoints.begin(), topPoints.end(), [](const Vector2f& v1, const Vector2f& v2) {
+        return v1.x < v2.x;
+    });
+
+    Vector2f LR = linearRegression(topPoints);
     if (isnan(LR.y)) return 0;
     else return atan(-LR.y);
 }
 
 void AffinePlatform::createTransform() {
     T = Transform().translate(_position).rotate(_angle, _rotationalOffset);
-}
-
-vector<Vector2f> AffinePlatform::collides(const FloatRect& rect) const {
-    return collider.findInteriorPoints(T, rect);
-}
-
-pair<bool, float> AffinePlatform::collides(const Segment& line) const {
-    return collider.intersects(T, line);
 }
 
 vector<Segment> AffinePlatform::collides(Polygon& shape) const {
