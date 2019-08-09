@@ -47,6 +47,10 @@ module.exports = {
     new HtmlWebpackPlugin({
       template: "./index.html"
     }),
-    new CopyWebpackPlugin([ { from: 'assets', to: 'assets' } ])
+    new CopyWebpackPlugin([ {
+      from: 'assets',
+      to: 'assets',
+      test: /\.(json|png)$/
+    } ])
   ]
 };

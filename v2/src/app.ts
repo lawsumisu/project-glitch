@@ -1,14 +1,12 @@
 import * as Phaser from 'phaser';
-
-enum AnimationKey {
-  IDLE = 'IDLE',
-  WALK = 'WALK'
-}
+import { Player } from "src/player";
 
 class FooScene extends Phaser.Scene {
+  private player: Player;
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
+    this.player = new Player(this);
   }
 
   public preload(): void {
@@ -16,25 +14,13 @@ class FooScene extends Phaser.Scene {
   }
 
   public create(): void {
-    const emerl = this.add.sprite(100, 100, 'emerl', 'idle/Idle01.png');
-    emerl.setScale(2);
-    const frameNames = this.anims.generateFrameNames('emerl', {
-      start: 1,
-      end: 6,
-      zeroPad: 2,
-      prefix: 'idle/Idle',
-      suffix: '.png'
-    });
-    this.anims.create({ key: AnimationKey.IDLE, frames: frameNames, frameRate: 10, repeat: -1 });
-    emerl.anims.play(AnimationKey.IDLE);
+    this.player.create();
   }
 
   public update(): void {
-    // this.updateInputs();
+    this.player.update();
   }
 
-  private updateInputs(): void {
-  }
 }
 
 const config: Phaser.Types.Core.GameConfig = {
@@ -46,20 +32,3 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 new Phaser.Game(config);
-
-// function preload(this: Phaser.Scene) {
-//   this.load.image('logo', logoImg);
-// }
-//
-// function create(this: Phaser.Scene) {
-//   const logo = this.add.image(400, 150, 'logo');
-//
-//   this.tweens.add({
-//     targets: logo,
-//     y: 450,
-//     duration: 2000,
-//     ease: 'Power2',
-//     yoyo: true,
-//     loop: -1,
-//   });
-// }
