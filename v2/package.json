@@ -1,7 +1,7 @@
 {
   "name": "project-glitch",
   "version": "0.0.0",
-  "description": "A template for setting up Phazer",
+  "description": "Phaser proof of concept for Project Glitch mechanics",
   "main": "index.js",
   "scripts": {
     "build": "webpack",
