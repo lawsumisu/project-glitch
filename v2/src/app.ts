@@ -1,5 +1,6 @@
 import * as Phaser from 'phaser';
 import { Player } from "src/player";
+import { DebugDrawPlugin } from "src/plugins/debug";
 
 class FooScene extends Phaser.Scene {
   private player: Player;
@@ -17,8 +18,8 @@ class FooScene extends Phaser.Scene {
     this.player.create();
   }
 
-  public update(): void {
-    this.player.update();
+  public update(time: number, delta: number): void {
+    this.player.update(time, delta);
   }
 
 }
@@ -29,6 +30,11 @@ const config: Phaser.Types.Core.GameConfig = {
   width: 800,
   height: 600,
   scene: FooScene,
+  plugins: {
+    scene: [
+      { key: 'debug', plugin: DebugDrawPlugin, mapping: 'debug' }
+    ]
+  }
 };
 
 new Phaser.Game(config);

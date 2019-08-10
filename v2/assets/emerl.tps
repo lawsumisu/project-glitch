@@ -205,6 +205,22 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">Animations/fall/01.png</key>
+            <key type="filename">Animations/fall/02.png</key>
+            <key type="filename">Animations/fall/03.png</key>
+            <key type="filename">Animations/fall/04.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>9,11,18,22</rect>
+                <key>scale9Paddings</key>
+                <rect>9,11,18,22</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">Animations/idle/01.png</key>
             <key type="filename">Animations/idle/02.png</key>
             <key type="filename">Animations/idle/03.png</key>
@@ -220,6 +236,23 @@
                 <rect>6,10,12,21</rect>
                 <key>scale9Paddings</key>
                 <rect>6,10,12,21</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">Animations/jump/01.png</key>
+            <key type="filename">Animations/jump/02.png</key>
+            <key type="filename">Animations/jump/03.png</key>
+            <key type="filename">Animations/jump/04.png</key>
+            <key type="filename">Animations/jump/05.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>6,10,11,21</rect>
+                <key>scale9Paddings</key>
+                <rect>6,10,11,21</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
