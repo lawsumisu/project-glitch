@@ -1,20 +1,37 @@
 {
-  "name": "project-glitch-v3",
-  "version": "0.1.0",
+  "name": "project-glitch",
+  "version": "0.0.0",
   "description": "Phaser proof of concept for Project Glitch mechanics",
   "main": "index.js",
-  "scripts": {},
-  "dependencies": {
-    "phaser-ce": "^2.10.0"
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack-dev-server --open",
+    "lint": "tsc --noEmit && tslint -p .",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "author": "lawsumisu",
+  "license": "MIT",
   "devDependencies": {
-    "babel-core": "^6.17.0",
-    "babel-loader": "^6.2.5",
-    "babel-preset-es2015": "^6.16.0",
-    "babel-preset-react": "^6.16.0",
-    "webpack": "^3.0.0",
-    "webpack-config-utils": "^2.3.0",
-    "webpack-dev-server": "^2.0.0"
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/preset-typescript": "^7.3.3",
+    "babel-loader": "^8.0.6",
+    "copy-webpack-plugin": "^5.0.4",
+    "file-loader": "^4.1.0",
+    "html-webpack-plugin": "^3.2.0",
+    "raw-loader": "^3.1.0",
+    "tslint": "^5.18.0",
+    "tslint-consistent-codestyle": "^1.15.1",
+    "tslint-eslint-rules": "^5.4.0",
+    "typescript": "^3.5.3",
+    "webpack": "^4.38.0",
+    "webpack-cli": "^3.3.6",
+    "webpack-config-utils": "^2.3.1",
+    "webpack-dev-server": "^3.7.2"
   },
-  "author": "Law Sumisu"
+  "dependencies": {
+    "phaser": "^3.18.1"
+  }
 }
