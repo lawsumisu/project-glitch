@@ -40,10 +40,10 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
 
   public boot (): void {
     this.systems.events
-      .on('start', this.sceneStart, this)
-      .on('render', this.sceneRender, this)
-      .on('shutdown', this.sceneShutdown, this)
-      .once('destroy', this.sceneDestroy, this);
+      .on('start', this.onSceneStart)
+      .on('postupdate', this.onScenePostUpdate)
+      .on('shutdown', this.onSceneShutdown)
+      .once('destroy', this.onSceneDestroy);
   }
 
   public drawLine(x1: number, y1: number, x2: number, y2: number, color: number = 0xffffff): void {
@@ -54,18 +54,18 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
     this.configs.push(<RectConfig> { type: ConfigType.RECT, x, y, width, height, color })
   }
 
-  private sceneStart (): void {
+  private onSceneStart = (): void => {
     this.graphics = this.scene.add.graphics();
   }
 
-  private sceneShutdown (): void {
+  private onSceneShutdown = (): void => {
     if (this.graphics) {
       this.graphics.destroy();
     }
     this.graphics = null;
   }
 
-  private sceneRender (): void {
+  private onScenePostUpdate = (): void => {
     if (this.graphics) {
       this.graphics.clear();
       this.systems.displayList.bringToTop(this.graphics);
@@ -79,16 +79,15 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
           }
         }
       });
-
       this.configs = [];
     }
   }
 
-  private sceneDestroy () {
+  private onSceneDestroy = () => {
     this.systems.events
-      .off('start', this.sceneStart, this)
-      .off('render', this.sceneRender, this)
-      .off('shutdown', this.sceneShutdown, this)
-      .off('destroy', this.sceneDestroy, this);
+      .off('start', this.onSceneStart)
+      .off('render', this.onScenePostUpdate)
+      .off('shutdown', this.onSceneShutdown)
+      .off('destroy', this.onSceneDestroy);
   }
 }
