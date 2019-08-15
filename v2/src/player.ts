@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
 import { DebugDrawPlugin } from "src/plugins/debug";
-import { Point, Vector2 } from "src/vector";
+import { Point, Vector2 } from "src/utilities/vector/vector";
 
 export enum PlayerAnimation {
   IDLE = 'IDLE',

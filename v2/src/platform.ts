@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { Vector2 } from "src/vector";
+import { Vector2 } from "src/utilities/vector/vector";
 import { DebugDrawPlugin } from "src/plugins/debug";
 
 export interface PlatformConfig {
@@ -29,7 +29,7 @@ export class Platform {
     if (this.trackIndex < this.track.length -1 ) {
       const from = this.track[this.trackIndex];
       const to = this.track[this.trackIndex + 1];
-      const direction = to.subtract(from);
+      const direction = to.subtract(from).normalize();
       const velocity = direction.scale(this.speed);
       this.position = this.position.add(velocity.scale(delta));
     }

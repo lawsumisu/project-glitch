@@ -2,7 +2,7 @@ import * as Phaser from 'phaser';
 import { Player } from "src/player";
 import { DebugDrawPlugin } from "src/plugins/debug";
 import { Platform } from "src/platform";
-import { Vector2 } from "src/vector";
+import { Vector2 } from "src/utilities/vector/vector";
 
 class FooScene extends Phaser.Scene {
   private player: Player;
@@ -20,11 +20,11 @@ class FooScene extends Phaser.Scene {
 
   public create(): void {
     this.player.create();
-    this.colliders = [new Phaser.Geom.Rectangle(350, 420, 100, 75)]
+    this.colliders = [new Phaser.Geom.Rectangle(350, 420, 100, 75)];
     this.platforms = [new Platform({
       width: 100,
       height: 35,
-      speed: 6,
+      speed: 60,
       trackPoints: [
         new Vector2(200, 450), new Vector2(250, 450)
       ]})]
