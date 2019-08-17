@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import { Point, Vector2 } from 'src/utilities/vector/vector';
-import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
+import { GameInput } from 'src/plugins/gameInput.plugin';
+import { Scene } from 'src/utilities/phaser.util';
 
 export enum PlayerAnimation {
   IDLE = 'IDLE',
@@ -18,7 +19,7 @@ enum PlayerState {
 
 export class Player {
   private spr: Phaser.GameObjects.Sprite;
-  private scene: Phaser.Scene;
+  private scene: Scene;
   private position = new Vector2(100,  100 );
   private velocity = new Vector2(0,  0 );
   private scale = 1;
@@ -38,7 +39,7 @@ export class Player {
   // Collision
   private size: Vector2 = new Vector2(25 * this.scale, 42 * this.scale);
 
-  constructor(scene: Phaser.Scene) {
+  constructor(scene: Scene) {
     this.scene = scene;
   }
 
@@ -69,13 +70,12 @@ export class Player {
 
   private updateInputs(): void {
     const Qkey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
-    const Akey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
 
     if (Phaser.Input.Keyboard.JustUp(Qkey)) {
       this.debugFlag = !this.debugFlag;
     }
 
-    if (Phaser.Input.Keyboard.JustDown(Akey) && this.isGrounded) {
+    if (this.scene.gameInput.isInputPressed(GameInput.INPUT2) && this.isGrounded) {
       if (this.state === PlayerState.IDLE) {
         this.playAnimation(PlayerAnimation.ATK1);
         this.state = PlayerState.ATTACK;
@@ -84,7 +84,6 @@ export class Player {
   }
 
   private updateState(): void {
-    const Akey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
     if (this.state === PlayerState.ATTACK) {
       if (this.isGrounded) {
         // Player cannot move while attacking on the ground
@@ -92,7 +91,7 @@ export class Player {
         this.groundVelocity = 0;
       }
       if (this.spr.anims.currentFrame.index >= 4 &&
-        this.spr.anims.getCurrentKey() === PlayerAnimation.ATK1 && Akey.isDown) {
+        this.spr.anims.getCurrentKey() === PlayerAnimation.ATK1 && this.scene.gameInput.isInputPressed(GameInput.INPUT2)) {
         this.playAnimation(PlayerAnimation.ATK2);
       }
       if (this.spr.anims.currentFrame.isLast) {
@@ -105,16 +104,15 @@ export class Player {
   }
 
   private updateKinematics(delta: number): void {
-    const rightKey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
-    const leftKey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
-    const spaceKey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
     const velocity = this.isGrounded ? this.groundVelocity : this.velocity.x;
     const acceleration = this.isGrounded ? this.acceleration : this.acceleration * 2;
     const deceleration = this.isGrounded ? this.deceleration : this.acceleration * 2;
 
+    const isRightDown = this.scene.gameInput.isInputDown(GameInput.RIGHT);
+    const isLeftDown = this.scene.gameInput.isInputDown(GameInput.LEFT);
     let speed = Math.abs(velocity);
-    const shouldAccelerate = this.hasControl && ((velocity > 0 && rightKey.isDown) || (velocity < 0 && leftKey.isDown));
-    const shouldDecelerate = this.hasControl && ((velocity && rightKey.isDown) || (velocity && leftKey.isDown));
+    const shouldAccelerate = this.hasControl && ((velocity > 0 && isRightDown) || (velocity < 0 && isLeftDown));
+    const shouldDecelerate = this.hasControl && ((velocity > 0 && isLeftDown) || (velocity < 0 && isRightDown));
     let sign = velocity >= 0 ? 1 : -1;
     if (speed > 0) {
       if (shouldAccelerate) {
@@ -137,19 +135,19 @@ export class Player {
         speed = Math.max(0, speed);
       }
     } else {
-      if (this.hasControl && (rightKey.isDown || leftKey.isDown)) {
+      if (this.hasControl && (isRightDown || isLeftDown)) {
         // Move has been inputted, so accelerate
         speed += this.acceleration * delta;
-        sign = rightKey.isDown ? 1 : -1;
+        sign = isRightDown ? 1 : -1;
       }
     }
     if (this.isGrounded) {
       this.groundVelocity = speed * sign;
       this.velocity.x = this.groundVelocity;
-      this.velocity.y = Phaser.Input.Keyboard.JustDown(spaceKey) ? -this.jumpSpeed : 0;
+      this.velocity.y = this.scene.gameInput.isInputPressed(GameInput.INPUT1, 3) ? -this.jumpSpeed : 0;
     } else {
       // Else, player is in the air.
-      if (Phaser.Input.Keyboard.JustUp(spaceKey)) {
+      if (this.scene.gameInput.isInputReleased(GameInput.INPUT1)) {
         // Player released space bar, so curb jump velocity so that player does not jump as high.
         this.velocity.y = Math.max(this.velocity.y, -this.lowJumpSpeed);
       }
@@ -234,12 +232,12 @@ export class Player {
     const { displayWidth, displayHeight, x, y } = this.spr;
     const px = this.position.x;
     const py = this.position.y;
-    this.debugPlugin.drawRect(x - displayWidth / 2, y - displayHeight / 2, displayWidth, displayHeight);
+    this.scene.debug.drawRect(x - displayWidth / 2, y - displayHeight / 2, displayWidth, displayHeight);
 
-    this.debugPlugin.drawLine(px - this.size.x / 2 - 1, py, px, py, 0xff0000);
-    this.debugPlugin.drawLine(px + this.size.x / 2 + 1, py, px, py, 0xff00ff);
-    this.debugPlugin.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py + this.size.y / 2, 0x0000ff);
-    this.debugPlugin.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py + this.size.y / 2, 0x00ffff);
+    this.scene.debug.drawLine(px - this.size.x / 2 - 1, py, px, py, 0xff0000);
+    this.scene.debug.drawLine(px + this.size.x / 2 + 1, py, px, py, 0xff00ff);
+    this.scene.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py + this.size.y / 2, 0x0000ff);
+    this.scene.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py + this.size.y / 2, 0x00ffff);
   }
 
   /**
@@ -293,9 +291,4 @@ export class Player {
       this.spr.anims.play(key);
     }
   }
-
-  private get debugPlugin(): DebugDrawPlugin {
-    return (<any> this.scene.sys).debug;
-  }
-
 }

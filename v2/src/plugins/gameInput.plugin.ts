@@ -42,8 +42,8 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
     [GameInput.UP]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.UP }],
     [GameInput.RIGHT]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.RIGHT }],
     [GameInput.LEFT]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.LEFT }],
-    [GameInput.INPUT1]: [],
-    [GameInput.INPUT2]: [],
+    [GameInput.INPUT1]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.SPACE }],
+    [GameInput.INPUT2]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.A }],
     [GameInput.INPUT3]: [],
     [GameInput.INPUT4]: [],
     [GameInput.INPUT5]: [],
@@ -60,24 +60,47 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
       .once('destroy', this.onSceneDestroy);
   }
 
-  public isInputPressed(input: GameInput): boolean {
+  /**
+   * Returns if the input was pressed within the last n frames (default 1).
+   * @param {GameInput} input
+   * @param {number} duration
+   * @returns {boolean}
+   */
+  public isInputPressed(input: GameInput, duration: number = 1): boolean {
     const state = this.inputState[input];
-    return state.isDown && state.duration === 1;
+    return state.isDown && state.duration <= duration;
   }
 
+  /**
+   * Returns true if the input was released this frame.
+   * @param {GameInput} input
+   * @returns {boolean}
+   */
   public isInputReleased(input: GameInput): boolean {
     const state = this.inputState[input];
     return !state.isDown && state.duration === 1;
   }
 
+  /**
+   * Returns true if the input has been down for at least n frames (default 1)
+   * @param {GameInput} input
+   * @param {number} duration
+   * @returns {boolean}
+   */
   public isInputDown(input: GameInput, duration: number = 1): boolean {
     const state = this.inputState[input];
-    return state.isDown && state.duration === duration;
+    return state.isDown && state.duration >= duration;
   }
 
+  /**
+   * Returns true if the input is not down for at least n frames (default 1)
+   * @param {GameInput} input
+   * @param {number} duration
+   * @returns {boolean}
+   */
   public isInputUp(input: GameInput, duration: number = 1): boolean {
     const state = this.inputState[input];
-    return !state.isDown && state.duration === duration;
+    return !state.isDown && state.duration >= duration;
   }
 
   public getDuration(input: GameInput): number {

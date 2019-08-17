@@ -3,8 +3,10 @@ import { Platform } from 'src/platform';
 import { Player } from 'src/player';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { Vector2 } from 'src/utilities/vector/vector';
+import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
+import { Scene } from 'src/utilities/phaser.util';
 
-class FooScene extends Phaser.Scene {
+class FooScene extends Scene {
   private player: Player;
   private colliders: Phaser.Geom.Rectangle[];
   private platforms: Platform[];
@@ -33,18 +35,13 @@ class FooScene extends Phaser.Scene {
   public update(time: number, delta: number): void {
     this.player.update(time, delta, this.colliders.concat(this.platforms.map((platform: Platform) => platform.collider)));
     this.colliders.forEach((collider: Phaser.Geom.Rectangle) => {
-     this.debugPlugin.drawRect(collider.x, collider.y, collider.width, collider.height, 0xffff00);
+     this.debug.drawRect(collider.x, collider.y, collider.width, collider.height, 0xffff00);
     });
     this.platforms.forEach((platform: Platform) => {
       platform.update(delta / 1000);
-      platform.debug(this.debugPlugin);
+      platform.debug(this.debug);
     });
   }
-
-  private get debugPlugin(): DebugDrawPlugin {
-    return (<any> this.sys).debug;
-  }
-
 }
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
@@ -56,6 +53,7 @@ const gameConfig: Phaser.Types.Core.GameConfig = {
   plugins: {
     scene: [
       { key: 'debug', plugin: DebugDrawPlugin, mapping: 'debug' },
+      { key: 'gameInput', plugin: GameInputPlugin, mapping: 'gameInput'},
     ],
   },
 };
