@@ -1,6 +1,6 @@
 import * as Phaser from 'phaser';
-import { DebugDrawPlugin } from "src/plugins/debug";
-import { Point, Vector2 } from "src/utilities/vector/vector";
+import { Point, Vector2 } from 'src/utilities/vector/vector';
+import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 
 export enum PlayerAnimation {
   IDLE = 'IDLE',
@@ -15,7 +15,6 @@ enum PlayerState {
   IDLE = 'IDLE',
   ATTACK = 'ATTACK',
 }
-
 
 export class Player {
   private spr: Phaser.GameObjects.Sprite;
@@ -165,13 +164,13 @@ export class Player {
   }
 
   private updateCollisions(colliders: Phaser.Geom.Rectangle[]): void {
-    let px = this.position.x, py = this.position.y;
+    const px = this.position.x, py = this.position.y;
     const sx = this.size.x, sy = this.size.y;
 
-    let sensorWallL = new Phaser.Geom.Line(px - sx / 2 - 1, py, px, py);
-    let sensorWallR = new Phaser.Geom.Line(px + sx / 2 + 1, py, px, py);
-    let sensorGndL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py + sy / 2);
-    let sensorGndR = new Phaser.Geom.Line(px + sx / 2 ,py, px + sx / 2, py + sy / 2);
+    const sensorWallL = new Phaser.Geom.Line(px - sx / 2 - 1, py, px, py);
+    const sensorWallR = new Phaser.Geom.Line(px + sx / 2 + 1, py, px, py);
+    const sensorGndL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py + sy / 2);
+    const sensorGndR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py + sy / 2);
     let gnd = 600;
     const getYFromPoint = (point: Point) => point.y;
     const getXFromPoint = (point: Point) => point.x;
@@ -260,11 +259,11 @@ export class Player {
     colliders: Phaser.Geom.Rectangle[],
     defaultValue: number,
     getValueFn: (point: Point) => number,
-    comparisonFn: typeof Math.min | typeof Math.max = Math.min
+    comparisonFn: typeof Math.min | typeof Math.max = Math.min,
   ): number | null {
     let output: number | null = null;
     colliders.forEach((collider: Phaser.Geom.Rectangle) => {
-      let intersections: Point[] = Phaser.Geom.Intersects.GetLineToRectangle(sensor, collider);
+      const intersections: Point[] = Phaser.Geom.Intersects.GetLineToRectangle(sensor, collider);
       if (intersections.length > 0) {
         if (output === null) {
           output = defaultValue;

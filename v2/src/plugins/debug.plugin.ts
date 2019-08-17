@@ -3,6 +3,7 @@ import * as Phaser from 'phaser';
 enum ConfigType {
   LINE = 'LINE',
   RECT = 'RECT',
+  CIRCLE = 'CIRCLE',
 }
 
 interface DebugConfig {
@@ -26,6 +27,13 @@ interface RectConfig extends DebugConfig {
   height: number;
 }
 
+interface CircleConfig extends DebugConfig {
+  type: ConfigType.CIRCLE;
+  x: number;
+  y: number;
+  r: number;
+}
+
 function isRect(config: DebugConfig): config is RectConfig {
   return config.type === ConfigType.RECT;
 }
@@ -34,11 +42,15 @@ function isLine(config: DebugConfig): config is LineConfig {
   return config.type === ConfigType.LINE;
 }
 
+function isCircle(config: DebugConfig): config is CircleConfig {
+  return config.type === ConfigType.CIRCLE;
+}
+
 export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
   private graphics: Phaser.GameObjects.Graphics | null = null;
   private configs: DebugConfig[] = [];
 
-  public boot (): void {
+  public boot(): void {
     this.systems.events
       .on('start', this.onSceneStart)
       .on('postupdate', this.onScenePostUpdate)
@@ -52,6 +64,10 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
 
   public drawRect(x: number, y: number, width: number, height: number, color: number = 0xffffff): void {
     this.configs.push(<RectConfig> { type: ConfigType.RECT, x, y, width, height, color })
+  }
+
+  public drawCircle(x: number, y: number, r: number, color: number = 0xffffff): void {
+    this.configs.push(<CircleConfig> { type: ConfigType.CIRCLE, x, y, r, color});
   }
 
   private onSceneStart = (): void => {
@@ -76,6 +92,8 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
             this.graphics.strokeLineShape(new Phaser.Geom.Line(config.x1, config.y1, config.x2, config.y2));
           } else if (isRect(config)) {
             this.graphics.strokeRect(config.x, config.y, config.width, config.height);
+          } else if (isCircle(config)) {
+            this.graphics.strokeCircleShape(new Phaser.Geom.Circle(config.x, config.y, config.r));
           }
         }
       });

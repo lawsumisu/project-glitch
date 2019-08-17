@@ -1,8 +1,8 @@
 import * as Phaser from 'phaser';
-import { Player } from "src/player";
-import { DebugDrawPlugin } from "src/plugins/debug";
-import { Platform } from "src/platform";
-import { Vector2 } from "src/utilities/vector/vector";
+import { Platform } from 'src/platform';
+import { Player } from 'src/player';
+import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
+import { Vector2 } from 'src/utilities/vector/vector';
 
 class FooScene extends Phaser.Scene {
   private player: Player;
@@ -26,18 +26,18 @@ class FooScene extends Phaser.Scene {
       height: 35,
       speed: 60,
       trackPoints: [
-        new Vector2(200, 450), new Vector2(250, 450)
-      ]})]
+        new Vector2(200, 450), new Vector2(250, 450), new Vector2(350, 350),
+      ]})];
   }
 
   public update(time: number, delta: number): void {
-    this.player.update(time, delta, this.colliders);
+    this.player.update(time, delta, this.colliders.concat(this.platforms.map((platform: Platform) => platform.collider)));
     this.colliders.forEach((collider: Phaser.Geom.Rectangle) => {
      this.debugPlugin.drawRect(collider.x, collider.y, collider.width, collider.height, 0xffff00);
     });
     this.platforms.forEach((platform: Platform) => {
       platform.update(delta / 1000);
-      platform.draw(this.debugPlugin);
+      platform.debug(this.debugPlugin);
     });
   }
 
@@ -47,7 +47,7 @@ class FooScene extends Phaser.Scene {
 
 }
 
-const config: Phaser.Types.Core.GameConfig = {
+const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'phaser-example',
   width: 800,
@@ -55,9 +55,9 @@ const config: Phaser.Types.Core.GameConfig = {
   scene: FooScene,
   plugins: {
     scene: [
-      { key: 'debug', plugin: DebugDrawPlugin, mapping: 'debug' }
-    ]
-  }
+      { key: 'debug', plugin: DebugDrawPlugin, mapping: 'debug' },
+    ],
+  },
 };
 
-new Phaser.Game(config);
+new Phaser.Game(gameConfig);

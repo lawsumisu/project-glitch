@@ -6,7 +6,7 @@ describe('Vector Tests', () => {
     it ('adds two vectors together', () => {
       const p = new Vector2(1, 2);
       const q = new Vector2(3, 4);
-      expect(p.add(q)).to.deep.equal(new Vector2(4,6));
+      expect(p.add(q)).to.deep.equal(new Vector2(4, 6));
 
       // Check that old vectors are unchanged
       expect(p).to.deep.equal(new Vector2(1, 2));
@@ -28,7 +28,7 @@ describe('Vector Tests', () => {
     it ('subtracts two vectors', () => {
       const p = new Vector2(1, 2);
       const q = new Vector2(3, 4);
-      expect(p.subtract(q)).to.deep.equal(new Vector2(-2,-2));
+      expect(p.subtract(q)).to.deep.equal(new Vector2(-2, -2));
 
       // Check that old vectors are unchanged
       expect(p).to.deep.equal(new Vector2(1, 2));
@@ -58,10 +58,10 @@ describe('Vector Tests', () => {
     });
 
     it('additive inverse', () => {
-      const p = new Vector2(2,2);
+      const p = new Vector2(2, 2);
       const q = p.negate();
       expect(p.add(q)).to.deep.equal(Vector2.ZERO);
-    })
+    });
   });
 
   describe('normalize()', () => {
@@ -71,6 +71,6 @@ describe('Vector Tests', () => {
     });
     it('normalizing zero vector returns zero vector', () => {
       expect(Vector2.ZERO.normalize()).to.deep.equal(Vector2.ZERO);
-    })
-  })
+    });
+  });
 });
