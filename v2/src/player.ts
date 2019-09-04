@@ -201,9 +201,25 @@ export class Player {
         this.groundVelocity = 0;
       }
     }
+    px = this.position.x;
+
+    // Check for ceiling collisions when airborne.
+    if (!this.isGrounded && this.velocity.y <= 0) {
+      let ceil = this.position.y - sy / 2;
+      const sensorCeilL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py - sy / 2);
+      const sensorCeilR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py - sy / 2);
+      const collisionCeilL = this.checkCollisionsWithSensor(sensorCeilL, platforms, ceil, getYFromPoint, Math.max)
+        || { platform: null, value: ceil };
+      const collisionCeilR = this.checkCollisionsWithSensor(sensorCeilR, platforms, ceil, getYFromPoint, Math.max)
+        || { platform: null, value: ceil };
+      ceil = Math.max(collisionCeilL.value, collisionCeilR.value);
+      if (this.position.y - sy / 2 < ceil) {
+        this.position.y = ceil + sy / 2;
+        this.velocity.y = 0;
+      }
+    }
 
     // Check for ground collisions. In the case there is no collision, use the gnd value.
-    px = this.position.x;
     const sensorGndL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py + sy / 2 + 16);
     const sensorGndR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py + sy / 2 + 16);
     const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, platforms, gnd, getYFromPoint) || { platform: null, value: gnd };
@@ -270,10 +286,15 @@ export class Player {
     const py = this.position.y;
     this.scene.debug.drawRect(x - displayWidth / 2, y - displayHeight / 2, displayWidth, displayHeight);
 
+    // Wall sensors
     this.scene.debug.drawLine(px - this.size.x / 2 - 1, py, px, py, 0xff0000);
     this.scene.debug.drawLine(px + this.size.x / 2 + 1, py, px, py, 0xff00ff);
+    // Ground sensors
     this.scene.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py + this.size.y / 2, 0x0000ff);
     this.scene.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py + this.size.y / 2, 0x00ffff);
+    // Ceiling sensors
+    this.scene.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py - this.size.y / 2, 0xaaff00);
+    this.scene.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py - this.size.y / 2, 0xffff00);
   }
 
   /**

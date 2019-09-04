@@ -31,8 +31,15 @@ class FooScene extends Scene {
       }),
       new Platform({
         width: 100,
+        height: 75,
+        speed: 0,
+        trackPoints: [ new Vector2(250, 555)],
+        scene: this,
+      }),
+      new Platform({
+        width: 100,
         height: 35,
-        speed: 60,
+        speed: 200,
         trackPoints: [
           new Vector2(200, 450), new Vector2(250, 450), new Vector2(350, 350),
         ],
