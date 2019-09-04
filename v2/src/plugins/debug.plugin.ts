@@ -3,6 +3,7 @@ import * as Phaser from 'phaser';
 enum ConfigType {
   LINE = 'LINE',
   RECT = 'RECT',
+  CIRCLE = 'CIRCLE',
 }
 
 interface DebugConfig {
@@ -26,6 +27,13 @@ interface RectConfig extends DebugConfig {
   height: number;
 }
 
+interface CircleConfig extends DebugConfig {
+  type: ConfigType.CIRCLE;
+  x: number;
+  y: number;
+  r: number;
+}
+
 function isRect(config: DebugConfig): config is RectConfig {
   return config.type === ConfigType.RECT;
 }
@@ -34,16 +42,20 @@ function isLine(config: DebugConfig): config is LineConfig {
   return config.type === ConfigType.LINE;
 }
 
+function isCircle(config: DebugConfig): config is CircleConfig {
+  return config.type === ConfigType.CIRCLE;
+}
+
 export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
   private graphics: Phaser.GameObjects.Graphics | null = null;
   private configs: DebugConfig[] = [];
 
-  public boot (): void {
+  public boot(): void {
     this.systems.events
-      .on('start', this.sceneStart, this)
-      .on('render', this.sceneRender, this)
-      .on('shutdown', this.sceneShutdown, this)
-      .once('destroy', this.sceneDestroy, this);
+      .on('start', this.onSceneStart)
+      .on('postupdate', this.onScenePostUpdate)
+      .on('shutdown', this.onSceneShutdown)
+      .once('destroy', this.onSceneDestroy);
   }
 
   public drawLine(x1: number, y1: number, x2: number, y2: number, color: number = 0xffffff): void {
@@ -54,18 +66,22 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
     this.configs.push(<RectConfig> { type: ConfigType.RECT, x, y, width, height, color })
   }
 
-  private sceneStart (): void {
+  public drawCircle(x: number, y: number, r: number, color: number = 0xffffff): void {
+    this.configs.push(<CircleConfig> { type: ConfigType.CIRCLE, x, y, r, color});
+  }
+
+  private onSceneStart = (): void => {
     this.graphics = this.scene.add.graphics();
   }
 
-  private sceneShutdown (): void {
+  private onSceneShutdown = (): void => {
     if (this.graphics) {
       this.graphics.destroy();
     }
     this.graphics = null;
   }
 
-  private sceneRender (): void {
+  private onScenePostUpdate = (): void => {
     if (this.graphics) {
       this.graphics.clear();
       this.systems.displayList.bringToTop(this.graphics);
@@ -76,19 +92,20 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
             this.graphics.strokeLineShape(new Phaser.Geom.Line(config.x1, config.y1, config.x2, config.y2));
           } else if (isRect(config)) {
             this.graphics.strokeRect(config.x, config.y, config.width, config.height);
+          } else if (isCircle(config)) {
+            this.graphics.strokeCircleShape(new Phaser.Geom.Circle(config.x, config.y, config.r));
           }
         }
       });
-
       this.configs = [];
     }
   }
 
-  private sceneDestroy () {
+  private onSceneDestroy = () => {
     this.systems.events
-      .off('start', this.sceneStart, this)
-      .off('render', this.sceneRender, this)
-      .off('shutdown', this.sceneShutdown, this)
-      .off('destroy', this.sceneDestroy, this);
+      .off('start', this.onSceneStart)
+      .off('render', this.onScenePostUpdate)
+      .off('shutdown', this.onSceneShutdown)
+      .off('destroy', this.onSceneDestroy);
   }
 }

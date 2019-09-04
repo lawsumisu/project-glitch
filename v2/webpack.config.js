@@ -51,6 +51,9 @@ module.exports = {
       from: 'assets',
       to: 'assets',
       test: /\.(json|png)$/
-    } ])
+    } ]),
+    new webpack.SourceMapDevToolPlugin({
+      test: /\.(ts|js)($|\?)/i
+    })
   ]
 };
