@@ -3,6 +3,8 @@ import * as Phaser from 'phaser';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 
 export class Scene extends Phaser.Scene {
+  public isPaused = false;
+
   public get debug(): DebugDrawPlugin {
     return (<any> this.sys).debug;
   }

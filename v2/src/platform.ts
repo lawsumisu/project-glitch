@@ -1,12 +1,14 @@
 import * as Phaser from 'phaser';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { Vector2 } from 'src/utilities/vector/vector';
+import { Scene } from 'src/utilities/phaser.util';
 
 export interface PlatformConfig {
   width: number;
   height: number;
   speed?: number;
   trackPoints: Vector2[];
+  scene: Scene;
 }
 export class Platform {
   private speed: number;
@@ -16,17 +18,22 @@ export class Platform {
   private track: Vector2[];
   private trackIndex: number = 0;
   private direction: number = 1;
+  private scene: Scene;
 
   constructor(config: PlatformConfig) {
-    const { width, height, speed, trackPoints } = config;
+    const { width, height, speed, trackPoints, scene } = config;
     this.position = trackPoints[0];
     this.width = width;
     this.height = height;
     this.speed = speed || 0;
     this.track = trackPoints;
+    this.scene = scene;
   }
 
   public update(delta: number): void {
+    if (this.scene.isPaused) {
+      return;
+    }
     this.updateKinematics(delta);
   }
 

@@ -29,7 +29,9 @@ class FooScene extends Scene {
       speed: 60,
       trackPoints: [
         new Vector2(200, 450), new Vector2(250, 450), new Vector2(350, 350),
-      ]})];
+      ],
+      scene: this,
+    })];
   }
 
   public update(time: number, delta: number): void {

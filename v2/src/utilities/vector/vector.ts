@@ -44,3 +44,19 @@ export class Vector2 implements Point {
     return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
   }
 }
+
+export class Vector3 {
+  public x: number;
+  public y: number;
+  public z: number;
+
+  public static get ZERO(): Vector3 {
+    return new Vector3(0, 0, 0);
+  }
+
+  constructor(x: number, y: number, z: number) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+}

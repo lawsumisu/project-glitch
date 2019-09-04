@@ -36,6 +36,9 @@ type InputMap = {
   [key in GameInput]: InputConfig[];
 };
 
+/**
+ * A plugin that allows mapping between device inputs and relevant game inputs.
+ */
 export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   public static defaultInputs = {
     [GameInput.DOWN]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.DOWN }],
@@ -44,7 +47,7 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
     [GameInput.LEFT]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.LEFT }],
     [GameInput.INPUT1]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.SPACE }],
     [GameInput.INPUT2]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.A }],
-    [GameInput.INPUT3]: [],
+    [GameInput.INPUT3]: [{ type: InputType.KEYBOARD, key: Phaser.Input.Keyboard.KeyCodes.S }],
     [GameInput.INPUT4]: [],
     [GameInput.INPUT5]: [],
     [GameInput.INPUT6]: [],
@@ -103,6 +106,11 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
     return !state.isDown && state.duration >= duration;
   }
 
+  /**
+   * Return number of frames this input has been up or down.
+   * @param {GameInput} input
+   * @returns {number}
+   */
   public getDuration(input: GameInput): number {
     return this.inputState[input].duration;
   }

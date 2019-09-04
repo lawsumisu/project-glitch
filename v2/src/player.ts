@@ -81,6 +81,9 @@ export class Player {
         this.state = PlayerState.ATTACK;
       }
     }
+
+    // Check for Pause
+    this.scene.isPaused = this.scene.gameInput.isInputDown(GameInput.INPUT3);
   }
 
   private updateState(): void {
@@ -162,13 +165,12 @@ export class Player {
   }
 
   private updateCollisions(colliders: Phaser.Geom.Rectangle[]): void {
-    const px = this.position.x, py = this.position.y;
+    let px = this.position.x;
+    const py = this.position.y;
     const sx = this.size.x, sy = this.size.y;
 
     const sensorWallL = new Phaser.Geom.Line(px - sx / 2 - 1, py, px, py);
     const sensorWallR = new Phaser.Geom.Line(px + sx / 2 + 1, py, px, py);
-    const sensorGndL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py + sy / 2);
-    const sensorGndR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py + sy / 2);
     let gnd = 600;
     const getYFromPoint = (point: Point) => point.y;
     const getXFromPoint = (point: Point) => point.x;
@@ -180,23 +182,36 @@ export class Player {
       // Player has collided with wall on the left, so push them to right
       this.position.x = collisionWallL + sx / 2 + 1;
       this.velocity.x = 0;
+      if (this.isGrounded) {
+        this.groundVelocity = 0;
+      }
     } else if (collisionWallR && !collisionWallL) {
       // Player has collided with wall on the right, so push them to left
       this.position.x = collisionWallR - sx / 2 - 1;
       this.velocity.x = 0;
+      if (this.isGrounded) {
+        this.groundVelocity = 0;
+      }
     }
 
     // Check for ground collisions. In the case there is no collision, use the gnd value.
+    px = this.position.x;
+    const sensorGndL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py + sy / 2 + 16);
+    const sensorGndR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py + sy / 2 + 16);
     const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, colliders, gnd, getYFromPoint) || gnd;
     const collisionGndR = this.checkCollisionsWithSensor(sensorGndR, colliders, gnd, getYFromPoint) || gnd;
     gnd = Math.min(collisionGndL, collisionGndR);
 
-    if (py + sy / 2 >= gnd && this.velocity.y >= 0) {
+    if (this.isGrounded && py + sy / 2 + 16 >= gnd && this.velocity.y === 0) {
+      // Player is moving along slope, so reposition player as the ground lowers.
+      this.position.y = gnd - sy / 2;
+    } else if (!this.isGrounded && py + sy / 2 >= gnd && this.velocity.y >= 0) {
       // Player is falling through the ground, so reposition player atop it.
       this.position.y = gnd - sy / 2;
       this.isGrounded = true;
       this.groundVelocity = this.velocity.x;
     } else {
+      // Player is airborne
       this.isGrounded = false;
     }
   }
@@ -243,7 +258,7 @@ export class Player {
   /**
    * Takes a sensor and checks for most relevant collision given a list of colliders.
    * Relevance is determined by a combination of the getValueFn and comparisionFn.
-   * If no collision is found, then null is retuned.
+   * If no collision is found, then null is returned.
    * @param {Phaser.Geom.Line} sensor
    * @param {Phaser.Geom.Rectangle[]} colliders
    * @param {number} defaultValue
