@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { Point, Vector2 } from 'src/utilities/vector/vector';
 import { GameInput } from 'src/plugins/gameInput.plugin';
 import { Scene } from 'src/utilities/phaser.util';
+import { Platform } from 'src/platform';
 
 export enum PlayerAnimation {
   IDLE = 'IDLE',
@@ -17,10 +18,16 @@ enum PlayerState {
   ATTACK = 'ATTACK',
 }
 
+interface CollisionData {
+  platform: Platform | null;
+  value: number;
+}
+
 export class Player {
+  public position = new Vector2(100,  100 );
+
   private spr: Phaser.GameObjects.Sprite;
   private scene: Scene;
-  private position = new Vector2(100,  100 );
   private velocity = new Vector2(0,  0 );
   private scale = 1;
   private groundVelocity: number = 0;
@@ -38,6 +45,7 @@ export class Player {
 
   // Collision
   private size: Vector2 = new Vector2(25 * this.scale, 42 * this.scale);
+  private platform: Platform | null = null;
 
   constructor(scene: Scene) {
     this.scene = scene;
@@ -56,12 +64,12 @@ export class Player {
 
   }
 
-  public update(__: number, deltaMillis: number, colliders: Phaser.Geom.Rectangle[]): void {
+  public update(__: number, deltaMillis: number, platforms: Platform[]): void {
     const dt = deltaMillis / 1000;
     this.updateInputs();
     this.updateState();
     this.updateKinematics(dt);
-    this.updateCollisions(colliders);
+    this.updateCollisions(platforms);
     this.updateSprite();
     if (this.debugFlag) {
       this.updateDebug();
@@ -164,7 +172,7 @@ export class Player {
 
   }
 
-  private updateCollisions(colliders: Phaser.Geom.Rectangle[]): void {
+  private updateCollisions(platforms: Platform[]): void {
     let px = this.position.x;
     const py = this.position.y;
     const sx = this.size.x, sy = this.size.y;
@@ -176,18 +184,18 @@ export class Player {
     const getXFromPoint = (point: Point) => point.x;
 
     // Check for wall collisions
-    const collisionWallL = this.checkCollisionsWithSensor(sensorWallL, colliders, px - sx / 2 - 1, getXFromPoint, Math.max);
-    const collisionWallR = this.checkCollisionsWithSensor(sensorWallR, colliders, px + sx / 2 + 1, getXFromPoint, Math.min);
+    const collisionWallL = this.checkCollisionsWithSensor(sensorWallL, platforms, px - sx / 2 - 1, getXFromPoint, Math.max);
+    const collisionWallR = this.checkCollisionsWithSensor(sensorWallR, platforms, px + sx / 2 + 1, getXFromPoint, Math.min);
     if (collisionWallL && !collisionWallR) {
       // Player has collided with wall on the left, so push them to right
-      this.position.x = collisionWallL + sx / 2 + 1;
+      this.position.x = collisionWallL.value + sx / 2 + 1;
       this.velocity.x = 0;
       if (this.isGrounded) {
         this.groundVelocity = 0;
       }
     } else if (collisionWallR && !collisionWallL) {
       // Player has collided with wall on the right, so push them to left
-      this.position.x = collisionWallR - sx / 2 - 1;
+      this.position.x = collisionWallR.value - sx / 2 - 1;
       this.velocity.x = 0;
       if (this.isGrounded) {
         this.groundVelocity = 0;
@@ -198,21 +206,34 @@ export class Player {
     px = this.position.x;
     const sensorGndL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py + sy / 2 + 16);
     const sensorGndR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py + sy / 2 + 16);
-    const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, colliders, gnd, getYFromPoint) || gnd;
-    const collisionGndR = this.checkCollisionsWithSensor(sensorGndR, colliders, gnd, getYFromPoint) || gnd;
-    gnd = Math.min(collisionGndL, collisionGndR);
+    const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, platforms, gnd, getYFromPoint) || { platform: null, value: gnd };
+    const collisionGndR = this.checkCollisionsWithSensor(sensorGndR, platforms, gnd, getYFromPoint) || { platform: null, value: gnd };
+    gnd = Math.min(collisionGndL.value, collisionGndR.value);
+    const platform = collisionGndR.platform || collisionGndL.platform;
 
     if (this.isGrounded && py + sy / 2 + 16 >= gnd && this.velocity.y === 0) {
       // Player is moving along slope, so reposition player as the ground lowers.
       this.position.y = gnd - sy / 2;
+      if (platform) {
+        this.platform = platform;
+        platform.player = this;
+      }
     } else if (!this.isGrounded && py + sy / 2 >= gnd && this.velocity.y >= 0) {
       // Player is falling through the ground, so reposition player atop it.
       this.position.y = gnd - sy / 2;
       this.isGrounded = true;
       this.groundVelocity = this.velocity.x;
+      if (platform) {
+        this.platform = platform;
+        platform.player = this;
+      }
     } else {
       // Player is airborne
       this.isGrounded = false;
+      if (this.platform) {
+        this.platform.clearPlayer();
+      }
+      this.platform = null;
     }
   }
 
@@ -256,11 +277,11 @@ export class Player {
   }
 
   /**
-   * Takes a sensor and checks for most relevant collision given a list of colliders.
+   * Takes a sensor and checks for most relevant collision given a list of platforms.
    * Relevance is determined by a combination of the getValueFn and comparisionFn.
    * If no collision is found, then null is returned.
    * @param {Phaser.Geom.Line} sensor
-   * @param {Phaser.Geom.Rectangle[]} colliders
+   * @param {Platform[]} platforms
    * @param {number} defaultValue
    * @param {(point: Point => number} getValueFn: Function that takes in a point and extracts a number.
    *  It is used in conjunction with the comparisonFn.
@@ -269,22 +290,29 @@ export class Player {
    */
   private checkCollisionsWithSensor(
     sensor: Phaser.Geom.Line,
-    colliders: Phaser.Geom.Rectangle[],
+    platforms: Platform[],
     defaultValue: number,
     getValueFn: (point: Point) => number,
     comparisonFn: typeof Math.min | typeof Math.max = Math.min,
-  ): number | null {
-    let output: number | null = null;
-    colliders.forEach((collider: Phaser.Geom.Rectangle) => {
-      const intersections: Point[] = Phaser.Geom.Intersects.GetLineToRectangle(sensor, collider);
+  ): CollisionData | null {
+    let output: CollisionData | null = null;
+
+    platforms.forEach((platform: Platform) => {
+
+      const intersections: Point[] = Phaser.Geom.Intersects.GetLineToRectangle(sensor, platform.collider);
       if (intersections.length > 0) {
         if (output === null) {
-          output = defaultValue;
+          output = { platform: null, value: defaultValue };
         }
         const reducedValue = intersections
           .map(getValueFn)
           .reduce((accumulator: number, value: number) => comparisonFn(accumulator, value), defaultValue);
-        output = comparisonFn(reducedValue, output);
+
+        const outputValue = comparisonFn(output.value, reducedValue);
+        if (outputValue === reducedValue && output.value !== reducedValue) {
+          // Output value was updated, so reference this platform
+          output = { platform, value: outputValue };
+        }
       }
     });
     return output;

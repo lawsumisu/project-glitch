@@ -8,7 +8,6 @@ import { Scene } from 'src/utilities/phaser.util';
 
 class FooScene extends Scene {
   private player: Player;
-  private colliders: Phaser.Geom.Rectangle[];
   private platforms: Platform[];
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
@@ -22,27 +21,32 @@ class FooScene extends Scene {
 
   public create(): void {
     this.player.create();
-    this.colliders = [new Phaser.Geom.Rectangle(350, 420, 100, 75)];
-    this.platforms = [new Platform({
-      width: 100,
-      height: 35,
-      speed: 60,
-      trackPoints: [
-        new Vector2(200, 450), new Vector2(250, 450), new Vector2(350, 350),
-      ],
-      scene: this,
-    })];
+    this.platforms = [
+      new Platform({
+        width: 100,
+        height: 75,
+        speed: 0,
+        trackPoints: [ new Vector2(400, 455)],
+        scene: this,
+      }),
+      new Platform({
+        width: 100,
+        height: 35,
+        speed: 60,
+        trackPoints: [
+          new Vector2(200, 450), new Vector2(250, 450), new Vector2(350, 350),
+        ],
+        scene: this,
+      }),
+    ];
   }
 
   public update(time: number, delta: number): void {
-    this.player.update(time, delta, this.colliders.concat(this.platforms.map((platform: Platform) => platform.collider)));
-    this.colliders.forEach((collider: Phaser.Geom.Rectangle) => {
-     this.debug.drawRect(collider.x, collider.y, collider.width, collider.height, 0xffff00);
-    });
     this.platforms.forEach((platform: Platform) => {
       platform.update(delta / 1000);
       platform.debug(this.debug);
     });
+    this.player.update(time, delta, this.platforms);
   }
 }
 

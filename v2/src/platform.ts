@@ -2,6 +2,7 @@ import * as Phaser from 'phaser';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { Vector2 } from 'src/utilities/vector/vector';
 import { Scene } from 'src/utilities/phaser.util';
+import { Player } from 'src/player';
 
 export interface PlatformConfig {
   width: number;
@@ -11,6 +12,8 @@ export interface PlatformConfig {
   scene: Scene;
 }
 export class Platform {
+  public player: Player | null = null;
+
   private speed: number;
   private position: Vector2;
   private width: number;
@@ -38,10 +41,15 @@ export class Platform {
   }
 
   public debug(debugPlugin: DebugDrawPlugin) {
-    debugPlugin.drawRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height, 0xff000f);
+    const color = this.player ? 0x00ffff : 0xff000f;
+    debugPlugin.drawRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height, color);
     this.track.forEach((v: Vector2) => {
       debugPlugin.drawCircle(v.x, v.y, 5, 0xff00ff);
     });
+  }
+
+  public clearPlayer(): void {
+    this.player = null;
   }
 
   public get collider(): Phaser.Geom.Rectangle {
@@ -49,6 +57,7 @@ export class Platform {
   }
 
   private updateKinematics(delta: number) {
+    const oldPosition = this.position;
     if (this.track.length >= 2 ) {
       const from = this.track[this.trackIndex];
       const to = this.track[this.trackIndex + this.direction];
@@ -70,6 +79,12 @@ export class Platform {
           this.direction *= -1;
         }
       }
+    }
+
+    if (this.player) {
+      // Update player position based on updated position of this platform
+      const diff = this.position.subtract(oldPosition);
+      this.player.position = this.player.position.add(diff);
     }
   }
 }
