@@ -5,10 +5,12 @@ import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { Vector2 } from 'src/utilities/vector/vector';
 import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
 import { Scene } from 'src/utilities/phaser.util';
+import { Scalar } from 'src/utilities/math/scalar.util';
 
 class FooScene extends Scene {
   private player: Player;
   private platforms: Platform[];
+  private cameraSpeed = 15;
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
@@ -21,6 +23,7 @@ class FooScene extends Scene {
 
   public create(): void {
     this.player.create();
+    this.cameras.main.setBounds(0, 0, 1200, 600);
     this.platforms = [
       new Platform({
         width: 100,
@@ -54,14 +57,27 @@ class FooScene extends Scene {
       platform.debug(this.debug);
     });
     this.player.update(time, delta, this.platforms);
+    this.updateCamera();
+  }
+
+  private updateCamera(): void {
+    if (this.isPaused) {
+      return;
+    } else {
+      const camera = this.cameras.main;
+      const dx = Scalar.clamp(this.player.position.x - camera.scrollX - camera.width / 2, -this.cameraSpeed,  this.cameraSpeed);
+      const dy = Scalar.clamp(this.player.position.y - camera.scrollY - camera.height / 2, -this.cameraSpeed, this.cameraSpeed);
+      camera.scrollX += dx;
+      camera.scrollY += dy;
+    }
   }
 }
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'phaser-example',
-  width: 800,
-  height: 600,
+  width: 400,
+  height: 400,
   scene: FooScene,
   plugins: {
     scene: [

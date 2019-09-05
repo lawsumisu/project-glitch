@@ -64,6 +64,10 @@ export class Player {
 
   }
 
+  public get sprite(): Phaser.GameObjects.Sprite {
+    return this.spr;
+  }
+
   public update(__: number, deltaMillis: number, platforms: Platform[]): void {
     const dt = deltaMillis / 1000;
     this.updateInputs();
@@ -230,26 +234,17 @@ export class Player {
     if (this.isGrounded && py + sy / 2 + 16 >= gnd && this.velocity.y === 0) {
       // Player is moving along slope, so reposition player as the ground lowers.
       this.position.y = gnd - sy / 2;
-      if (platform) {
-        this.platform = platform;
-        platform.player = this;
-      }
+      this.setPlatform(platform);
     } else if (!this.isGrounded && py + sy / 2 >= gnd && this.velocity.y >= 0) {
       // Player is falling through the ground, so reposition player atop it.
       this.position.y = gnd - sy / 2;
       this.isGrounded = true;
       this.groundVelocity = this.velocity.x;
-      if (platform) {
-        this.platform = platform;
-        platform.player = this;
-      }
+      this.setPlatform(platform);
     } else {
       // Player is airborne
       this.isGrounded = false;
-      if (this.platform) {
-        this.platform.clearPlayer();
-      }
-      this.platform = null;
+      this.setPlatform(null);
     }
   }
 
@@ -337,6 +332,17 @@ export class Player {
       }
     });
     return output;
+  }
+
+  private setPlatform(platform: Platform | null): void {
+    if (this.platform) {
+      this.platform.clearPlayer();
+    }
+
+    this.platform = platform;
+    if (this.platform) {
+      this.platform.player = this;
+    }
   }
 
   private addAnimation(key: PlayerAnimation, count: number, prefix: string, frameRate: number, repeat: number): void {
