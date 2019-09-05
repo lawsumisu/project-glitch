@@ -9,6 +9,7 @@ enum ConfigType {
 interface DebugConfig {
   type: ConfigType;
   color: number;
+  lineWidth: number;
 }
 
 interface LineConfig extends DebugConfig {
@@ -58,16 +59,16 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
       .once('destroy', this.onSceneDestroy);
   }
 
-  public drawLine(x1: number, y1: number, x2: number, y2: number, color: number = 0xffffff): void {
-    this.configs.push(<LineConfig> { type: ConfigType.LINE, x1, y1, x2, y2, color});
+  public drawLine(x1: number, y1: number, x2: number, y2: number, color: number = 0xffffff, lineWidth = 1): void {
+    this.configs.push(<LineConfig> { type: ConfigType.LINE, x1, y1, x2, y2, color, lineWidth});
   }
 
-  public drawRect(x: number, y: number, width: number, height: number, color: number = 0xffffff): void {
-    this.configs.push(<RectConfig> { type: ConfigType.RECT, x, y, width, height, color })
+  public drawRect(x: number, y: number, width: number, height: number, color: number = 0xffffff, lineWidth = 1): void {
+    this.configs.push(<RectConfig> { type: ConfigType.RECT, x, y, width, height, color, lineWidth });
   }
 
-  public drawCircle(x: number, y: number, r: number, color: number = 0xffffff): void {
-    this.configs.push(<CircleConfig> { type: ConfigType.CIRCLE, x, y, r, color});
+  public drawCircle(x: number, y: number, r: number, color: number = 0xffffff, lineWidth = 1): void {
+    this.configs.push(<CircleConfig> { type: ConfigType.CIRCLE, x, y, r, color, lineWidth});
   }
 
   private onSceneStart = (): void => {
@@ -87,7 +88,7 @@ export class DebugDrawPlugin extends Phaser.Plugins.ScenePlugin {
       this.systems.displayList.bringToTop(this.graphics);
       this.configs.forEach((config: DebugConfig) => {
         if (this.graphics) {
-          this.graphics.lineStyle(1, config.color);
+          this.graphics.lineStyle(config.lineWidth, config.color);
           if (isLine(config)) {
             this.graphics.strokeLineShape(new Phaser.Geom.Line(config.x1, config.y1, config.x2, config.y2));
           } else if (isRect(config)) {

@@ -3,6 +3,7 @@ import { Point, Vector2 } from 'src/utilities/vector/vector';
 import { GameInput } from 'src/plugins/gameInput.plugin';
 import { Scene } from 'src/utilities/phaser.util';
 import { Platform } from 'src/platform';
+import { Scalar } from 'src/utilities/math/scalar.util';
 
 export enum PlayerAnimation {
   IDLE = 'IDLE',
@@ -37,6 +38,7 @@ export class Player {
   private gravity = 787.5;
   private jumpSpeed = 390;
   private lowJumpSpeed = 240;
+  private maxSpeed = new Vector2(360, 960);
   private isGrounded = true;
 
   private debugFlag = true;
@@ -156,6 +158,7 @@ export class Player {
         sign = isRightDown ? 1 : -1;
       }
     }
+    speed = Math.min(this.maxSpeed.x, speed);
     if (this.isGrounded) {
       this.groundVelocity = speed * sign;
       this.velocity.x = this.groundVelocity;
@@ -168,6 +171,7 @@ export class Player {
       }
       this.velocity.x = speed * sign;
       this.velocity.y += this.gravity * delta;
+      this.velocity.y = Math.min(this.velocity.y, this.maxSpeed.y);
     }
 
     this.position.x += this.velocity.x * delta;
@@ -246,6 +250,11 @@ export class Player {
       this.isGrounded = false;
       this.setPlatform(null);
     }
+
+    // Make sure player remains in bounds of screen.
+    const bounds = this.scene.bounds;
+    this.position.x = Scalar.clamp(this.position.x, bounds.left + sx / 2, bounds.right - sx / 2);
+    this.position.y = Scalar.clamp(this.position.y, bounds.top + sy / 2, bounds.bottom - sy / 2);
   }
 
   private updateSprite(): void {

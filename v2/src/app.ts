@@ -10,7 +10,7 @@ import { Scalar } from 'src/utilities/math/scalar.util';
 class FooScene extends Scene {
   private player: Player;
   private platforms: Platform[];
-  private cameraSpeed = 15;
+  private cameraSpeed = 10;
 
   constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
@@ -24,6 +24,7 @@ class FooScene extends Scene {
   public create(): void {
     this.player.create();
     this.cameras.main.setBounds(0, 0, 1200, 600);
+    this.cameras.main.setZoom(2);
     this.platforms = [
       new Platform({
         width: 100,
@@ -44,7 +45,7 @@ class FooScene extends Scene {
         height: 35,
         speed: 200,
         trackPoints: [
-          new Vector2(200, 450), new Vector2(250, 450), new Vector2(350, 350),
+          new Vector2(200, 450), new Vector2(250, 450), new Vector2(250, 50),
         ],
         scene: this,
       }),
@@ -58,13 +59,16 @@ class FooScene extends Scene {
     });
     this.player.update(time, delta, this.platforms);
     this.updateCamera();
+    const bounds = this.bounds;
+    this.debug.drawRect(bounds.left, bounds.top, bounds.width, bounds.height, 0xffff00, 3);
   }
 
   private updateCamera(): void {
+    const camera = this.cameras.main;
     if (this.isPaused) {
-      return;
+      // camera.zoomTo(1.5, 50, 'Quad.easeInOut', true);
     } else {
-      const camera = this.cameras.main;
+      // camera.zoomTo(2, 50, 'Quad.easeInOut', true);
       const dx = Scalar.clamp(this.player.position.x - camera.scrollX - camera.width / 2, -this.cameraSpeed,  this.cameraSpeed);
       const dy = Scalar.clamp(this.player.position.y - camera.scrollY - camera.height / 2, -this.cameraSpeed, this.cameraSpeed);
       camera.scrollX += dx;
@@ -76,8 +80,8 @@ class FooScene extends Scene {
 const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'phaser-example',
-  width: 400,
-  height: 400,
+  width: 600,
+  height: 600,
   scene: FooScene,
   plugins: {
     scene: [
