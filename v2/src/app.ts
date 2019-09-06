@@ -1,5 +1,5 @@
 import * as Phaser from 'phaser';
-import { Platform } from 'src/platform';
+import { Platform, PlatformType } from 'src/platform';
 import { Player } from 'src/player';
 import { DebugDrawPlugin } from 'src/plugins/debug.plugin';
 import { Vector2 } from 'src/utilities/vector/vector';
@@ -7,6 +7,29 @@ import { GameInputPlugin } from 'src/plugins/gameInput.plugin';
 import { Scene } from 'src/utilities/phaser.util';
 import { Scalar } from 'src/utilities/math/scalar.util';
 
+function createPlatformHelix(scene: Scene): Platform[] {
+  const width = 50;
+  const height = 35;
+  const speed = 45;
+  const spacing = 75;
+  const type = PlatformType.THIN;
+  const platforms: Platform[] = [];
+  for (let i = 0; i < 5; ++i) {
+    const y = 500 - spacing * i;
+    platforms.push(
+      new Platform({
+        width,
+        height,
+        speed,
+        trackPoints: [ new Vector2(500, y), new Vector2(600, y)],
+        scene,
+        reverseTimer: 1,
+        type,
+      }),
+    );
+  }
+  return platforms;
+}
 class FooScene extends Scene {
   private player: Player;
   private platforms: Platform[];
@@ -49,6 +72,8 @@ class FooScene extends Scene {
         ],
         scene: this,
       }),
+
+      ...createPlatformHelix(this),
     ];
   }
 
