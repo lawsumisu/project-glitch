@@ -2,12 +2,14 @@ import * as Phaser from 'phaser';
 import { Point, Vector2 } from 'src/utilities/vector/vector';
 import { GameInput } from 'src/plugins/gameInput.plugin';
 import { Scene } from 'src/utilities/phaser.util';
-import { Platform } from 'src/platform';
+import { Platform, PlatformType } from 'src/platform';
+import { Scalar } from 'src/utilities/math/scalar.util';
 
 export enum PlayerAnimation {
   IDLE = 'IDLE',
   WALK = 'WALK',
   JUMP = 'JUMP',
+  LAND = 'LAND',
   FALL = 'FALL',
   ATK1 = 'ATK1',
   ATK2 = 'ATK2',
@@ -36,7 +38,8 @@ export class Player {
   private friction = 170;
   private gravity = 787.5;
   private jumpSpeed = 390;
-  private lowJumpSpeed = 240;
+  private lowJumpSpeed = 120;
+  private maxSpeed = new Vector2(360, 960);
   private isGrounded = true;
 
   private debugFlag = true;
@@ -58,10 +61,15 @@ export class Player {
     this.addAnimation(PlayerAnimation.WALK, 8, 'walk', 10, -1);
     this.addAnimation(PlayerAnimation.JUMP, 5, 'jump', 15, 0);
     this.addAnimation(PlayerAnimation.FALL, 4, 'fall', 20, 0);
+    this.addAnimation(PlayerAnimation.LAND, 3, 'land', 15, 0);
     this.addAnimation(PlayerAnimation.ATK1, 6, '1stAttack/Sonic', 15, 0);
     this.addAnimation(PlayerAnimation.ATK2, 6, '2ndAttack/Sonic', 15, 0);
     this.playAnimation(PlayerAnimation.IDLE);
 
+  }
+
+  public get sprite(): Phaser.GameObjects.Sprite {
+    return this.spr;
   }
 
   public update(__: number, deltaMillis: number, platforms: Platform[]): void {
@@ -152,6 +160,7 @@ export class Player {
         sign = isRightDown ? 1 : -1;
       }
     }
+    speed = Math.min(this.maxSpeed.x, speed);
     if (this.isGrounded) {
       this.groundVelocity = speed * sign;
       this.velocity.x = this.groundVelocity;
@@ -164,15 +173,21 @@ export class Player {
       }
       this.velocity.x = speed * sign;
       this.velocity.y += this.gravity * delta;
+      this.velocity.y = Math.min(this.velocity.y, this.maxSpeed.y);
     }
 
     this.position.x += this.velocity.x * delta;
     this.position.y += this.velocity.y * delta;
-    // console.log(this.position, this.velocity, this.isGrounded);
 
+    // Make sure player remains in bounds of screen.
+    const bounds = this.scene.bounds;
+    this.position.x = Scalar.clamp(this.position.x, bounds.left + this.size.x / 2, bounds.right - this.size.x / 2);
+    this.position.y = Scalar.clamp(this.position.y, bounds.top + this.size.y / 2, bounds.bottom - this.size.y / 2);
   }
 
   private updateCollisions(platforms: Platform[]): void {
+    const solidPlatforms = platforms.filter((platform: Platform) => platform.type === PlatformType.SOLID);
+
     let px = this.position.x;
     const py = this.position.y;
     const sx = this.size.x, sy = this.size.y;
@@ -184,8 +199,8 @@ export class Player {
     const getXFromPoint = (point: Point) => point.x;
 
     // Check for wall collisions
-    const collisionWallL = this.checkCollisionsWithSensor(sensorWallL, platforms, px - sx / 2 - 1, getXFromPoint, Math.max);
-    const collisionWallR = this.checkCollisionsWithSensor(sensorWallR, platforms, px + sx / 2 + 1, getXFromPoint, Math.min);
+    const collisionWallL = this.checkCollisionsWithSensor(sensorWallL, solidPlatforms, px - sx / 2 - 1, getXFromPoint, Math.max);
+    const collisionWallR = this.checkCollisionsWithSensor(sensorWallR, solidPlatforms, px + sx / 2 + 1, getXFromPoint, Math.min);
     if (collisionWallL && !collisionWallR) {
       // Player has collided with wall on the left, so push them to right
       this.position.x = collisionWallL.value + sx / 2 + 1;
@@ -203,20 +218,25 @@ export class Player {
     }
     px = this.position.x;
 
-    // Check for ceiling collisions when airborne.
-    if (!this.isGrounded && this.velocity.y <= 0) {
-      let ceil = this.position.y - sy / 2;
-      const sensorCeilL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py - sy / 2);
-      const sensorCeilR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py - sy / 2);
-      const collisionCeilL = this.checkCollisionsWithSensor(sensorCeilL, platforms, ceil, getYFromPoint, Math.max)
-        || { platform: null, value: ceil };
-      const collisionCeilR = this.checkCollisionsWithSensor(sensorCeilR, platforms, ceil, getYFromPoint, Math.max)
-        || { platform: null, value: ceil };
-      ceil = Math.max(collisionCeilL.value, collisionCeilR.value);
-      if (this.position.y - sy / 2 < ceil) {
-        this.position.y = ceil + sy / 2;
-        this.velocity.y = 0;
-      }
+    // Check for ceiling collisions.
+    let ceil = this.position.y - sy / 2;
+    const sensorCeilL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py - sy / 2);
+    const sensorCeilR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py - sy / 2);
+    const collisionCeilL = this.checkCollisionsWithSensor(sensorCeilL, solidPlatforms, ceil, getYFromPoint, Math.max);
+    const collisionCeilR = this.checkCollisionsWithSensor(sensorCeilR, solidPlatforms, ceil, getYFromPoint, Math.max);
+    const hasCeilingCollision = !!collisionCeilL || !!collisionCeilR;
+    if (collisionCeilR) {
+      ceil = Math.max(ceil, collisionCeilR.value);
+    }
+    if (collisionCeilL) {
+      ceil = Math.max(ceil, collisionCeilL.value);
+    }
+    if (!this.isGrounded && this.velocity.y <= 0 && this.position.y - sy / 2 < ceil) {
+      this.position.y = ceil + sy / 2;
+      this.velocity.y = 0;
+    } else if (this.isGrounded && hasCeilingCollision) {
+      // Stop player from jumping if they are in contact with ceiling while on the ground
+      this.velocity.y = 0;
     }
 
     // Check for ground collisions. In the case there is no collision, use the gnd value.
@@ -225,48 +245,37 @@ export class Player {
     const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, platforms, gnd, getYFromPoint) || { platform: null, value: gnd };
     const collisionGndR = this.checkCollisionsWithSensor(sensorGndR, platforms, gnd, getYFromPoint) || { platform: null, value: gnd };
     gnd = Math.min(collisionGndL.value, collisionGndR.value);
-    const platform = collisionGndR.platform || collisionGndL.platform;
+    const gndPlatform = collisionGndR.platform || collisionGndL.platform;
 
     if (this.isGrounded && py + sy / 2 + 16 >= gnd && this.velocity.y === 0) {
       // Player is moving along slope, so reposition player as the ground lowers.
       this.position.y = gnd - sy / 2;
-      if (platform) {
-        this.platform = platform;
-        platform.player = this;
-      }
+      this.setPlatform(gndPlatform);
     } else if (!this.isGrounded && py + sy / 2 >= gnd && this.velocity.y >= 0) {
       // Player is falling through the ground, so reposition player atop it.
       this.position.y = gnd - sy / 2;
       this.isGrounded = true;
       this.groundVelocity = this.velocity.x;
-      if (platform) {
-        this.platform = platform;
-        platform.player = this;
-      }
+      this.setPlatform(gndPlatform);
     } else {
       // Player is airborne
       this.isGrounded = false;
-      if (this.platform) {
-        this.platform.clearPlayer();
-      }
-      this.platform = null;
+      this.setPlatform(null);
     }
   }
 
   private updateSprite(): void {
+    const currentAnimation = <PlayerAnimation> this.spr.anims.getCurrentKey();
     this.spr.x = this.position.x;
     this.spr.y = this.position.y;
-    if (this.velocity.x > 0) {
-      this.spr.flipX = false;
-    } else if (this.velocity.x < 0) {
-      this.spr.flipX = true;
-    }
     switch (this.state) {
       case PlayerState.IDLE:
         if (this.isGrounded) {
           if (Math.abs(this.velocity.x) > 0) {
             this.playAnimation(PlayerAnimation.WALK);
-          } else if (this.velocity.x === 0) {
+          } else if (currentAnimation === PlayerAnimation.FALL && this.velocity.x === 0) {
+            this.playAnimation(PlayerAnimation.LAND);
+          } else if (currentAnimation !== PlayerAnimation.LAND && this.velocity.x === 0) {
             this.playAnimation(PlayerAnimation.IDLE);
           }
         } else {
@@ -276,7 +285,24 @@ export class Player {
             this.playAnimation(PlayerAnimation.FALL);
           }
         }
+        if (currentAnimation === PlayerAnimation.LAND && !this.spr.anims.isPlaying) {
+          this.playAnimation(PlayerAnimation.IDLE);
+        }
         break;
+    }
+    if (this.velocity.x > 0) {
+      this.spr.flipX = false;
+    } else if (this.velocity.x < 0) {
+      this.spr.flipX = true;
+    }
+    if (this.spr.flipX) {
+      // When the sprite is flipped, the pivots also need to be flipped.
+      // Based on phaser/src/gameobjects/components/Animation.js:setCurrentFrame,
+      // pivots are analogous to the sprite origin, so updating the sprite origin directly should have the desired effect.
+      const frame = this.spr.anims.currentFrame.frame;
+      if (frame.customPivot) {
+        this.spr.setOrigin(1 - frame.pivotX, frame.pivotY);
+      }
     }
   }
 
@@ -337,6 +363,17 @@ export class Player {
       }
     });
     return output;
+  }
+
+  private setPlatform(platform: Platform | null): void {
+    if (this.platform) {
+      this.platform.clearPlayer();
+    }
+
+    this.platform = platform;
+    if (this.platform) {
+      this.platform.player = this;
+    }
   }
 
   private addAnimation(key: PlayerAnimation, count: number, prefix: string, frameRate: number, repeat: number): void {

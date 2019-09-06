@@ -12,4 +12,16 @@ export class Scene extends Phaser.Scene {
   public get gameInput(): GameInputPlugin {
     return (<any> this.sys).gameInput;
   }
+
+  public get bounds(): Phaser.Geom.Rectangle {
+    const camera = this.cameras.main;
+    if (this.isPaused) {
+      const rect = new Phaser.Geom.Rectangle(0, 0, camera.width / camera.zoom, camera.height / camera.zoom);
+      rect.centerX = camera.scrollX + camera.width / 2;
+      rect.centerY = camera.scrollY + camera.height / 2;
+      return rect;
+    } else {
+      return camera.getBounds();
+    }
+  }
 }

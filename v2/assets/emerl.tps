@@ -177,16 +177,40 @@
             <key>defaultPivotPoint</key>
             <point_f>0.5,0.5</point_f>
             <key>writePivotPoints</key>
-            <false/>
+            <true/>
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
             <key type="filename">Animations/1stAttack/Sonic/01.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.315789,0.487179</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>10,10,19,19</rect>
+                <key>scale9Paddings</key>
+                <rect>10,10,19,19</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">Animations/1stAttack/Sonic/02.png</key>
             <key type="filename">Animations/1stAttack/Sonic/03.png</key>
             <key type="filename">Animations/1stAttack/Sonic/04.png</key>
             <key type="filename">Animations/1stAttack/Sonic/05.png</key>
             <key type="filename">Animations/1stAttack/Sonic/06.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.368421,0.487179</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>10,10,19,19</rect>
+                <key>scale9Paddings</key>
+                <rect>10,10,19,19</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">Animations/2ndAttack/Sonic/01.png</key>
             <key type="filename">Animations/2ndAttack/Sonic/02.png</key>
             <key type="filename">Animations/2ndAttack/Sonic/03.png</key>
@@ -253,6 +277,21 @@
                 <rect>6,10,11,21</rect>
                 <key>scale9Paddings</key>
                 <rect>6,10,11,21</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">Animations/land/01.png</key>
+            <key type="filename">Animations/land/02.png</key>
+            <key type="filename">Animations/land/03.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.518519,0.432432</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>7,9,13,19</rect>
+                <key>scale9Paddings</key>
+                <rect>7,9,13,19</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
