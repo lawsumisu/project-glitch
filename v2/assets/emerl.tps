@@ -184,7 +184,7 @@
             <key type="filename">Animations/1stAttack/Sonic/01.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
-                <point_f>0.342105,0.512821</point_f>
+                <point_f>0.315789,0.487179</point_f>
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
@@ -201,7 +201,7 @@
             <key type="filename">Animations/1stAttack/Sonic/06.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
-                <point_f>0.394737,0.512821</point_f>
+                <point_f>0.368421,0.487179</point_f>
                 <key>scale9Enabled</key>
                 <false/>
                 <key>scale9Borders</key>
