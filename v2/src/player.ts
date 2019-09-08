@@ -4,6 +4,7 @@ import { GameInput } from 'src/plugins/gameInput.plugin';
 import { Scene } from 'src/utilities/phaser.util';
 import { Platform, PlatformType } from 'src/platform';
 import { Scalar } from 'src/utilities/math/scalar.util';
+import { AfterimageData } from 'src/afterimage';
 
 export enum PlayerAnimation {
   IDLE = 'IDLE',
@@ -50,6 +51,8 @@ export class Player {
   private size: Vector2 = new Vector2(25 * this.scale, 42 * this.scale);
   private platform: Platform | null = null;
 
+  private afterimageData: AfterimageData;
+
   constructor(scene: Scene) {
     this.scene = scene;
   }
@@ -58,7 +61,7 @@ export class Player {
     this.spr = this.scene.add.sprite(this.position.x, this.position.y, 'emerl', 'idle/01.png');
     this.spr.setScale(this.scale);
     this.addAnimation(PlayerAnimation.IDLE, 6, 'idle', 10, -1);
-    this.addAnimation(PlayerAnimation.WALK, 8, 'walk', 10, -1);
+    this.addAnimation(PlayerAnimation.WALK, 8, 'walk', 20, -1);
     this.addAnimation(PlayerAnimation.JUMP, 5, 'jump', 15, 0);
     this.addAnimation(PlayerAnimation.FALL, 4, 'fall', 20, 0);
     this.addAnimation(PlayerAnimation.LAND, 3, 'land', 15, 0);
@@ -66,6 +69,8 @@ export class Player {
     this.addAnimation(PlayerAnimation.ATK2, 6, '2ndAttack/Sonic', 15, 0);
     this.playAnimation(PlayerAnimation.IDLE);
 
+    // Setup afterimages
+    this.afterimageData = new AfterimageData(this.spr, 4, 5, this.scene);
   }
 
   public get sprite(): Phaser.GameObjects.Sprite {
@@ -79,6 +84,7 @@ export class Player {
     this.updateKinematics(dt);
     this.updateCollisions(platforms);
     this.updateSprite();
+    this.afterimageData.update(this.scene.isPaused);
     if (this.debugFlag) {
       this.updateDebug();
     }
@@ -164,7 +170,7 @@ export class Player {
     if (this.isGrounded) {
       this.groundVelocity = speed * sign;
       this.velocity.x = this.groundVelocity;
-      this.velocity.y = this.scene.gameInput.isInputPressed(GameInput.INPUT1, 3) ? -this.jumpSpeed : 0;
+      this.velocity.y = this.hasControl && this.scene.gameInput.isInputPressed(GameInput.INPUT1, 3) ? -this.jumpSpeed : 0;
     } else {
       // Else, player is in the air.
       if (this.scene.gameInput.isInputReleased(GameInput.INPUT1)) {
@@ -187,6 +193,7 @@ export class Player {
 
   private updateCollisions(platforms: Platform[]): void {
     const solidPlatforms = platforms.filter((platform: Platform) => platform.type === PlatformType.SOLID);
+    const nonFluidPlatforms = platforms.filter((platform: Platform) => platform.type !== PlatformType.FLUID);
 
     let px = this.position.x;
     const py = this.position.y;
@@ -242,8 +249,10 @@ export class Player {
     // Check for ground collisions. In the case there is no collision, use the gnd value.
     const sensorGndL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py + sy / 2 + 16);
     const sensorGndR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py + sy / 2 + 16);
-    const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, platforms, gnd, getYFromPoint) || { platform: null, value: gnd };
-    const collisionGndR = this.checkCollisionsWithSensor(sensorGndR, platforms, gnd, getYFromPoint) || { platform: null, value: gnd };
+    const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, nonFluidPlatforms, gnd, getYFromPoint) ||
+      { platform: null, value: gnd };
+    const collisionGndR = this.checkCollisionsWithSensor(sensorGndR, nonFluidPlatforms, gnd, getYFromPoint) ||
+      { platform: null, value: gnd };
     gnd = Math.min(collisionGndL.value, collisionGndR.value);
     const gndPlatform = collisionGndR.platform || collisionGndL.platform;
 
@@ -268,11 +277,14 @@ export class Player {
     const currentAnimation = <PlayerAnimation> this.spr.anims.getCurrentKey();
     this.spr.x = this.position.x;
     this.spr.y = this.position.y;
+    this.spr.anims.setTimeScale(1);
     switch (this.state) {
       case PlayerState.IDLE:
         if (this.isGrounded) {
-          if (Math.abs(this.velocity.x) > 0) {
+          const speed = Math.abs(this.velocity.x);
+          if (speed > 0) {
             this.playAnimation(PlayerAnimation.WALK);
+            this.spr.anims.setTimeScale(Math.max(.4, speed / this.maxSpeed.x));
           } else if (currentAnimation === PlayerAnimation.FALL && this.velocity.x === 0) {
             this.playAnimation(PlayerAnimation.LAND);
           } else if (currentAnimation !== PlayerAnimation.LAND && this.velocity.x === 0) {
@@ -307,10 +319,10 @@ export class Player {
   }
 
   private updateDebug(): void {
-    const { displayWidth, displayHeight, x, y } = this.spr;
+    const { displayWidth, displayHeight, x, y, originX, originY } = this.spr;
     const px = this.position.x;
     const py = this.position.y;
-    this.scene.debug.drawRect(x - displayWidth / 2, y - displayHeight / 2, displayWidth, displayHeight);
+    this.scene.debug.drawRect(x - displayWidth * originX, y - displayHeight * originY, displayWidth, displayHeight);
 
     // Wall sensors
     this.scene.debug.drawLine(px - this.size.x / 2 - 1, py, px, py, 0xff0000);

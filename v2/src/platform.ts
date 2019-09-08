@@ -7,6 +7,7 @@ import { Player } from 'src/player';
 export enum PlatformType {
   SOLID = 'SOLID',
   THIN = 'THIN',
+  FLUID = 'FLUID',
 }
 export interface PlatformConfig {
   width: number;
@@ -18,7 +19,6 @@ export interface PlatformConfig {
   type?: PlatformType;
 }
 export class Platform {
-  public readonly type: PlatformType;
   public player: Player | null = null;
 
   private speed: number;
@@ -31,6 +31,7 @@ export class Platform {
   private scene: Scene;
   private reverseTimer: number;
   private currentTimer = 0;
+  private _type: PlatformType;
 
   constructor(config: PlatformConfig) {
     const { width, height, speed, trackPoints, scene, reverseTimer, type } = config;
@@ -41,7 +42,7 @@ export class Platform {
     this.track = trackPoints;
     this.scene = scene;
     this.reverseTimer = reverseTimer || 0;
-    this.type = type || PlatformType.SOLID;
+    this._type = type || PlatformType.SOLID;
   }
 
   public update(delta: number): void {
@@ -53,7 +54,19 @@ export class Platform {
   }
 
   public debug(debugPlugin: DebugDrawPlugin) {
-    const color = this.player ? 0x00ffff : 0xff000f;
+    let color;
+    switch (this._type) {
+      case PlatformType.FLUID:
+        color = 0x0000ff;
+        break;
+      case PlatformType.THIN:
+        color = 0x00ff00;
+        break;
+      case PlatformType.SOLID:
+        color = 0xff0000;
+        break;
+    }
+    color = this.player ? 0x00ffff : color;
     debugPlugin.drawRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height, color);
     this.track.forEach((v: Vector2) => {
       debugPlugin.drawCircle(v.x, v.y, 5, 0xff00ff);
@@ -66,6 +79,14 @@ export class Platform {
 
   public get collider(): Phaser.Geom.Rectangle {
     return new Phaser.Geom.Rectangle(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+  }
+
+  public get type(): PlatformType {
+    if (this._type === PlatformType.FLUID && this.scene.isPaused) {
+      return PlatformType.THIN;
+    } else {
+      return this._type;
+    }
   }
 
   private updateTimer(delta: number): void {

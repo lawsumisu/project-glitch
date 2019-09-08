@@ -30,6 +30,36 @@ function createPlatformHelix(scene: Scene): Platform[] {
   }
   return platforms;
 }
+
+function createPlatformRiver(scene: Scene, length: number): Platform[] {
+  const width = 100;
+  const height = 100;
+  const startX = 650;
+  return [
+    new Platform({
+      width,
+      height,
+      speed: 0,
+      trackPoints: [ new Vector2(650 , 550)],
+      scene,
+    }),
+    new Platform({
+      width: length,
+      height,
+      speed: 0,
+      trackPoints: [new Vector2(startX + width / 2 + length / 2, 550)],
+      scene,
+      type: PlatformType.FLUID,
+    }),
+    new Platform({
+      width,
+      height,
+      speed: 0,
+      trackPoints: [ new Vector2(startX + width + length, 550)],
+      scene,
+    }),
+  ];
+}
 class FooScene extends Scene {
   private player: Player;
   private platforms: Platform[];
@@ -46,8 +76,8 @@ class FooScene extends Scene {
 
   public create(): void {
     this.player.create();
-    this.cameras.main.setBounds(0, 0, 1200, 600);
-    this.cameras.main.setZoom(2);
+    this.cameras.main.setBounds(0, 0, 1500, 600);
+    this.cameras.main.setZoom(1.5);
     this.platforms = [
       new Platform({
         width: 100,
@@ -74,6 +104,7 @@ class FooScene extends Scene {
       }),
 
       ...createPlatformHelix(this),
+      ...createPlatformRiver(this, 500),
     ];
   }
 
@@ -90,22 +121,17 @@ class FooScene extends Scene {
 
   private updateCamera(): void {
     const camera = this.cameras.main;
-    if (this.isPaused) {
-      // camera.zoomTo(1.5, 50, 'Quad.easeInOut', true);
-    } else {
-      // camera.zoomTo(2, 50, 'Quad.easeInOut', true);
-      const dx = Scalar.clamp(this.player.position.x - camera.scrollX - camera.width / 2, -this.cameraSpeed,  this.cameraSpeed);
-      const dy = Scalar.clamp(this.player.position.y - camera.scrollY - camera.height / 2, -this.cameraSpeed, this.cameraSpeed);
-      camera.scrollX += dx;
-      camera.scrollY += dy;
-    }
+    const dx = Scalar.clamp(this.player.position.x - camera.scrollX - camera.width / 2, -this.cameraSpeed,  this.cameraSpeed);
+    const dy = Scalar.clamp(this.player.position.y - camera.scrollY - camera.height / 2, -this.cameraSpeed, this.cameraSpeed);
+    camera.scrollX += dx;
+    camera.scrollY += dy;
   }
 }
 
 const gameConfig: Phaser.Types.Core.GameConfig = {
   type: Phaser.AUTO,
   parent: 'phaser-example',
-  width: 600,
+  width: 800,
   height: 600,
   scene: FooScene,
   plugins: {
