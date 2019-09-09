@@ -315,6 +315,21 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">Animations/wallSlide/01.png</key>
+            <key type="filename">Animations/wallSlide/02.png</key>
+            <key type="filename">Animations/wallSlide/03.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>7,10,14,21</rect>
+                <key>scale9Paddings</key>
+                <rect>7,10,14,21</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
         </map>
         <key>fileList</key>
         <array>

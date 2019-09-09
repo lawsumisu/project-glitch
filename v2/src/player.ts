@@ -14,6 +14,7 @@ export enum PlayerAnimation {
   FALL = 'FALL',
   ATK1 = 'ATK1',
   ATK2 = 'ATK2',
+  WALLSLIDE = 'WALLSLIDE',
 }
 
 enum PlayerState {
@@ -32,6 +33,7 @@ export class Player {
   private spr: Phaser.GameObjects.Sprite;
   private scene: Scene;
   private velocity = new Vector2(0,  0 );
+  private wallJumpSpeed = new Vector2(65, 280);
   private scale = 1;
   private groundVelocity: number = 0;
   private acceleration = 170;
@@ -42,9 +44,11 @@ export class Player {
   private lowJumpSpeed = 120;
   private maxSpeed = new Vector2(360, 960);
   private isGrounded = true;
+  private isWallSliding = false;
 
   private debugFlag = true;
   private hasControl = true;
+  private horizontalLock = 0;
   private state = PlayerState.IDLE;
 
   // Collision
@@ -67,6 +71,7 @@ export class Player {
     this.addAnimation(PlayerAnimation.LAND, 3, 'land', 15, 0);
     this.addAnimation(PlayerAnimation.ATK1, 6, '1stAttack/Sonic', 15, 0);
     this.addAnimation(PlayerAnimation.ATK2, 6, '2ndAttack/Sonic', 15, 0);
+    this.addAnimation(PlayerAnimation.WALLSLIDE, 3, 'wallSlide', 15, 0);
     this.playAnimation(PlayerAnimation.IDLE);
 
     // Setup afterimages
@@ -79,6 +84,8 @@ export class Player {
 
   public update(__: number, deltaMillis: number, platforms: Platform[]): void {
     const dt = deltaMillis / 1000;
+    // Update horizontal lock
+    this.horizontalLock = Math.max(0, this.horizontalLock - dt);
     this.updateInputs();
     this.updateState();
     this.updateKinematics(dt);
@@ -136,11 +143,13 @@ export class Player {
     const isRightDown = this.scene.gameInput.isInputDown(GameInput.RIGHT);
     const isLeftDown = this.scene.gameInput.isInputDown(GameInput.LEFT);
     let speed = Math.abs(velocity);
-    const shouldAccelerate = this.hasControl && ((velocity > 0 && isRightDown) || (velocity < 0 && isLeftDown));
-    const shouldDecelerate = this.hasControl && ((velocity > 0 && isLeftDown) || (velocity < 0 && isRightDown));
+    const shouldAccelerate = this.hasControl && this.horizontalLock === 0
+      && ((velocity > 0 && isRightDown) || (velocity < 0 && isLeftDown));
+    const shouldDecelerate = this.hasControl && this.horizontalLock === 0
+      && ((velocity > 0 && isLeftDown) || (velocity < 0 && isRightDown));
     let sign = velocity >= 0 ? 1 : -1;
     if (speed > 0) {
-      if (shouldAccelerate) {
+      if (shouldAccelerate ) {
         // Moving in the direction of motion, so accelerate
         speed += acceleration * delta;
       } else if (shouldDecelerate) {
@@ -180,6 +189,15 @@ export class Player {
       this.velocity.x = speed * sign;
       this.velocity.y += this.gravity * delta;
       this.velocity.y = Math.min(this.velocity.y, this.maxSpeed.y);
+
+      if (this.isWallSliding) {
+        this.velocity.y = Math.min(this.velocity.y, 120);
+        if (this.scene.gameInput.isInputPressed(GameInput.INPUT1)) {
+          const direction = this.spr.flipX ? 1 : -1;
+          this.velocity = new Vector2(direction * this.wallJumpSpeed.x, -this.wallJumpSpeed.y);
+          this.horizontalLock = .1;
+        }
+      }
     }
 
     this.position.x += this.velocity.x * delta;
@@ -215,6 +233,8 @@ export class Player {
       if (this.isGrounded) {
         this.groundVelocity = 0;
       }
+      // If holding left while colliding with this wall, then player is wall sliding.
+      this.isWallSliding = this.scene.gameInput.isInputDown(GameInput.LEFT);
     } else if (collisionWallR && !collisionWallL) {
       // Player has collided with wall on the right, so push them to left
       this.position.x = collisionWallR.value - sx / 2 - 1;
@@ -222,6 +242,10 @@ export class Player {
       if (this.isGrounded) {
         this.groundVelocity = 0;
       }
+      // If holding right while colliding with this wall, then player is wall sliding.
+      this.isWallSliding = this.scene.gameInput.isInputDown(GameInput.RIGHT);
+    } else if (!collisionWallR && !collisionWallL) {
+      this.isWallSliding = false;
     }
     px = this.position.x;
 
@@ -256,6 +280,7 @@ export class Player {
     gnd = Math.min(collisionGndL.value, collisionGndR.value);
     const gndPlatform = collisionGndR.platform || collisionGndL.platform;
 
+    const oldIsGrounded = this.isGrounded;
     if (this.isGrounded && py + sy / 2 + 16 >= gnd && this.velocity.y === 0) {
       // Player is moving along slope, so reposition player as the ground lowers.
       this.position.y = gnd - sy / 2;
@@ -270,6 +295,10 @@ export class Player {
       // Player is airborne
       this.isGrounded = false;
       this.setPlatform(null);
+    }
+
+    if (oldIsGrounded && !this.isGrounded && this.velocity.y >= 0) {
+      this.horizontalLock = .1;
     }
   }
 

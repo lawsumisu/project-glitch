@@ -79,6 +79,13 @@ class FooScene extends Scene {
     this.cameras.main.setBounds(0, 0, 1500, 600);
     this.cameras.main.setZoom(1.5);
     this.platforms = [
+      new Platform( {
+        width: 100,
+        height: 400,
+        speed: 0,
+        trackPoints: [ new Vector2(50, 400)],
+        scene: this,
+      }),
       new Platform({
         width: 100,
         height: 75,
