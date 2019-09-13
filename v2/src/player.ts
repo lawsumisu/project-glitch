@@ -76,6 +76,7 @@ export class Player {
 
     // Setup afterimages
     this.afterimageData = new AfterimageData(this.spr, 4, 5, this.scene);
+    this.scene.children.bringToTop(this.spr);
   }
 
   public get sprite(): Phaser.GameObjects.Sprite {

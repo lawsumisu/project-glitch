@@ -1,5 +1,8 @@
 import { Scalar } from 'src/utilities/math/scalar.util';
 
+/**
+ * Generic container for an ordered list of the last n inserted items.
+ */
 export class RingBuffer<T = any> {
   public readonly size: number;
   private buffer: T[] = [];
@@ -15,6 +18,11 @@ export class RingBuffer<T = any> {
     }
   }
 
+  /**
+   * Inserts an item at the end of this buffer. If the buffer is full during this insert, then the least recently added item is removed.
+   * Performed in O(1) runtime.
+   * @param item
+   */
   public push(item: T): void {
     if (this.length < this.size) {
       this.buffer.push(item);
@@ -24,6 +32,12 @@ export class RingBuffer<T = any> {
     }
   }
 
+  /**
+   * Get the item at the provided index. Valid indices can be in the range of [-n, n-1] where n is the max size of this buffer. If the
+   * index is negative, then indexing starts from the most-recently added element (i.e at(-1) will return the last element in the
+   * buffer, at(-2) will return second to last element, etc.)
+   * @param index
+   */
   public at(index: number): T {
     if (index !== Math.round(index)) {
       throw new Error('index must be an integer');
@@ -35,6 +49,9 @@ export class RingBuffer<T = any> {
     }
   }
 
+  /**
+   * Returns an array of all elements in this buffer.
+   */
   public toArray(): T[] {
     const output: T[] = [];
     for (let i = 0; i < this.size; ++i) {
@@ -43,6 +60,9 @@ export class RingBuffer<T = any> {
     return output;
   }
 
+  /**
+   * Gets the current number of items stored in this buffer.
+   */
   public get length(): number {
     return this.buffer.length;
   }

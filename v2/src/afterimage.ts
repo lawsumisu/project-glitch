@@ -3,11 +3,20 @@ import { Scene } from 'src/utilities/phaser.util';
 import { RingBuffer } from 'src/utilities/ringBuffer/ringBuffer.util';
 import { Vector2 } from 'src/utilities/vector/vector';
 
+interface FrameData {
+  key: string;
+  flipX: boolean;
+  origin: Vector2;
+}
+
+/**
+ * Data structure for managing, updating, and displaying afterimages of an input sprite.
+ */
 export class AfterimageData {
   private afterimages: Phaser.GameObjects.Sprite[] = [];
-  private frames: RingBuffer<{key: string; flipX: boolean; origin: Vector2}>;
+  private frames: RingBuffer<FrameData>;
   private positions: RingBuffer<Vector2>;
-  private originalSprite: Phaser.GameObjects.Sprite;
+  private readonly originalSprite: Phaser.GameObjects.Sprite;
 
   constructor(originalSprite: Phaser.GameObjects.Sprite, afterimageCount: number, historyLength: number, scene: Scene) {
     this.originalSprite = originalSprite;
@@ -15,7 +24,7 @@ export class AfterimageData {
       const sprite = scene.add.sprite(originalSprite.x, originalSprite.y, originalSprite.frame.texture.key, originalSprite.frame.name);
       this.afterimages.push(sprite);
     }
-    this.frames = new RingBuffer<{key: string; flipX: boolean; origin: Vector2}>(historyLength);
+    this.frames = new RingBuffer<FrameData>(historyLength);
     this.positions = new RingBuffer<Vector2>(historyLength);
   }
 
