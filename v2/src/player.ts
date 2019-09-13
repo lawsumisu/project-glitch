@@ -1,10 +1,10 @@
 import * as Phaser from 'phaser';
 import { Point, Vector2 } from 'src/utilities/vector/vector';
 import { GameInput } from 'src/plugins/gameInput.plugin';
-import { Scene } from 'src/utilities/phaser.util';
 import { Platform, PlatformType } from 'src/platform';
 import { Scalar } from 'src/utilities/math/scalar.util';
 import { AfterimageData } from 'src/afterimage';
+import { Level } from 'src/levels';
 
 export enum PlayerAnimation {
   IDLE = 'IDLE',
@@ -28,11 +28,11 @@ interface CollisionData {
 }
 
 export class Player {
-  public position = new Vector2(100,  100 );
+  public position = new Vector2(100, 100);
 
   private spr: Phaser.GameObjects.Sprite;
-  private scene: Scene;
-  private velocity = new Vector2(0,  0 );
+  private readonly level: Level;
+  private velocity = new Vector2(0, 0);
   private wallJumpSpeed = new Vector2(65, 280);
   private scale = 1;
   private groundVelocity: number = 0;
@@ -57,12 +57,12 @@ export class Player {
 
   private afterimageData: AfterimageData;
 
-  constructor(scene: Scene) {
-    this.scene = scene;
+  constructor(level: Level) {
+    this.level = level;
   }
 
   public create(): void {
-    this.spr = this.scene.add.sprite(this.position.x, this.position.y, 'emerl', 'idle/01.png');
+    this.spr = this.level.add.sprite(this.position.x, this.position.y, 'emerl', 'idle/01.png');
     this.spr.setScale(this.scale);
     this.addAnimation(PlayerAnimation.IDLE, 6, 'idle', 10, -1);
     this.addAnimation(PlayerAnimation.WALK, 8, 'walk', 20, -1);
@@ -75,8 +75,8 @@ export class Player {
     this.playAnimation(PlayerAnimation.IDLE);
 
     // Setup afterimages
-    this.afterimageData = new AfterimageData(this.spr, 4, 5, this.scene);
-    this.scene.children.bringToTop(this.spr);
+    this.afterimageData = new AfterimageData(this.spr, 4, 5, this.level);
+    this.level.children.bringToTop(this.spr);
   }
 
   public get sprite(): Phaser.GameObjects.Sprite {
@@ -92,28 +92,34 @@ export class Player {
     this.updateKinematics(dt);
     this.updateCollisions(platforms);
     this.updateSprite();
-    this.afterimageData.update(this.scene.isPaused);
+    this.afterimageData.update(this.level.isPaused);
     if (this.debugFlag) {
       this.updateDebug();
     }
   }
 
   private updateInputs(): void {
-    const Qkey = this.scene.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+    const Qkey = this.level.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
 
     if (Phaser.Input.Keyboard.JustUp(Qkey)) {
       this.debugFlag = !this.debugFlag;
     }
 
-    if (this.scene.gameInput.isInputPressed(GameInput.INPUT2) && this.isGrounded) {
+    if (this.level.gameInput.isInputPressed(GameInput.INPUT2) && this.isGrounded) {
       if (this.state === PlayerState.IDLE) {
         this.playAnimation(PlayerAnimation.ATK1);
         this.state = PlayerState.ATTACK;
+        // TODO add proper handling of attacking state
+        this.level.addHitbox({
+          box: new Phaser.Geom.Rectangle(this.position.x - this.size.x / 2, this.position.y - this.size.y / 2, this.size.x, this.size.y),
+          tag: 'player_attack_1',
+          force: new Vector2(100 * (this.spr.flipX ? -1 : 1), 0),
+        });
       }
     }
 
     // Check for Pause
-    this.scene.isPaused = this.scene.gameInput.isInputDown(GameInput.INPUT3);
+    this.level.isPaused = this.level.gameInput.isInputDown(GameInput.INPUT3);
   }
 
   private updateState(): void {
@@ -124,12 +130,13 @@ export class Player {
         this.groundVelocity = 0;
       }
       if (this.spr.anims.currentFrame.index >= 4 &&
-        this.spr.anims.getCurrentKey() === PlayerAnimation.ATK1 && this.scene.gameInput.isInputPressed(GameInput.INPUT2)) {
+        this.spr.anims.getCurrentKey() === PlayerAnimation.ATK1 && this.level.gameInput.isInputPressed(GameInput.INPUT2)) {
         this.playAnimation(PlayerAnimation.ATK2);
       }
       if (this.spr.anims.currentFrame.isLast) {
         // After attack finishes, player is set to idle state.
         this.state = PlayerState.IDLE;
+        this.level.removeHitbox('player_attack_1');
       }
     } else if (this.state === PlayerState.IDLE) {
       this.hasControl = true;
@@ -141,8 +148,8 @@ export class Player {
     const acceleration = this.isGrounded ? this.acceleration : this.acceleration * 2;
     const deceleration = this.isGrounded ? this.deceleration : this.acceleration * 2;
 
-    const isRightDown = this.scene.gameInput.isInputDown(GameInput.RIGHT);
-    const isLeftDown = this.scene.gameInput.isInputDown(GameInput.LEFT);
+    const isRightDown = this.level.gameInput.isInputDown(GameInput.RIGHT);
+    const isLeftDown = this.level.gameInput.isInputDown(GameInput.LEFT);
     let speed = Math.abs(velocity);
     const shouldAccelerate = this.hasControl && this.horizontalLock === 0
       && ((velocity > 0 && isRightDown) || (velocity < 0 && isLeftDown));
@@ -150,7 +157,7 @@ export class Player {
       && ((velocity > 0 && isLeftDown) || (velocity < 0 && isRightDown));
     let sign = velocity >= 0 ? 1 : -1;
     if (speed > 0) {
-      if (shouldAccelerate ) {
+      if (shouldAccelerate) {
         // Moving in the direction of motion, so accelerate
         speed += acceleration * delta;
       } else if (shouldDecelerate) {
@@ -180,10 +187,10 @@ export class Player {
     if (this.isGrounded) {
       this.groundVelocity = speed * sign;
       this.velocity.x = this.groundVelocity;
-      this.velocity.y = this.hasControl && this.scene.gameInput.isInputPressed(GameInput.INPUT1, 3) ? -this.jumpSpeed : 0;
+      this.velocity.y = this.hasControl && this.level.gameInput.isInputPressed(GameInput.INPUT1, 3) ? -this.jumpSpeed : 0;
     } else {
       // Else, player is in the air.
-      if (this.scene.gameInput.isInputReleased(GameInput.INPUT1)) {
+      if (this.level.gameInput.isInputReleased(GameInput.INPUT1)) {
         // Player released space bar, so curb jump velocity so that player does not jump as high.
         this.velocity.y = Math.max(this.velocity.y, -this.lowJumpSpeed);
       }
@@ -193,7 +200,7 @@ export class Player {
 
       if (this.isWallSliding) {
         this.velocity.y = Math.min(this.velocity.y, 120);
-        if (this.scene.gameInput.isInputPressed(GameInput.INPUT1)) {
+        if (this.level.gameInput.isInputPressed(GameInput.INPUT1)) {
           const direction = this.spr.flipX ? 1 : -1;
           this.velocity = new Vector2(direction * this.wallJumpSpeed.x, -this.wallJumpSpeed.y);
           this.horizontalLock = .1;
@@ -205,7 +212,7 @@ export class Player {
     this.position.y += this.velocity.y * delta;
 
     // Make sure player remains in bounds of screen.
-    const bounds = this.scene.bounds;
+    const bounds = this.level.bounds;
     this.position.x = Scalar.clamp(this.position.x, bounds.left + this.size.x / 2, bounds.right - this.size.x / 2);
     this.position.y = Scalar.clamp(this.position.y, bounds.top + this.size.y / 2, bounds.bottom - this.size.y / 2);
   }
@@ -235,7 +242,7 @@ export class Player {
         this.groundVelocity = 0;
       }
       // If holding left while colliding with this wall, then player is wall sliding.
-      this.isWallSliding = this.scene.gameInput.isInputDown(GameInput.LEFT);
+      this.isWallSliding = this.level.gameInput.isInputDown(GameInput.LEFT);
     } else if (collisionWallR && !collisionWallL) {
       // Player has collided with wall on the right, so push them to left
       this.position.x = collisionWallR.value - sx / 2 - 1;
@@ -244,7 +251,7 @@ export class Player {
         this.groundVelocity = 0;
       }
       // If holding right while colliding with this wall, then player is wall sliding.
-      this.isWallSliding = this.scene.gameInput.isInputDown(GameInput.RIGHT);
+      this.isWallSliding = this.level.gameInput.isInputDown(GameInput.RIGHT);
     } else if (!collisionWallR && !collisionWallL) {
       this.isWallSliding = false;
     }
@@ -253,7 +260,7 @@ export class Player {
     // Check for ceiling collisions.
     let ceil = this.position.y - sy / 2;
     const sensorCeilL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py - sy / 2);
-    const sensorCeilR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py - sy / 2);
+    const sensorCeilR = new Phaser.Geom.Line(px + sx / 2, py, px + sx / 2, py - sy / 2);
     const collisionCeilL = this.checkCollisionsWithSensor(sensorCeilL, solidPlatforms, ceil, getYFromPoint, Math.max);
     const collisionCeilR = this.checkCollisionsWithSensor(sensorCeilR, solidPlatforms, ceil, getYFromPoint, Math.max);
     const hasCeilingCollision = !!collisionCeilL || !!collisionCeilR;
@@ -273,11 +280,11 @@ export class Player {
 
     // Check for ground collisions. In the case there is no collision, use the gnd value.
     const sensorGndL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py + sy / 2 + 16);
-    const sensorGndR = new Phaser.Geom.Line(px + sx / 2 , py, px + sx / 2, py + sy / 2 + 16);
+    const sensorGndR = new Phaser.Geom.Line(px + sx / 2, py, px + sx / 2, py + sy / 2 + 16);
     const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, nonFluidPlatforms, gnd, getYFromPoint) ||
-      { platform: null, value: gnd };
+      {platform: null, value: gnd};
     const collisionGndR = this.checkCollisionsWithSensor(sensorGndR, nonFluidPlatforms, gnd, getYFromPoint) ||
-      { platform: null, value: gnd };
+      {platform: null, value: gnd};
     gnd = Math.min(collisionGndL.value, collisionGndR.value);
     const gndPlatform = collisionGndR.platform || collisionGndL.platform;
 
@@ -349,20 +356,20 @@ export class Player {
   }
 
   private updateDebug(): void {
-    const { displayWidth, displayHeight, x, y, originX, originY } = this.spr;
+    const {displayWidth, displayHeight, x, y, originX, originY} = this.spr;
     const px = this.position.x;
     const py = this.position.y;
-    this.scene.debug.drawRect(x - displayWidth * originX, y - displayHeight * originY, displayWidth, displayHeight);
+    this.level.debug.drawRect(x - displayWidth * originX, y - displayHeight * originY, displayWidth, displayHeight);
 
     // Wall sensors
-    this.scene.debug.drawLine(px - this.size.x / 2 - 1, py, px, py, 0xff0000);
-    this.scene.debug.drawLine(px + this.size.x / 2 + 1, py, px, py, 0xff00ff);
+    this.level.debug.drawLine(px - this.size.x / 2 - 1, py, px, py, 0xff0000);
+    this.level.debug.drawLine(px + this.size.x / 2 + 1, py, px, py, 0xff00ff);
     // Ground sensors
-    this.scene.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py + this.size.y / 2, 0x0000ff);
-    this.scene.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py + this.size.y / 2, 0x00ffff);
+    this.level.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py + this.size.y / 2, 0x0000ff);
+    this.level.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py + this.size.y / 2, 0x00ffff);
     // Ceiling sensors
-    this.scene.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py - this.size.y / 2, 0xaaff00);
-    this.scene.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py - this.size.y / 2, 0xffff00);
+    this.level.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py - this.size.y / 2, 0xaaff00);
+    this.level.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py - this.size.y / 2, 0xffff00);
   }
 
   /**
@@ -391,7 +398,7 @@ export class Player {
       const intersections: Point[] = Phaser.Geom.Intersects.GetLineToRectangle(sensor, platform.collider);
       if (intersections.length > 0) {
         if (output === null) {
-          output = { platform: null, value: defaultValue };
+          output = {platform: null, value: defaultValue};
         }
         const reducedValue = intersections
           .map(getValueFn)
@@ -400,7 +407,7 @@ export class Player {
         const outputValue = comparisonFn(output.value, reducedValue);
         if (outputValue === reducedValue && output.value !== reducedValue) {
           // Output value was updated, so reference this platform
-          output = { platform, value: outputValue };
+          output = {platform, value: outputValue};
         }
       }
     });
@@ -426,7 +433,7 @@ export class Player {
       prefix: `${prefix}/`,
       suffix: '.png',
     });
-    this.spr.anims.animationManager.create({ key, frames, frameRate, repeat });
+    this.spr.anims.animationManager.create({key, frames, frameRate, repeat});
   }
 
   private playAnimation(key: PlayerAnimation): void {

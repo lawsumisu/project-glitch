@@ -1,7 +1,7 @@
 import * as Phaser from 'phaser';
-import { Scene } from 'src/utilities/phaser.util';
 import { RingBuffer } from 'src/utilities/ringBuffer/ringBuffer.util';
 import { Vector2 } from 'src/utilities/vector/vector';
+import {Level} from 'src/levels';
 
 interface FrameData {
   key: string;
@@ -18,10 +18,10 @@ export class AfterimageData {
   private positions: RingBuffer<Vector2>;
   private readonly originalSprite: Phaser.GameObjects.Sprite;
 
-  constructor(originalSprite: Phaser.GameObjects.Sprite, afterimageCount: number, historyLength: number, scene: Scene) {
+  constructor(originalSprite: Phaser.GameObjects.Sprite, afterimageCount: number, historyLength: number, level: Level) {
     this.originalSprite = originalSprite;
     for (let i = 0; i < afterimageCount; ++i) {
-      const sprite = scene.add.sprite(originalSprite.x, originalSprite.y, originalSprite.frame.texture.key, originalSprite.frame.name);
+      const sprite = level.add.sprite(originalSprite.x, originalSprite.y, originalSprite.frame.texture.key, originalSprite.frame.name);
       this.afterimages.push(sprite);
     }
     this.frames = new RingBuffer<FrameData>(historyLength);
