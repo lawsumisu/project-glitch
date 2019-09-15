@@ -57,6 +57,8 @@ export class Player {
 
   private afterimageData: AfterimageData;
 
+  private cachedTag: string;
+
   constructor(level: Level) {
     this.level = level;
   }
@@ -110,10 +112,12 @@ export class Player {
         this.playAnimation(PlayerAnimation.ATK1);
         this.state = PlayerState.ATTACK;
         // TODO add proper handling of attacking state
+        const tag = `player_attack_1_${this.level.game.getTime()}`;
+        this.cachedTag = tag;
         this.level.addHitbox({
           box: new Phaser.Geom.Rectangle(this.position.x - this.size.x / 2, this.position.y - this.size.y / 2, this.size.x, this.size.y),
-          tag: 'player_attack_1',
-          force: new Vector2(100 * (this.spr.flipX ? -1 : 1), 0),
+          tag,
+          force: new Vector2(250 * (this.spr.flipX ? -1 : 1), 0),
         });
       }
     }
@@ -136,7 +140,7 @@ export class Player {
       if (this.spr.anims.currentFrame.isLast) {
         // After attack finishes, player is set to idle state.
         this.state = PlayerState.IDLE;
-        this.level.removeHitbox('player_attack_1');
+        this.level.removeHitbox(this.cachedTag);
       }
     } else if (this.state === PlayerState.IDLE) {
       this.hasControl = true;

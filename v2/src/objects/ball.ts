@@ -4,6 +4,8 @@ import { Platform } from 'src/platform';
 import * as Phaser from 'phaser';
 import { Scalar } from 'src/utilities/math/scalar.util';
 import { Hitbox, LevelObject } from 'src/objects/index';
+import { Queue } from 'src/utilities/collections/queue';
+import { GameInput } from 'src/plugins/gameInput.plugin';
 
 export class Ball implements LevelObject {
   public position: Vector2;
@@ -13,10 +15,15 @@ export class Ball implements LevelObject {
   private isGrounded = true;
   private readonly level: Level;
   private radius = 15;
+
   private activeHitboxes: Set<string>;
+  private forceQueue: Queue<Vector2>;
+  private forceFrameTimer = 0;
+  private forceFrameTimerMax = 15;
 
   constructor(level: Level) {
     this.level = level;
+    this.forceQueue = new Queue<Vector2>();
   }
 
   public create(): void {
@@ -25,19 +32,21 @@ export class Ball implements LevelObject {
   }
 
   public force(f: Vector2): void {
-    this.velocity = this.velocity.add(f);
+    this.forceQueue.push(f);
   }
 
   public update(__: number, deltaMillis: number, platforms: Platform[], hitboxes: Hitbox[]): void {
     const dt = deltaMillis / 1000;
+    this.updateHits(hitboxes);
     if (!this.level.isPaused) {
-      this.updateKinematics(dt, hitboxes);
+      this.forceFrameTimer = Math.max(0, this.forceFrameTimer - 1);
+      this.updateKinematics(dt);
       this.updateCollisions(platforms);
     }
     this.updateDebug();
   }
 
-  private updateKinematics(delta: number, hitboxes: Hitbox[]): void {
+  private updateHits(hitboxes: Hitbox[]): void {
     const newHits = new Set<string>();
     hitboxes.forEach((hitbox: Hitbox) => {
       if (Phaser.Geom.Intersects.CircleToRectangle(new Phaser.Geom.Circle(this.position.x, this.position.y, this.radius), hitbox.box)) {
@@ -47,7 +56,18 @@ export class Ball implements LevelObject {
         }
       }
     });
+    if (this.level.gameInput.isInputPressed(GameInput.UP)) {
+      this.force(new Vector2(0, -200));
+    }
     this.activeHitboxes = newHits;
+  }
+  private updateKinematics(delta: number): void {
+    // Update velocity based on currently queued hits.
+    if (this.forceQueue.length > 0 && this.forceFrameTimer === 0) {
+      this.velocity = this.forceQueue.pop();
+      this.forceFrameTimer = this.forceFrameTimerMax;
+    }
+    console.log(this.velocity);
     // if (this.level.gameInput.isInputDown(GameInput.RIGHT)) {
     //   this.force(new Vector2(10, 0));
     // }
@@ -57,15 +77,18 @@ export class Ball implements LevelObject {
     // if (this.level.gameInput.isInputDown(GameInput.UP)) {
     //   this.force(new Vector2(0, -20));
     // }
-    if (this.isGrounded) {
-      let speed = Math.abs(this.velocity.x);
-      const sign = this.velocity.x >= 0 ? 1 : -1;
-      speed -= this.friction * delta;
-      speed = Math.max(0, speed);
-      this.velocity.x = speed * sign;
-    } else {
-      this.velocity.y += this.gravity * delta;
+    if (this.forceFrameTimer === 0) {
+      if (this.isGrounded) {
+        let speed = Math.abs(this.velocity.x);
+        const sign = this.velocity.x >= 0 ? 1 : -1;
+        speed -= this.friction * delta;
+        speed = Math.max(0, speed);
+        this.velocity.x = speed * sign;
+      } else {
+        this.velocity.y += this.gravity * delta;
+      }
     }
+
     // Update position
     this.position = this.position.add(this.velocity.scale(delta));
 
