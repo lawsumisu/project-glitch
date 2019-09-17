@@ -43,8 +43,18 @@ export abstract class Level extends Phaser.Scene {
     });
     this.objects.forEach((object: LevelObject) => {
       object.update(time, delta, this.platforms, _.values(this.hitboxes));
+      if (object.platform) {
+        object.platform.update(delta / 1000);
+        object.platform.debug(this.debug);
+      }
     });
-    this.player.update(time, delta, this.platforms);
+
+    const objectPlatforms = <Platform[]> _.chain(this.objects)
+      .map((object: LevelObject) => object.platform)
+      .filter((platform: Platform | null) => platform !== null)
+      .value();
+    const allPlatforms = this.platforms.concat(objectPlatforms);
+    this.player.update(time, delta, allPlatforms);
     this.updateCamera();
     this.updateDebug();
   }

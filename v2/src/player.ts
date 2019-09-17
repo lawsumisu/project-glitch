@@ -5,6 +5,7 @@ import { Platform, PlatformType } from 'src/platform';
 import { Scalar } from 'src/utilities/math/scalar.util';
 import { AfterimageData } from 'src/afterimage';
 import { Level } from 'src/levels';
+import * as _ from 'lodash';
 
 export enum PlayerAnimation {
   IDLE = 'IDLE',
@@ -14,12 +15,28 @@ export enum PlayerAnimation {
   FALL = 'FALL',
   ATK1 = 'ATK1',
   ATK2 = 'ATK2',
-  WALLSLIDE = 'WALLSLIDE',
+  WALL_SLIDE = 'WALL_SLIDE',
 }
 
-enum PlayerState {
+export enum PlayerState {
   IDLE = 'IDLE',
-  ATTACK = 'ATTACK',
+  WALK = 'WALK',
+  JUMP = 'JUMP',
+  LAND = 'LAND',
+  FALL = 'FALL',
+  ATK1 = 'ATK1',
+  ATK2 = 'ATK2',
+  WALL_SLIDE = 'WALL_SLIDE',
+}
+
+interface PlayerStateData {
+  name: PlayerState;
+  hasControl?: boolean;
+
+  // Animation that is played when this state is entered.
+  animation: PlayerAnimation;
+  // Method that is called once every frame player is in this state. On transition, this method is called with a value of '0'.
+  update?: (tick: number) => void;
 }
 
 interface CollisionData {
@@ -47,9 +64,12 @@ export class Player {
   private isWallSliding = false;
 
   private debugFlag = true;
-  private hasControl = true;
   private horizontalLock = 0;
-  private state = PlayerState.IDLE;
+
+  // State Management
+  private stateTick = 0;
+  private state: PlayerStateData;
+  private states: {[key: string]: PlayerStateData } = {};
 
   // Collision
   private size: Vector2 = new Vector2(25 * this.scale, 42 * this.scale);
@@ -57,10 +77,93 @@ export class Player {
 
   private afterimageData: AfterimageData;
 
-  private cachedTag: string;
+  private hitboxTags: Set<string> = new Set();
 
   constructor(level: Level) {
     this.level = level;
+
+    // Setup player states
+
+    // Idle
+    this.addState({
+      hasControl: true,
+      name: PlayerState.IDLE,
+      animation: PlayerAnimation.IDLE,
+    });
+
+    // Walk
+    this.addState({
+      hasControl: true,
+      name: PlayerState.WALK,
+      animation: PlayerAnimation.WALK,
+    });
+
+    // Jump
+    this.addState({
+      hasControl: true,
+      name: PlayerState.JUMP,
+      animation: PlayerAnimation.JUMP,
+      update: (tick: number) => {
+        if (tick === 0) {
+          this.velocity.y = -this.jumpSpeed;
+        }
+      },
+    });
+
+    // Fall
+    this.addState({
+      hasControl: true,
+      name: PlayerState.FALL,
+      animation: PlayerAnimation.FALL,
+    });
+
+    // Land
+    this.addState({
+      hasControl: true,
+      name: PlayerState.LAND,
+      animation: PlayerAnimation.LAND,
+      update: () => {
+        if (this.spr.anims.currentFrame.isLast) {
+          this.setState(PlayerState.IDLE);
+        }
+      },
+    });
+
+    // attack 1
+    this.addState({
+      hasControl: false,
+      name: PlayerState.ATK1,
+      animation: PlayerAnimation.ATK1,
+      update: (tick: number) => {
+        if (tick === 0) {
+          this.groundVelocity = 0;
+        } else if (tick === 4) {
+          this.generateHitbox(new Vector2(1, -2), new Vector2(20, 7), new Vector2(250, 0), 'attack1');
+        }
+        if (this.spr.anims.currentFrame.isLast) {
+          // After attack finishes, player is set to idle state.
+          this.setState(PlayerState.IDLE);
+        }
+      },
+    });
+
+    // attack 2
+    this.addState({
+      hasControl: false,
+      name: PlayerState.ATK2,
+      animation: PlayerAnimation.ATK2,
+      update: (tick: number) => {
+        if (tick === 2) {
+          this.generateHitbox(new Vector2(0, 0), new Vector2(20, 20), new Vector2(0, -100), 'attack2');
+        }
+        if (this.spr.anims.currentFrame.isLast) {
+          // After attack finishes, player is set to idle state.
+          this.setState(PlayerState.IDLE);
+        }
+      },
+    });
+
+    this.state = this.states[PlayerState.IDLE];
   }
 
   public create(): void {
@@ -73,7 +176,7 @@ export class Player {
     this.addAnimation(PlayerAnimation.LAND, 3, 'land', 15, 0);
     this.addAnimation(PlayerAnimation.ATK1, 6, '1stAttack/Sonic', 15, 0);
     this.addAnimation(PlayerAnimation.ATK2, 6, '2ndAttack/Sonic', 15, 0);
-    this.addAnimation(PlayerAnimation.WALLSLIDE, 3, 'wallSlide', 15, 0);
+    this.addAnimation(PlayerAnimation.WALL_SLIDE, 3, 'wallSlide', 15, 0);
     this.playAnimation(PlayerAnimation.IDLE);
 
     // Setup afterimages
@@ -107,44 +210,28 @@ export class Player {
       this.debugFlag = !this.debugFlag;
     }
 
+    let state = this.state.name;
+    if (this.level.gameInput.isInputPressed(GameInput.INPUT1) && this.isGrounded) {
+      state = PlayerState.JUMP;
+    }
     if (this.level.gameInput.isInputPressed(GameInput.INPUT2) && this.isGrounded) {
-      if (this.state === PlayerState.IDLE) {
-        this.playAnimation(PlayerAnimation.ATK1);
-        this.state = PlayerState.ATTACK;
-        // TODO add proper handling of attacking state
-        const tag = `player_attack_1_${this.level.game.getTime()}`;
-        this.cachedTag = tag;
-        this.level.addHitbox({
-          box: new Phaser.Geom.Rectangle(this.position.x - this.size.x / 2, this.position.y - this.size.y / 2, this.size.x, this.size.y),
-          tag,
-          force: new Vector2(250 * (this.spr.flipX ? -1 : 1), 0),
-        });
+      if (this.state.name === PlayerState.IDLE || this.state.name === PlayerState.WALK) {
+        state = PlayerState.ATK1;
+      } else if (this.state.name === PlayerState.ATK1 && this.spr.anims.currentFrame.index >= 4) {
+        state = PlayerState.ATK2;
       }
     }
+    this.setState(state);
 
     // Check for Pause
     this.level.isPaused = this.level.gameInput.isInputDown(GameInput.INPUT3);
   }
 
   private updateState(): void {
-    if (this.state === PlayerState.ATTACK) {
-      if (this.isGrounded) {
-        // Player cannot move while attacking on the ground
-        this.hasControl = false;
-        this.groundVelocity = 0;
-      }
-      if (this.spr.anims.currentFrame.index >= 4 &&
-        this.spr.anims.getCurrentKey() === PlayerAnimation.ATK1 && this.level.gameInput.isInputPressed(GameInput.INPUT2)) {
-        this.playAnimation(PlayerAnimation.ATK2);
-      }
-      if (this.spr.anims.currentFrame.isLast) {
-        // After attack finishes, player is set to idle state.
-        this.state = PlayerState.IDLE;
-        this.level.removeHitbox(this.cachedTag);
-      }
-    } else if (this.state === PlayerState.IDLE) {
-      this.hasControl = true;
+    if (this.state.update) {
+      this.state.update(this.stateTick);
     }
+    this.stateTick++;
   }
 
   private updateKinematics(delta: number): void {
@@ -155,9 +242,9 @@ export class Player {
     const isRightDown = this.level.gameInput.isInputDown(GameInput.RIGHT);
     const isLeftDown = this.level.gameInput.isInputDown(GameInput.LEFT);
     let speed = Math.abs(velocity);
-    const shouldAccelerate = this.hasControl && this.horizontalLock === 0
+    const shouldAccelerate = this.state.hasControl && this.horizontalLock === 0
       && ((velocity > 0 && isRightDown) || (velocity < 0 && isLeftDown));
-    const shouldDecelerate = this.hasControl && this.horizontalLock === 0
+    const shouldDecelerate = this.state.hasControl && this.horizontalLock === 0
       && ((velocity > 0 && isLeftDown) || (velocity < 0 && isRightDown));
     let sign = velocity >= 0 ? 1 : -1;
     if (speed > 0) {
@@ -181,7 +268,7 @@ export class Player {
         speed = Math.max(0, speed);
       }
     } else {
-      if (this.hasControl && (isRightDown || isLeftDown)) {
+      if (this.state.hasControl && (isRightDown || isLeftDown)) {
         // Move has been inputted, so accelerate
         speed += this.acceleration * delta;
         sign = isRightDown ? 1 : -1;
@@ -191,10 +278,9 @@ export class Player {
     if (this.isGrounded) {
       this.groundVelocity = speed * sign;
       this.velocity.x = this.groundVelocity;
-      this.velocity.y = this.hasControl && this.level.gameInput.isInputPressed(GameInput.INPUT1, 3) ? -this.jumpSpeed : 0;
     } else {
       // Else, player is in the air.
-      if (this.level.gameInput.isInputReleased(GameInput.INPUT1)) {
+      if (this.level.gameInput.isInputReleased(GameInput.INPUT1) && this.state.name === PlayerState.JUMP) {
         // Player released space bar, so curb jump velocity so that player does not jump as high.
         this.velocity.y = Math.max(this.velocity.y, -this.lowJumpSpeed);
       }
@@ -302,6 +388,7 @@ export class Player {
       this.position.y = gnd - sy / 2;
       this.isGrounded = true;
       this.groundVelocity = this.velocity.x;
+      this.velocity.y = 0;
       this.setPlatform(gndPlatform);
     } else {
       // Player is airborne
@@ -315,34 +402,24 @@ export class Player {
   }
 
   private updateSprite(): void {
-    const currentAnimation = <PlayerAnimation> this.spr.anims.getCurrentKey();
     this.spr.x = this.position.x;
     this.spr.y = this.position.y;
     this.spr.anims.setTimeScale(1);
-    switch (this.state) {
-      case PlayerState.IDLE:
-        if (this.isGrounded) {
-          const speed = Math.abs(this.velocity.x);
-          if (speed > 0) {
-            this.playAnimation(PlayerAnimation.WALK);
-            this.spr.anims.setTimeScale(Math.max(.4, speed / this.maxSpeed.x));
-          } else if (currentAnimation === PlayerAnimation.FALL && this.velocity.x === 0) {
-            this.playAnimation(PlayerAnimation.LAND);
-          } else if (currentAnimation !== PlayerAnimation.LAND && this.velocity.x === 0) {
-            this.playAnimation(PlayerAnimation.IDLE);
-          }
-        } else {
-          if (this.velocity.y < 0) {
-            this.playAnimation(PlayerAnimation.JUMP);
-          } else {
-            this.playAnimation(PlayerAnimation.FALL);
-          }
-        }
-        if (currentAnimation === PlayerAnimation.LAND && !this.spr.anims.isPlaying) {
-          this.playAnimation(PlayerAnimation.IDLE);
-        }
-        break;
+
+    if (this.isGrounded) {
+      const speed = Math.abs(this.velocity.x);
+      if (speed > 0) {
+        this.setState(PlayerState.WALK);
+        this.spr.anims.setTimeScale(Math.max(.4, speed / this.maxSpeed.x));
+      } else if (this.state.name === PlayerState.FALL && this.velocity.x === 0) {
+        this.setState(PlayerState.LAND);
+      } else if (!_.includes([PlayerState.LAND, ...Player.attackStates], this.state.name) && speed === 0) {
+        this.setState(PlayerState.IDLE);
+      }
+    } else if (this.velocity.y > 0) {
+      this.setState(PlayerState.FALL);
     }
+
     if (this.velocity.x > 0) {
       this.spr.flipX = false;
     } else if (this.velocity.x < 0) {
@@ -429,6 +506,46 @@ export class Player {
     }
   }
 
+  private addState(state: PlayerStateData): void {
+    this.states[state.name] = state;
+  }
+
+  /**
+   * Updates the current player state.
+   * @param stateName
+   * @param force: Forces the state to transition, even if the new state would be the same as the current one.
+   */
+  private setState(stateName: PlayerState, force?: boolean): void {
+    if (this.state.name !== stateName || force) {
+      this.removeHitboxes();
+      this.state = this.states[stateName];
+      this.playAnimation(this.state.animation);
+      if (this.state.update) {
+        this.state.update(0);
+      }
+      this.stateTick = 1;
+    }
+  }
+
+  private generateHitbox(offset: Vector2, size: Vector2, force: Vector2, tag: string): void {
+    const timestampedTag = `${tag}_${this.level.game.getTime()}`;
+    // Need to position hitbox with respect to the direction player is facing.
+    const x = this.spr.flipX ? this.position.x - offset.x - size.x : this.position.x + offset.x;
+    this.level.addHitbox({
+      box: new Phaser.Geom.Rectangle(x, this.position.y + offset.y, size.x, size.y),
+      force: new Vector2(this.spr.flipX ? -force.x : force.x, force.y),
+      tag: timestampedTag,
+    });
+    this.hitboxTags.add(timestampedTag);
+  }
+
+  private removeHitboxes(): void {
+    this.hitboxTags.forEach((tag: string) => {
+      this.level.removeHitbox(tag);
+    });
+    this.hitboxTags.clear();
+  }
+
   private addAnimation(key: PlayerAnimation, count: number, prefix: string, frameRate: number, repeat: number): void {
     const frames = this.spr.anims.animationManager.generateFrameNames('emerl', {
       start: 1,
@@ -444,5 +561,9 @@ export class Player {
     if (this.spr.anims.getCurrentKey() !== key) {
       this.spr.anims.play(key);
     }
+  }
+
+  private static get attackStates(): PlayerState[] {
+    return [PlayerState.ATK1, PlayerState.ATK2];
   }
 }

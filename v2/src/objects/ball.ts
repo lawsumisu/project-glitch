@@ -1,6 +1,6 @@
 import { Point, Vector2 } from 'src/utilities/vector/vector';
 import { Level } from 'src/levels';
-import { Platform } from 'src/platform';
+import { Platform, PlatformType } from 'src/platform';
 import * as Phaser from 'phaser';
 import { Scalar } from 'src/utilities/math/scalar.util';
 import { Hitbox, LevelObject } from 'src/objects/index';
@@ -24,6 +24,17 @@ export class Ball implements LevelObject {
   constructor(level: Level) {
     this.level = level;
     this.forceQueue = new Queue<Vector2>();
+  }
+
+  public get platform(): Platform {
+    return new Platform({
+      speed: 0,
+      trackPoints: [this.position.clone()],
+      width: this.radius * 2,
+      height: this.radius * 2,
+      level: this.level,
+      type: PlatformType.THIN,
+    });
   }
 
   public create(): void {
@@ -67,7 +78,6 @@ export class Ball implements LevelObject {
       this.velocity = this.forceQueue.pop();
       this.forceFrameTimer = this.forceFrameTimerMax;
     }
-    console.log(this.velocity);
     // if (this.level.gameInput.isInputDown(GameInput.RIGHT)) {
     //   this.force(new Vector2(10, 0));
     // }

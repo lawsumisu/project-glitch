@@ -12,4 +12,5 @@ export interface Hitbox {
 export interface LevelObject {
   create: () => void;
   update: (time: number, deltaMillis: number, platforms: Platform[], hitboxes: Hitbox[]) => void;
+  platform: Platform | null;
 }
