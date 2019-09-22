@@ -21,15 +21,16 @@ export class Ball implements LevelObject {
   private forceFrameTimer = 0;
   private forceFrameTimerMax = 15;
 
+  private _platform: Platform;
+
   constructor(level: Level) {
     this.level = level;
     this.forceQueue = new Queue<Vector2>();
-  }
-
-  public get platform(): Platform {
-    return new Platform({
+    this.position = new Vector2(250, 100);
+    this._platform = new Platform({
       speed: 0,
-      trackPoints: [this.position.clone()],
+      origin: this.position.clone(),
+      trackPoints: [],
       width: this.radius * 2,
       height: this.radius * 2,
       level: this.level,
@@ -37,8 +38,11 @@ export class Ball implements LevelObject {
     });
   }
 
+  public get platform(): Platform {
+    return this._platform;
+  }
+
   public create(): void {
-    this.position = new Vector2(250, 100);
     this.activeHitboxes = new Set();
   }
 
@@ -102,10 +106,12 @@ export class Ball implements LevelObject {
     // Update position
     this.position = this.position.add(this.velocity.scale(delta));
 
-    // Make sure player remains in bounds of screen.
+    // Make sure ball remains in bounds of screen.
     const bounds = this.level.bounds;
     this.position.x = Scalar.clamp(this.position.x, bounds.left + this.radius, bounds.right - this.radius);
     this.position.y = Scalar.clamp(this.position.y, bounds.top + this.radius, bounds.bottom - this.radius);
+
+    this._platform.setOrigin(this.position);
   }
 
   private updateCollisions(platforms: Platform[]): void {

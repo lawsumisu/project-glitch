@@ -14,6 +14,7 @@ export interface PlatformConfig {
   width: number;
   height: number;
   speed?: number;
+  origin?: Vector2;
   reverseTimer?: number;
   trackPoints: Vector2[];
   level: Level;
@@ -59,7 +60,8 @@ export class Platform {
   public player: Player | null = null;
 
   private speed: number;
-  private position: Vector2;
+  private localPosition: Vector2;
+  private origin: Vector2;
   private width: number;
   private height: number;
   private track: Vector2[];
@@ -71,8 +73,9 @@ export class Platform {
   private _type: PlatformType;
 
   constructor(config: PlatformConfig) {
-    const { width, height, speed, trackPoints, level, reverseTimer, type } = config;
-    this.position = trackPoints[0];
+    const { width, height, speed, trackPoints, level, reverseTimer, type, origin } = config;
+    this.origin = origin || Vector2.ZERO;
+    this.localPosition = trackPoints[0] || Vector2.ZERO;
     this.width = width;
     this.height = height;
     this.speed = speed || 0;
@@ -104,18 +107,33 @@ export class Platform {
         break;
     }
     color = this.player ? 0x00ffff : color;
-    debugPlugin.drawRect(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height, color);
+
+    const p = this.position;
+    debugPlugin.drawRect(p.x - this.width / 2, p.y - this.height / 2, this.width, this.height, color);
     this.track.forEach((v: Vector2) => {
       debugPlugin.drawCircle(v.x, v.y, 5, 0xff00ff);
     });
+  }
+
+  public setOrigin(newOrigin: Vector2): void {
+    if (this.player) {
+      const diff = newOrigin.subtract(this.origin);
+      this.player.position = this.player.position.add(diff);
+    }
+    this.origin = newOrigin;
   }
 
   public clearPlayer(): void {
     this.player = null;
   }
 
+  public get position(): Vector2 {
+    return this.localPosition.add(this.origin);
+  }
+
   public get collider(): Phaser.Geom.Rectangle {
-    return new Phaser.Geom.Rectangle(this.position.x - this.width / 2, this.position.y - this.height / 2, this.width, this.height);
+    const p = this.position;
+    return new Phaser.Geom.Rectangle(p.x - this.width / 2, p.y - this.height / 2, this.width, this.height);
   }
 
   public get type(): PlatformType {
@@ -134,20 +152,20 @@ export class Platform {
     if (this.currentTimer > 0) {
       return;
     }
-    const oldPosition = this.position;
+    const oldPosition = this.localPosition;
     if (this.track.length >= 2 ) {
       const from = this.track[this.trackIndex];
       const to = this.track[this.trackIndex + this.direction];
       const direction = to.subtract(from).normalize();
       const velocity = direction.scale(this.speed);
-      this.position = this.position.add(velocity.scale(delta));
+      this.localPosition = this.localPosition.add(velocity.scale(delta));
 
       // Check if platform has passed the next location
-      const platformDistance = this.position.subtract(from).magnitude();
+      const platformDistance = this.localPosition.subtract(from).magnitude();
       const trackDistance = to.subtract(from).magnitude();
       if (platformDistance >= trackDistance) {
         // Set platform to track position so that platform doesn't overshoot.
-        this.position = to;
+        this.localPosition = to;
 
         // Update track position
         this.trackIndex += this.direction;
@@ -161,7 +179,7 @@ export class Platform {
 
     if (this.player) {
       // Update player position based on updated position of this platform
-      const diff = this.position.subtract(oldPosition);
+      const diff = this.localPosition.subtract(oldPosition);
       this.player.position = this.player.position.add(diff);
     }
   }
