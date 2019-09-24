@@ -43,6 +43,10 @@ export class Vector2 implements Point {
   public magnitude(): number {
     return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
   }
+
+  public clone(): Vector2 {
+    return new Vector2(this.x, this.y);
+  }
 }
 
 export class Vector3 {
