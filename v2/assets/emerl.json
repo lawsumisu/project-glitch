@@ -4,11 +4,236 @@
 			"image": "emerl.png",
 			"format": "RGBA8888",
 			"size": {
-				"w": 577,
-				"h": 127
+				"w": 124,
+				"h": 763
 			},
 			"scale": 1,
 			"frames": [
+				{
+					"filename": "upperAttack/Sonic/01.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 48,
+						"h": 42
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 48,
+						"h": 42
+					},
+					"frame": {
+						"x": 1,
+						"y": 1,
+						"w": 48,
+						"h": 42
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "upperAttack/Sonic/02.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 48,
+						"h": 42
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 48,
+						"h": 42
+					},
+					"frame": {
+						"x": 1,
+						"y": 45,
+						"w": 48,
+						"h": 42
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "upperAttack/Sonic/03.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 48,
+						"h": 42
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 48,
+						"h": 42
+					},
+					"frame": {
+						"x": 51,
+						"y": 1,
+						"w": 48,
+						"h": 42
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "upperAttack/Sonic/04.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 48,
+						"h": 42
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 48,
+						"h": 42
+					},
+					"frame": {
+						"x": 1,
+						"y": 89,
+						"w": 48,
+						"h": 42
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "upperAttack/Sonic/05.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 48,
+						"h": 42
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 48,
+						"h": 42
+					},
+					"frame": {
+						"x": 51,
+						"y": 45,
+						"w": 48,
+						"h": 42
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "upperAttack/Sonic/06.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 48,
+						"h": 42
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 48,
+						"h": 42
+					},
+					"frame": {
+						"x": 1,
+						"y": 133,
+						"w": 48,
+						"h": 42
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "upperAttack/Sonic/07.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 48,
+						"h": 42
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 48,
+						"h": 42
+					},
+					"frame": {
+						"x": 51,
+						"y": 89,
+						"w": 48,
+						"h": 42
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "upperAttack/Sonic/08.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 48,
+						"h": 42
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 48,
+						"h": 42
+					},
+					"frame": {
+						"x": 1,
+						"y": 177,
+						"w": 48,
+						"h": 42
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "upperAttack/Sonic/09.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 48,
+						"h": 42
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 48,
+						"h": 42
+					},
+					"frame": {
+						"x": 51,
+						"y": 133,
+						"w": 48,
+						"h": 42
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
 				{
 					"filename": "fall/01.png",
 					"rotated": false,
@@ -25,7 +250,7 @@
 					},
 					"frame": {
 						"x": 1,
-						"y": 1,
+						"y": 221,
 						"w": 36,
 						"h": 44
 					},
@@ -50,7 +275,7 @@
 					},
 					"frame": {
 						"x": 1,
-						"y": 47,
+						"y": 267,
 						"w": 36,
 						"h": 44
 					},
@@ -74,8 +299,8 @@
 						"h": 44
 					},
 					"frame": {
-						"x": 39,
-						"y": 1,
+						"x": 1,
+						"y": 313,
 						"w": 36,
 						"h": 44
 					},
@@ -99,8 +324,8 @@
 						"h": 44
 					},
 					"frame": {
-						"x": 39,
-						"y": 47,
+						"x": 1,
+						"y": 359,
 						"w": 36,
 						"h": 44
 					},
@@ -110,7 +335,7 @@
 					}
 				},
 				{
-					"filename": "3rdAttack/01.png",
+					"filename": "3rdAttack/Sonic/01.png",
 					"rotated": false,
 					"trimmed": false,
 					"sourceSize": {
@@ -124,8 +349,8 @@
 						"h": 41
 					},
 					"frame": {
-						"x": 77,
-						"y": 1,
+						"x": 51,
+						"y": 177,
 						"w": 37,
 						"h": 41
 					},
@@ -135,7 +360,7 @@
 					}
 				},
 				{
-					"filename": "3rdAttack/02.png",
+					"filename": "3rdAttack/Sonic/02.png",
 					"rotated": false,
 					"trimmed": false,
 					"sourceSize": {
@@ -149,8 +374,158 @@
 						"h": 41
 					},
 					"frame": {
-						"x": 77,
-						"y": 44,
+						"x": 1,
+						"y": 405,
+						"w": 37,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "3rdAttack/Sonic/03.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 37,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 37,
+						"h": 41
+					},
+					"frame": {
+						"x": 1,
+						"y": 448,
+						"w": 37,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "3rdAttack/Sonic/04.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 37,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 37,
+						"h": 41
+					},
+					"frame": {
+						"x": 1,
+						"y": 491,
+						"w": 37,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "3rdAttack/Sonic/05.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 37,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 37,
+						"h": 41
+					},
+					"frame": {
+						"x": 1,
+						"y": 534,
+						"w": 37,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "3rdAttack/Sonic/06.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 37,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 37,
+						"h": 41
+					},
+					"frame": {
+						"x": 1,
+						"y": 577,
+						"w": 37,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "3rdAttack/Sonic/07.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 37,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 37,
+						"h": 41
+					},
+					"frame": {
+						"x": 1,
+						"y": 620,
+						"w": 37,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "3rdAttack/Sonic/08.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 37,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 37,
+						"h": 41
+					},
+					"frame": {
+						"x": 1,
+						"y": 663,
 						"w": 37,
 						"h": 41
 					},
@@ -174,539 +549,14 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 77,
-						"y": 87,
+						"x": 1,
+						"y": 706,
 						"w": 38,
 						"h": 39
 					},
 					"anchor": {
 						"x": 0.315789,
 						"y": 0.487179
-					}
-				},
-				{
-					"filename": "3rdAttack/03.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 37,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 37,
-						"h": 41
-					},
-					"frame": {
-						"x": 116,
-						"y": 1,
-						"w": 37,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "3rdAttack/04.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 37,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 37,
-						"h": 41
-					},
-					"frame": {
-						"x": 116,
-						"y": 44,
-						"w": 37,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "1stAttack/Sonic/02.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 38,
-						"h": 39
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 38,
-						"h": 39
-					},
-					"frame": {
-						"x": 117,
-						"y": 87,
-						"w": 38,
-						"h": 39
-					},
-					"anchor": {
-						"x": 0.368421,
-						"y": 0.487179
-					}
-				},
-				{
-					"filename": "3rdAttack/05.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 37,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 37,
-						"h": 41
-					},
-					"frame": {
-						"x": 155,
-						"y": 1,
-						"w": 37,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "3rdAttack/06.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 37,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 37,
-						"h": 41
-					},
-					"frame": {
-						"x": 155,
-						"y": 44,
-						"w": 37,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "1stAttack/Sonic/03.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 38,
-						"h": 39
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 38,
-						"h": 39
-					},
-					"frame": {
-						"x": 157,
-						"y": 87,
-						"w": 38,
-						"h": 39
-					},
-					"anchor": {
-						"x": 0.368421,
-						"y": 0.487179
-					}
-				},
-				{
-					"filename": "3rdAttack/07.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 37,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 37,
-						"h": 41
-					},
-					"frame": {
-						"x": 194,
-						"y": 1,
-						"w": 37,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "3rdAttack/08.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 37,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 37,
-						"h": 41
-					},
-					"frame": {
-						"x": 194,
-						"y": 44,
-						"w": 37,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "1stAttack/Sonic/04.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 38,
-						"h": 39
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 38,
-						"h": 39
-					},
-					"frame": {
-						"x": 197,
-						"y": 87,
-						"w": 38,
-						"h": 39
-					},
-					"anchor": {
-						"x": 0.368421,
-						"y": 0.487179
-					}
-				},
-				{
-					"filename": "wallSlide/01.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 26,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 26,
-						"h": 41
-					},
-					"frame": {
-						"x": 233,
-						"y": 1,
-						"w": 26,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "wallSlide/02.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 26,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 26,
-						"h": 41
-					},
-					"frame": {
-						"x": 233,
-						"y": 44,
-						"w": 26,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "1stAttack/Sonic/05.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 38,
-						"h": 39
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 38,
-						"h": 39
-					},
-					"frame": {
-						"x": 237,
-						"y": 87,
-						"w": 38,
-						"h": 39
-					},
-					"anchor": {
-						"x": 0.368421,
-						"y": 0.487179
-					}
-				},
-				{
-					"filename": "wallSlide/03.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 26,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 26,
-						"h": 41
-					},
-					"frame": {
-						"x": 261,
-						"y": 1,
-						"w": 26,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "idle/01.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 24,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 24,
-						"h": 41
-					},
-					"frame": {
-						"x": 261,
-						"y": 44,
-						"w": 24,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "1stAttack/Sonic/06.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 38,
-						"h": 39
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 38,
-						"h": 39
-					},
-					"frame": {
-						"x": 277,
-						"y": 87,
-						"w": 38,
-						"h": 39
-					},
-					"anchor": {
-						"x": 0.368421,
-						"y": 0.487179
-					}
-				},
-				{
-					"filename": "idle/02.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 24,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 24,
-						"h": 41
-					},
-					"frame": {
-						"x": 287,
-						"y": 44,
-						"w": 24,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "idle/03.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 24,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 24,
-						"h": 41
-					},
-					"frame": {
-						"x": 289,
-						"y": 1,
-						"w": 24,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "idle/04.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 24,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 24,
-						"h": 41
-					},
-					"frame": {
-						"x": 313,
-						"y": 44,
-						"w": 24,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "idle/05.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 24,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 24,
-						"h": 41
-					},
-					"frame": {
-						"x": 315,
-						"y": 1,
-						"w": 24,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "2ndAttack/Sonic/01.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 38,
-						"h": 39
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 38,
-						"h": 39
-					},
-					"frame": {
-						"x": 317,
-						"y": 87,
-						"w": 38,
-						"h": 39
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "idle/06.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 24,
-						"h": 41
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 24,
-						"h": 41
-					},
-					"frame": {
-						"x": 339,
-						"y": 44,
-						"w": 24,
-						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
 					}
 				},
 				{
@@ -724,35 +574,10 @@
 						"h": 41
 					},
 					"frame": {
-						"x": 341,
+						"x": 101,
 						"y": 1,
 						"w": 22,
 						"h": 41
-					},
-					"anchor": {
-						"x": 0.5,
-						"y": 0.5
-					}
-				},
-				{
-					"filename": "2ndAttack/Sonic/02.png",
-					"rotated": false,
-					"trimmed": false,
-					"sourceSize": {
-						"w": 38,
-						"h": 39
-					},
-					"spriteSourceSize": {
-						"x": 0,
-						"y": 0,
-						"w": 38,
-						"h": 39
-					},
-					"frame": {
-						"x": 357,
-						"y": 87,
-						"w": 38,
-						"h": 39
 					},
 					"anchor": {
 						"x": 0.5,
@@ -774,8 +599,8 @@
 						"h": 41
 					},
 					"frame": {
-						"x": 365,
-						"y": 1,
+						"x": 101,
+						"y": 44,
 						"w": 22,
 						"h": 41
 					},
@@ -799,8 +624,8 @@
 						"h": 41
 					},
 					"frame": {
-						"x": 365,
-						"y": 44,
+						"x": 101,
+						"y": 87,
 						"w": 22,
 						"h": 41
 					},
@@ -824,10 +649,385 @@
 						"h": 41
 					},
 					"frame": {
-						"x": 389,
-						"y": 1,
+						"x": 101,
+						"y": 130,
 						"w": 22,
 						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "idle/01.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 24,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 24,
+						"h": 41
+					},
+					"frame": {
+						"x": 39,
+						"y": 221,
+						"w": 24,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "idle/02.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 24,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 24,
+						"h": 41
+					},
+					"frame": {
+						"x": 39,
+						"y": 264,
+						"w": 24,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "idle/03.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 24,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 24,
+						"h": 41
+					},
+					"frame": {
+						"x": 39,
+						"y": 307,
+						"w": 24,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "idle/04.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 24,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 24,
+						"h": 41
+					},
+					"frame": {
+						"x": 39,
+						"y": 350,
+						"w": 24,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "idle/05.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 24,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 24,
+						"h": 41
+					},
+					"frame": {
+						"x": 65,
+						"y": 220,
+						"w": 24,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "idle/06.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 24,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 24,
+						"h": 41
+					},
+					"frame": {
+						"x": 65,
+						"y": 263,
+						"w": 24,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "wallSlide/01.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 26,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 26,
+						"h": 41
+					},
+					"frame": {
+						"x": 65,
+						"y": 306,
+						"w": 26,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.38461538,
+						"y": 0.51219512
+					}
+				},
+				{
+					"filename": "wallSlide/02.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 26,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 26,
+						"h": 41
+					},
+					"frame": {
+						"x": 65,
+						"y": 349,
+						"w": 26,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.38461538461538464,
+						"y": 0.5121951219512195
+					}
+				},
+				{
+					"filename": "wallSlide/03.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 26,
+						"h": 41
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 26,
+						"h": 41
+					},
+					"frame": {
+						"x": 40,
+						"y": 393,
+						"w": 26,
+						"h": 41
+					},
+					"anchor": {
+						"x": 0.38461539,
+						"y": 0.51219512
+					}
+				},
+				{
+					"filename": "1stAttack/Sonic/02.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 38,
+						"h": 39
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 38,
+						"h": 39
+					},
+					"frame": {
+						"x": 40,
+						"y": 436,
+						"w": 38,
+						"h": 39
+					},
+					"anchor": {
+						"x": 0.368421,
+						"y": 0.487179
+					}
+				},
+				{
+					"filename": "1stAttack/Sonic/03.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 38,
+						"h": 39
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 38,
+						"h": 39
+					},
+					"frame": {
+						"x": 40,
+						"y": 477,
+						"w": 38,
+						"h": 39
+					},
+					"anchor": {
+						"x": 0.368421,
+						"y": 0.487179
+					}
+				},
+				{
+					"filename": "1stAttack/Sonic/04.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 38,
+						"h": 39
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 38,
+						"h": 39
+					},
+					"frame": {
+						"x": 40,
+						"y": 518,
+						"w": 38,
+						"h": 39
+					},
+					"anchor": {
+						"x": 0.368421,
+						"y": 0.487179
+					}
+				},
+				{
+					"filename": "1stAttack/Sonic/05.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 38,
+						"h": 39
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 38,
+						"h": 39
+					},
+					"frame": {
+						"x": 40,
+						"y": 559,
+						"w": 38,
+						"h": 39
+					},
+					"anchor": {
+						"x": 0.368421,
+						"y": 0.487179
+					}
+				},
+				{
+					"filename": "1stAttack/Sonic/06.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 38,
+						"h": 39
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 38,
+						"h": 39
+					},
+					"frame": {
+						"x": 40,
+						"y": 600,
+						"w": 38,
+						"h": 39
+					},
+					"anchor": {
+						"x": 0.368421,
+						"y": 0.487179
+					}
+				},
+				{
+					"filename": "2ndAttack/Sonic/01.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 38,
+						"h": 39
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 38,
+						"h": 39
+					},
+					"frame": {
+						"x": 40,
+						"y": 641,
+						"w": 38,
+						"h": 39
 					},
 					"anchor": {
 						"x": 0.5,
@@ -849,10 +1049,35 @@
 						"h": 41
 					},
 					"frame": {
-						"x": 389,
-						"y": 44,
+						"x": 68,
+						"y": 392,
 						"w": 22,
 						"h": 41
+					},
+					"anchor": {
+						"x": 0.5,
+						"y": 0.5
+					}
+				},
+				{
+					"filename": "2ndAttack/Sonic/02.png",
+					"rotated": false,
+					"trimmed": false,
+					"sourceSize": {
+						"w": 38,
+						"h": 39
+					},
+					"spriteSourceSize": {
+						"x": 0,
+						"y": 0,
+						"w": 38,
+						"h": 39
+					},
+					"frame": {
+						"x": 41,
+						"y": 682,
+						"w": 38,
+						"h": 39
 					},
 					"anchor": {
 						"x": 0.5,
@@ -874,8 +1099,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 397,
-						"y": 87,
+						"x": 41,
+						"y": 723,
 						"w": 38,
 						"h": 39
 					},
@@ -899,8 +1124,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 413,
-						"y": 1,
+						"x": 80,
+						"y": 435,
 						"w": 38,
 						"h": 39
 					},
@@ -924,8 +1149,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 413,
-						"y": 42,
+						"x": 80,
+						"y": 476,
 						"w": 38,
 						"h": 39
 					},
@@ -949,8 +1174,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 437,
-						"y": 83,
+						"x": 80,
+						"y": 517,
 						"w": 38,
 						"h": 39
 					},
@@ -974,8 +1199,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 453,
-						"y": 1,
+						"x": 80,
+						"y": 558,
 						"w": 30,
 						"h": 39
 					},
@@ -999,8 +1224,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 453,
-						"y": 42,
+						"x": 80,
+						"y": 599,
 						"w": 30,
 						"h": 39
 					},
@@ -1024,8 +1249,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 477,
-						"y": 83,
+						"x": 80,
+						"y": 640,
 						"w": 30,
 						"h": 39
 					},
@@ -1049,8 +1274,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 485,
-						"y": 1,
+						"x": 81,
+						"y": 681,
 						"w": 30,
 						"h": 39
 					},
@@ -1074,8 +1299,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 485,
-						"y": 42,
+						"x": 81,
+						"y": 722,
 						"w": 30,
 						"h": 39
 					},
@@ -1099,8 +1324,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 509,
-						"y": 83,
+						"x": 90,
+						"y": 177,
 						"w": 30,
 						"h": 39
 					},
@@ -1124,8 +1349,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 517,
-						"y": 1,
+						"x": 91,
+						"y": 218,
 						"w": 30,
 						"h": 39
 					},
@@ -1149,8 +1374,8 @@
 						"h": 39
 					},
 					"frame": {
-						"x": 517,
-						"y": 42,
+						"x": 91,
+						"y": 259,
 						"w": 30,
 						"h": 39
 					},
@@ -1174,8 +1399,8 @@
 						"h": 37
 					},
 					"frame": {
-						"x": 541,
-						"y": 83,
+						"x": 93,
+						"y": 300,
 						"w": 27,
 						"h": 37
 					},
@@ -1199,8 +1424,8 @@
 						"h": 37
 					},
 					"frame": {
-						"x": 549,
-						"y": 1,
+						"x": 93,
+						"y": 339,
 						"w": 27,
 						"h": 37
 					},
@@ -1224,8 +1449,8 @@
 						"h": 37
 					},
 					"frame": {
-						"x": 549,
-						"y": 40,
+						"x": 93,
+						"y": 378,
 						"w": 27,
 						"h": 37
 					},
@@ -1240,6 +1465,6 @@
 	"meta": {
 		"app": "https://www.codeandweb.com/texturepacker",
 		"version": "3.0",
-		"smartupdate": "$TexturePacker:SmartUpdate:3121a6d54ca81a1bd7d62966bb241c0a:5d94d80754fe15259b0f5609ffd5ad1a:669db5aba8e2fa463f5559c805b43e89$"
+		"smartupdate": "$TexturePacker:SmartUpdate:4a8d8761c1dfd0829897000c5cc77904:2bc203c02149e668b2b313f4998bac5b:669db5aba8e2fa463f5559c805b43e89$"
 	}
 }

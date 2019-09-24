@@ -15,6 +15,8 @@ export enum PlayerAnimation {
   FALL = 'FALL',
   ATK1 = 'ATK1',
   ATK2 = 'ATK2',
+  ATK3 = 'ATK3',
+  ATK_UPPER = 'ATK_UPPER',
   WALL_SLIDE = 'WALL_SLIDE',
 }
 
@@ -26,13 +28,15 @@ export enum PlayerState {
   FALL = 'FALL',
   ATK1 = 'ATK1',
   ATK2 = 'ATK2',
+  ATK3 = 'ATK3',
+  ATK_UPPER = 'ATK_UPPER',
   WALL_SLIDE = 'WALL_SLIDE',
 }
 
 interface PlayerStateData {
   name: PlayerState;
   hasControl?: boolean;
-
+  cancelTimer?: number;
   // Animation that is played when this state is entered.
   animation: PlayerAnimation;
   // Method that is called once every frame player is in this state. On transition, this method is called with a value of '0'.
@@ -68,6 +72,7 @@ export class Player {
 
   // State Management
   private stateTick = 0;
+  private cancelTimer = 0;
   private state: PlayerStateData;
   private states: {[key: string]: PlayerStateData } = {};
 
@@ -106,6 +111,15 @@ export class Player {
       update: (tick: number) => {
         if (tick === 0) {
           this.velocity.y = -this.jumpSpeed;
+          if (this.isWallSliding) {
+            const direction = this.spr.flipX ? 1 : -1;
+            this.velocity = new Vector2(direction * this.wallJumpSpeed.x, -this.wallJumpSpeed.y);
+            this.horizontalLock = 6;
+          }
+        }
+        if (this.level.gameInput.isInputReleased(GameInput.INPUT1)) {
+          // Player released space bar, so curb jump velocity so that player does not jump as high.
+          this.velocity.y = Math.max(this.velocity.y, -this.lowJumpSpeed);
         }
       },
     });
@@ -134,11 +148,13 @@ export class Player {
       hasControl: false,
       name: PlayerState.ATK1,
       animation: PlayerAnimation.ATK1,
+      cancelTimer: 10,
       update: (tick: number) => {
         if (tick === 0) {
           this.groundVelocity = 0;
         } else if (tick === 4) {
-          this.generateHitbox(new Vector2(1, -2), new Vector2(20, 7), new Vector2(250, 0), 'attack1');
+          const force = this.level.isPaused ? new Vector2(250, 0) : Vector2.ZERO;
+          this.generateHitbox(new Vector2(1, -2), new Vector2(20, 7), force, 'attack1');
         }
         if (this.spr.anims.currentFrame.isLast) {
           // After attack finishes, player is set to idle state.
@@ -152,15 +168,63 @@ export class Player {
       hasControl: false,
       name: PlayerState.ATK2,
       animation: PlayerAnimation.ATK2,
+      cancelTimer: 15,
       update: (tick: number) => {
         if (tick === 2) {
-          this.generateHitbox(new Vector2(0, 0), new Vector2(20, 20), new Vector2(0, -100), 'attack2');
+          const force = this.level.isPaused ? new Vector2(250, 0) : Vector2.ZERO;
+          this.generateHitbox(new Vector2(0, 0), new Vector2(20, 20), force, 'attack2');
         }
         if (this.spr.anims.currentFrame.isLast) {
           // After attack finishes, player is set to idle state.
           this.setState(PlayerState.IDLE);
         }
       },
+    });
+
+    // attack 3
+    this.addState({
+      hasControl: false,
+      name: PlayerState.ATK3,
+      animation: PlayerAnimation.ATK3,
+      cancelTimer: 15,
+      update: (tick: number) => {
+        if (tick === 2) {
+          const force = this.level.isPaused ? new Vector2(250, 0) : new Vector2(50, 0);
+          this.generateHitbox(new Vector2(0, 0), new Vector2(20, 20), force, 'attack3');
+        }
+        if (this.spr.anims.currentFrame.isLast) {
+          // After attack finishes, player is set to idle state.
+          this.setState(PlayerState.IDLE);
+        }
+      },
+    });
+
+    // upper attack
+    this.addState({
+      hasControl: false,
+      name: PlayerState.ATK_UPPER,
+      animation: PlayerAnimation.ATK_UPPER,
+      cancelTimer: 20,
+      update: (tick: number) => {
+        if (tick === 0) {
+          this.groundVelocity = 0;
+        } else if (tick === 5) {
+          const force = this.level.isPaused ? new Vector2(0, -200) : new Vector2(0, -50);
+          this.generateHitbox(new Vector2(10, -15), new Vector2(15, 30), force, 'attack_upper');
+          this.generateHitbox(new Vector2(-25, -15), new Vector2(50, 15), force, 'attack_upper');
+        }
+        if (this.spr.anims.currentFrame.isLast) {
+          // After attack finishes, player is set to idle state.
+          this.setState(PlayerState.IDLE);
+        }
+      },
+    });
+
+    // wall slide
+    this.addState({
+      hasControl: true,
+      name: PlayerState.WALL_SLIDE,
+      animation: PlayerAnimation.WALL_SLIDE,
     });
 
     this.state = this.states[PlayerState.IDLE];
@@ -176,7 +240,9 @@ export class Player {
     this.addAnimation(PlayerAnimation.LAND, 3, 'land', 15, 0);
     this.addAnimation(PlayerAnimation.ATK1, 6, '1stAttack/Sonic', 15, 0);
     this.addAnimation(PlayerAnimation.ATK2, 6, '2ndAttack/Sonic', 15, 0);
+    this.addAnimation(PlayerAnimation.ATK3, 8, '3rdAttack/Sonic', 15, 0);
     this.addAnimation(PlayerAnimation.WALL_SLIDE, 3, 'wallSlide', 15, 0);
+    this.addAnimation(PlayerAnimation.ATK_UPPER, 9, 'upperAttack/Sonic', 20, 0);
     this.playAnimation(PlayerAnimation.IDLE);
 
     // Setup afterimages
@@ -191,7 +257,8 @@ export class Player {
   public update(__: number, deltaMillis: number, platforms: Platform[]): void {
     const dt = deltaMillis / 1000;
     // Update horizontal lock
-    this.horizontalLock = Math.max(0, this.horizontalLock - dt);
+    this.horizontalLock = Math.max(0, this.horizontalLock - 1);
+    this.cancelTimer = Math.max(0, this.cancelTimer - 1);
     this.updateInputs();
     this.updateState();
     this.updateKinematics(dt);
@@ -211,14 +278,19 @@ export class Player {
     }
 
     let state = this.state.name;
-    if (this.level.gameInput.isInputPressed(GameInput.INPUT1) && this.isGrounded) {
+    if (this.level.gameInput.isInputPressed(GameInput.INPUT1) && (this.isGrounded || this.isWallSliding)) {
       state = PlayerState.JUMP;
     }
-    if (this.level.gameInput.isInputPressed(GameInput.INPUT2) && this.isGrounded) {
-      if (this.state.name === PlayerState.IDLE || this.state.name === PlayerState.WALK) {
+    if (this.level.gameInput.isInputPressed(GameInput.INPUT2) && this.isGrounded && this.cancelTimer === 0) {
+      if (_.includes([PlayerState.ATK1, PlayerState.ATK2, PlayerState.ATK3, PlayerState.IDLE, PlayerState.WALK], this.state.name)
+        && this.level.gameInput.isInputDown(GameInput.UP)) {
+        state = PlayerState.ATK_UPPER;
+      } else if (this.state.name === PlayerState.IDLE || this.state.name === PlayerState.WALK) {
         state = PlayerState.ATK1;
-      } else if (this.state.name === PlayerState.ATK1 && this.spr.anims.currentFrame.index >= 4) {
+      } else if (this.state.name === PlayerState.ATK1) {
         state = PlayerState.ATK2;
+      } else if (this.state.name === PlayerState.ATK2) {
+        state = PlayerState.ATK3;
       }
     }
     this.setState(state);
@@ -280,21 +352,12 @@ export class Player {
       this.velocity.x = this.groundVelocity;
     } else {
       // Else, player is in the air.
-      if (this.level.gameInput.isInputReleased(GameInput.INPUT1) && this.state.name === PlayerState.JUMP) {
-        // Player released space bar, so curb jump velocity so that player does not jump as high.
-        this.velocity.y = Math.max(this.velocity.y, -this.lowJumpSpeed);
-      }
       this.velocity.x = speed * sign;
       this.velocity.y += this.gravity * delta;
       this.velocity.y = Math.min(this.velocity.y, this.maxSpeed.y);
 
       if (this.isWallSliding) {
         this.velocity.y = Math.min(this.velocity.y, 120);
-        if (this.level.gameInput.isInputPressed(GameInput.INPUT1)) {
-          const direction = this.spr.flipX ? 1 : -1;
-          this.velocity = new Vector2(direction * this.wallJumpSpeed.x, -this.wallJumpSpeed.y);
-          this.horizontalLock = .1;
-        }
       }
     }
 
@@ -397,7 +460,7 @@ export class Player {
     }
 
     if (oldIsGrounded && !this.isGrounded && this.velocity.y >= 0) {
-      this.horizontalLock = .1;
+      this.horizontalLock = 6;
     }
   }
 
@@ -416,6 +479,8 @@ export class Player {
       } else if (!_.includes([PlayerState.LAND, ...Player.attackStates], this.state.name) && speed === 0) {
         this.setState(PlayerState.IDLE);
       }
+    } else if (this.isWallSliding && this.velocity.y >= 120) {
+      this.setState(PlayerState.WALL_SLIDE);
     } else if (this.velocity.y > 0) {
       this.setState(PlayerState.FALL);
     }
@@ -524,6 +589,8 @@ export class Player {
         this.state.update(0);
       }
       this.stateTick = 1;
+      this.cancelTimer = this.state.cancelTimer || 0;
+      console.log(this.state.name);
     }
   }
 
@@ -564,6 +631,6 @@ export class Player {
   }
 
   private static get attackStates(): PlayerState[] {
-    return [PlayerState.ATK1, PlayerState.ATK2];
+    return [PlayerState.ATK1, PlayerState.ATK2, PlayerState.ATK3, PlayerState.ATK_UPPER];
   }
 }
