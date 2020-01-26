@@ -118,7 +118,7 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
   private onSceneStart = (): void => {
     this.setupInputMap();
     this.clearInputs();
-  }
+  };
 
   private onSceneUpdate = (): void => {
     _.forEach(this.inputMap, (configs: InputConfig[], input: GameInput) => {
@@ -139,11 +139,11 @@ export class GameInputPlugin extends Phaser.Plugins.ScenePlugin {
         duration: this.inputState[input].duration + 1,
       };
     });
-  }
+  };
 
   private onSceneDestroy = (): void => {
     this.clearInputs();
-  }
+  };
 
   private setupInputMap(): void {
     this.inputMap = {

@@ -48,6 +48,13 @@ interface CollisionData {
   value: number;
 }
 
+enum CollisionType {
+  GROUND = 'GROUND',
+  CEILING = 'CEILING',
+  LEFT_WALL = 'LEFT_WALL',
+  RIGHT_WALL = 'RIGHT_WALL',
+}
+
 export class Player {
   public position = new Vector2(100, 100);
 
@@ -77,7 +84,7 @@ export class Player {
   private states: {[key: string]: PlayerStateData } = {};
 
   // Collision
-  private size: Vector2 = new Vector2(25 * this.scale, 42 * this.scale);
+  private size: Vector2 = new Vector2(25 * this.scale, 40 * this.scale);
   private platform: Platform | null = null;
 
   private afterimageData: AfterimageData;
@@ -371,6 +378,7 @@ export class Player {
   }
 
   private updateCollisions(platforms: Platform[]): void {
+
     const solidPlatforms = platforms.filter((platform: Platform) => platform.type === PlatformType.SOLID);
     const nonFluidPlatforms = platforms.filter((platform: Platform) => platform.type !== PlatformType.FLUID);
 
@@ -378,15 +386,16 @@ export class Player {
     const py = this.position.y;
     const sx = this.size.x, sy = this.size.y;
 
+    // Get tiles that player could potentially collide with
     const sensorWallL = new Phaser.Geom.Line(px - sx / 2 - 1, py, px, py);
     const sensorWallR = new Phaser.Geom.Line(px + sx / 2 + 1, py, px, py);
-    let gnd = 600;
+    let gnd = this.level.size.y;
     const getYFromPoint = (point: Point) => point.y;
-    const getXFromPoint = (point: Point) => point.x;
 
     // Check for wall collisions
-    const collisionWallL = this.checkCollisionsWithSensor(sensorWallL, solidPlatforms, px - sx / 2 - 1, getXFromPoint, Math.max);
-    const collisionWallR = this.checkCollisionsWithSensor(sensorWallR, solidPlatforms, px + sx / 2 + 1, getXFromPoint, Math.min);
+    const collisionWallL = this.checkCollisionsWithSensor(sensorWallL, px - sx / 2 - 1, CollisionType.LEFT_WALL, solidPlatforms);
+    const collisionWallR = this.checkCollisionsWithSensor(sensorWallR, px + sx / 2 + 1, CollisionType.RIGHT_WALL, solidPlatforms);
+
     if (collisionWallL && !collisionWallR) {
       // Player has collided with wall on the left, so push them to right
       this.position.x = collisionWallL.value + sx / 2 + 1;
@@ -414,8 +423,8 @@ export class Player {
     let ceil = this.position.y - sy / 2;
     const sensorCeilL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py - sy / 2);
     const sensorCeilR = new Phaser.Geom.Line(px + sx / 2, py, px + sx / 2, py - sy / 2);
-    const collisionCeilL = this.checkCollisionsWithSensor(sensorCeilL, solidPlatforms, ceil, getYFromPoint, Math.max);
-    const collisionCeilR = this.checkCollisionsWithSensor(sensorCeilR, solidPlatforms, ceil, getYFromPoint, Math.max);
+    const collisionCeilL = this.checkPlatformCollisionsWithSensor(sensorCeilL, solidPlatforms, ceil, getYFromPoint, Math.max);
+    const collisionCeilR = this.checkPlatformCollisionsWithSensor(sensorCeilR, solidPlatforms, ceil, getYFromPoint, Math.max);
     const hasCeilingCollision = !!collisionCeilL || !!collisionCeilR;
     if (collisionCeilR) {
       ceil = Math.max(ceil, collisionCeilR.value);
@@ -434,9 +443,9 @@ export class Player {
     // Check for ground collisions. In the case there is no collision, use the gnd value.
     const sensorGndL = new Phaser.Geom.Line(px - sx / 2, py, px - sx / 2, py + sy / 2 + 16);
     const sensorGndR = new Phaser.Geom.Line(px + sx / 2, py, px + sx / 2, py + sy / 2 + 16);
-    const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, nonFluidPlatforms, gnd, getYFromPoint) ||
+    const collisionGndL = this.checkCollisionsWithSensor(sensorGndL, gnd, CollisionType.GROUND, nonFluidPlatforms) ||
       {platform: null, value: gnd};
-    const collisionGndR = this.checkCollisionsWithSensor(sensorGndR, nonFluidPlatforms, gnd, getYFromPoint) ||
+    const collisionGndR = this.checkCollisionsWithSensor(sensorGndR, gnd, CollisionType.GROUND, nonFluidPlatforms) ||
       {platform: null, value: gnd};
     gnd = Math.min(collisionGndL.value, collisionGndR.value);
     const gndPlatform = collisionGndR.platform || collisionGndL.platform;
@@ -511,13 +520,28 @@ export class Player {
     this.level.debug.drawLine(px - this.size.x / 2 - 1, py, px, py, 0xff0000);
     this.level.debug.drawLine(px + this.size.x / 2 + 1, py, px, py, 0xff00ff);
     // Ground sensors
-    this.level.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py + this.size.y / 2, 0x0000ff);
-    this.level.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py + this.size.y / 2, 0x00ffff);
+    this.level.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py + this.size.y / 2 + 16, 0x0000ff);
+    this.level.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py + this.size.y / 2 + 16, 0x00ffff);
     // Ceiling sensors
     this.level.debug.drawLine(px - this.size.x / 2, py, px - this.size.x / 2, py - this.size.y / 2, 0xaaff00);
     this.level.debug.drawLine(px + this.size.x / 2, py, px + this.size.x / 2, py - this.size.y / 2, 0xffff00);
   }
 
+  private checkCollisionsWithSensor(sensor: Phaser.Geom.Line, defaultValue: number, collisionType: CollisionType, platforms: Platform[]) {
+    const tileCollision = this.checkTileCollisionsWithSensor(sensor, defaultValue, collisionType);
+    let platformCollision = null;
+    const getYFromPoint = (point: Point) => point.y;
+    const getXFromPoint = (point: Point) => point.x;
+    switch (collisionType) {
+      case CollisionType.GROUND:
+        platformCollision = this.checkPlatformCollisionsWithSensor(sensor, platforms, defaultValue, getYFromPoint, Math.min);
+        break;
+      case CollisionType.LEFT_WALL:
+        platformCollision = this.checkPlatformCollisionsWithSensor(sensor, platforms, defaultValue, getXFromPoint, Math.max);
+    }
+    return this.reduceCollisions(
+      <CollisionData[]> [tileCollision, platformCollision].filter((collision) => collision !== null), collisionType);
+  }
   /**
    * Takes a sensor and checks for most relevant collision given a list of platforms.
    * Relevance is determined by a combination of the getValueFn and comparisionFn.
@@ -530,7 +554,7 @@ export class Player {
    * @param {any} comparisonFn: Determines how to compare values. Can be either Math.min or Math.max.
    * @returns {number | null}
    */
-  private checkCollisionsWithSensor(
+  private checkPlatformCollisionsWithSensor(
     sensor: Phaser.Geom.Line,
     platforms: Platform[],
     defaultValue: number,
@@ -558,6 +582,57 @@ export class Player {
       }
     });
     return output;
+  }
+
+  private checkTileCollisionsWithSensor(
+    sensor: Phaser.Geom.Line,
+    defaultValue: number,
+    collsionType: CollisionType,
+  ): CollisionData | null {
+
+    // Fine relevant tiles to check based on sensor position
+    const tx1 = Math.floor(sensor.left / 96), tx2 = Math.floor(sensor.right / 96);
+    const ty1 = Math.floor(sensor.top / 96), ty2 = Math.floor(sensor.bottom / 96);
+    let value: number | null = null;
+    this.level.collisionLayer.forEachTile((tile: Phaser.Tilemaps.Tile) => {
+      const data = <{ objectgroup: { objects: any[] } } | null> tile.getTileData();
+      if (data) {
+        const rects = data.objectgroup.objects
+          .filter((obj: any) => obj.rectangle)
+          .map((obj: { x: number; y: number; height: number; width: number; }) =>
+            new Phaser.Geom.Rectangle(obj.x + tile.getLeft(), obj.y + tile.getTop(), obj.width, obj.height));
+        rects.forEach((rect: Phaser.Geom.Rectangle) => {
+          const intersections: Point[] = Phaser.Geom.Intersects.GetLineToRectangle(sensor, rect);
+          if (intersections.length > 0) {
+            switch (collsionType) {
+              case CollisionType.GROUND:
+                value = Math.min(value || defaultValue, rect.top);
+                break;
+              case CollisionType.LEFT_WALL:
+                value = Math.max(value || defaultValue, rect.right);
+                break;
+            }
+          }
+        });
+      }
+    }, this, tx1, ty1, tx2 - tx1 + 1, ty2 - ty1 + 1);
+    if (value) {
+      return { platform: null, value };
+    } else {
+      return null;
+    }
+  }
+
+  private reduceCollisions(collisions: CollisionData[], collisionType: CollisionType): CollisionData | null {
+    return collisions.reduce((accumulator: CollisionData | null, collision: CollisionData) => {
+      if (!accumulator ||
+        (collisionType === CollisionType.LEFT_WALL && collision.value > accumulator.value) ||
+        (collisionType === CollisionType.GROUND && collision.value < accumulator.value)) {
+        return collision;
+      } else {
+        return accumulator;
+      }
+    }, null);
   }
 
   private setPlatform(platform: Platform | null): void {

@@ -35,6 +35,7 @@
     "no-irregular-whitespace": true,
 
     "no-relative-imports": true,
+    "semicolon": [true, "always", "ignore-bound-class-methods"],
     "variable-name": false
   }
 }

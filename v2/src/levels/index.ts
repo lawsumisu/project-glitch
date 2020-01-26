@@ -6,6 +6,7 @@ import { Platform } from 'src/platform';
 import { Scalar } from 'src/utilities/math/scalar.util';
 import { Hitbox, LevelObject } from 'src/objects';
 import * as _ from 'lodash';
+import { Vector2 } from 'src/utilities/vector/vector';
 
 export abstract class Level extends Phaser.Scene {
   public isPaused = false;
@@ -14,6 +15,7 @@ export abstract class Level extends Phaser.Scene {
   protected hitboxes: {[key: string]: Hitbox };
   protected objects: LevelObject[];
   protected cameraSpeed = 10;
+  protected _collisionLayer: Phaser.Tilemaps.StaticTilemapLayer;
 
   protected constructor(config: string | Phaser.Types.Scenes.SettingsConfig) {
     super(config);
@@ -67,6 +69,10 @@ export abstract class Level extends Phaser.Scene {
     return (<any> this.sys).gameInput;
   }
 
+  public get collisionLayer(): Phaser.Tilemaps.StaticTilemapLayer {
+    return this._collisionLayer;
+  }
+
   public get bounds(): Phaser.Geom.Rectangle {
     const camera = this.cameras.main;
     if (this.isPaused) {
@@ -77,6 +83,11 @@ export abstract class Level extends Phaser.Scene {
     } else {
       return camera.getBounds();
     }
+  }
+
+  public get size(): Vector2 {
+    const bounds = this.cameras.main.getBounds();
+    return new Vector2(bounds.width, bounds.height);
   }
 
   public addHitbox(hitbox: Hitbox): void {
