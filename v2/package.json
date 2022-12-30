@@ -37,7 +37,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^4.0.2",
     "lodash": "^4.17.15",
-    "mocha": "^6.2.0",
+    "mocha": "^10.2.0",
     "raw-loader": "^3.1.0",
     "tslint": "^5.18.0",
     "tslint-consistent-codestyle": "^1.15.1",
